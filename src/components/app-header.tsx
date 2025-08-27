@@ -17,23 +17,19 @@ export function AppHeader({ links = [] }: { links: { label: string; path: string
   return (
     <header className="relative z-50 px-4 py-2 bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400">
       <div className="mx-auto flex justify-between items-center">
-        <div className="flex items-baseline gap-4">
-          <Link to="/" className="text-xl hover:text-neutral-500 dark:hover:text-white">
-            <span>Lildex</span>
+        <div className="flex items-center gap-4">
+          <Link to="/">
+            <img src="img/lil-logo.png" alt="Lildex" className="h-8 w-auto" />
           </Link>
-          <div className="hidden md:flex items-center">
-            <ul className="flex gap-4 flex-nowrap items-center">
-              {links.map(({ label, path }) => (
-                <li key={path}>
-                  <Link
-                    className={`hover:text-neutral-500 dark:hover:text-white ${isActive(path) ? 'text-neutral-500 dark:text-white' : ''}`}
-                    to={path}
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+          <div className="hidden md:flex items-center gap-x-2">
+            {links.map(({ label, path }) => (
+              <Link
+                className={`hover:text-neutral-500 dark:hover:text-white inline-flex  items-center justify-center whitespace-nowrap px-4 py-2.5 ${isActive(path) ? 'text-neutral-500 dark:text-white' : ''}`}
+                to={path}
+              >
+                <span className="relative">{label}</span>
+              </Link>
+            ))}
           </div>
         </div>
 
