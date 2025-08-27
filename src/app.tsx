@@ -3,9 +3,7 @@ import { AppLayout } from '@/components/app-layout.tsx'
 import { AppRoutes } from '@/app-routes.tsx'
 
 const links: { label: string; path: string }[] = [
-  // { label: 'Home', path: '/' },
-  // { label: 'Account', path: '/account' },
-  { label: 'Lildex Program', path: '/lildex' },
+  { label: 'Trade', path: '/' },
   { label: 'Pools', path: '/pools' },
   { label: 'Launch', path: '/launch' },
 ]
