@@ -1,70 +1,95 @@
 #![allow(clippy::result_large_err)]
 
 use anchor_lang::prelude::*;
-
 declare_id!("JAVuBXeBZqXNtS73azhBDAoYaaAFfo4gWXoZe2e7Jf8H");
 
+#[doc(hidden)]
+pub mod auth;
+#[doc(hidden)]
+pub mod constants;
+#[doc(hidden)]
+pub mod errors;
+#[doc(hidden)]
+pub mod events;
+#[doc(hidden)]
+pub mod instructions;
+#[doc(hidden)]
+pub mod math;
+#[doc(hidden)]
+pub mod state;
+#[doc(hidden)]
+pub mod util;
+
+use crate::state::WhirlpoolBumps;
+use instructions::*;
 #[program]
 pub mod lildex {
     use super::*;
 
-    pub fn close(_ctx: Context<CloseLildex>) -> Result<()> {
-        Ok(())
+    pub fn initialize_config(
+        ctx: Context<InitializeConfig>,
+        fee_authority: Pubkey,
+        collect_protocol_fees_authority: Pubkey,
+        reward_emissions_super_authority: Pubkey,
+        default_protocol_fee_rate: u16,
+    ) -> Result<()> {
+        instructions::initialize_config::handler(
+            ctx,
+            fee_authority,
+            collect_protocol_fees_authority,
+            reward_emissions_super_authority,
+            default_protocol_fee_rate,
+        )
     }
 
-    pub fn decrement(ctx: Context<Update>) -> Result<()> {
-        ctx.accounts.lildex.count = ctx.accounts.lildex.count.checked_sub(1).unwrap();
-        Ok(())
+    pub fn initialize_pool(
+        ctx: Context<InitializePool>,
+        bumps: WhirlpoolBumps,
+        // tick_spacing: u16,
+        initial_sqrt_price: u128,
+    ) -> Result<()> {
+        instructions::initialize_pool::handler(ctx, bumps, initial_sqrt_price)
     }
 
-    pub fn increment(ctx: Context<Update>) -> Result<()> {
-        ctx.accounts.lildex.count = ctx.accounts.lildex.count.checked_add(1).unwrap();
-        Ok(())
+    // pub fn initialize_reward(ctx: Context<InitializeReward>, reward_index: u8) -> Result<()> {
+    //     instructions::initialize_reward::handler(ctx, reward_index)
+    // }
+
+    pub fn open_position(
+        ctx: Context<OpenPosition>,
+        bumps: state::OpenPositionBumps,
+        tick_lower_index: i32,
+        tick_upper_index: i32,
+    ) -> Result<()> {
+        instructions::open_position::handler(ctx, bumps, tick_lower_index, tick_upper_index)
     }
 
-    pub fn initialize(_ctx: Context<InitializeLildex>) -> Result<()> {
-        Ok(())
+    pub fn close_position(ctx: Context<ClosePosition>) -> Result<()> {
+        instructions::close_position::handler(ctx)
     }
+    // pub fn collect_fees(ctx: Context<CollectFees>) -> Result<()> {
+    //     instructions::collect_fees::handler(ctx)
+    // }
 
-    pub fn set(ctx: Context<Update>, value: u8) -> Result<()> {
-        ctx.accounts.lildex.count = value.clone();
-        Ok(())
-    }
-}
+    // pub fn collect_reward(ctx: Context<CollectReward>, reward_index: u8) -> Result<()> {
+    //     instructions::collect_reward::handler(ctx, reward_index)
+    // }
 
-#[derive(Accounts)]
-pub struct InitializeLildex<'info> {
-    #[account(mut)]
-    pub payer: Signer<'info>,
-
-    #[account(
-  init,
-  space = 8 + Lildex::INIT_SPACE,
-  payer = payer
-    )]
-    pub lildex: Account<'info, Lildex>,
-    pub system_program: Program<'info, System>,
-}
-#[derive(Accounts)]
-pub struct CloseLildex<'info> {
-    #[account(mut)]
-    pub payer: Signer<'info>,
-
-    #[account(
-  mut,
-  close = payer, // close account and return lamports to payer
-    )]
-    pub lildex: Account<'info, Lildex>,
-}
-
-#[derive(Accounts)]
-pub struct Update<'info> {
-    #[account(mut)]
-    pub lildex: Account<'info, Lildex>,
-}
-
-#[account]
-#[derive(InitSpace)]
-pub struct Lildex {
-    count: u8,
+    // pub fn swap(
+    //     ctx: Context<Swap>,
+    //     amount: u64,
+    //     other_amount_threshold: u64,
+    //     sqrt_price_limit: u128,
+    //     amount_specified_is_input: bool,
+    //     a_to_b: bool,
+    // ) -> Result<()> {
+    //     instructions::swap::handler(
+    //         ctx,
+    //         amount,
+    //         other_amount_threshold,
+    //         sqrt_price_limit,
+    //         amount_specified_is_input,
+    //         a_to_b,
+    //     )
+    // }
 }
