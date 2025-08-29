@@ -6,7 +6,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-lildex = "JAVuBXeBZqXNtS73azhBDAoYaaAFfo4gWXoZe2e7Jf8H"
+lildex = "6TnPz5JHzrJdj9oBFcs87zW2ewg4C5gWDPDkBzMXTfLD"
 
 [registry]
 url = "https://api.apr.dev"
