@@ -20,5 +20,9 @@ pub fn handler(
     default_protocol_fee_rate: u16,
 ) -> Result<()> {
     // Create the config account
+    ctx.accounts.config.set_inner(WhirlpoolsConfig {
+        fee_authority,
+        default_protocol_fee_rate,
+    });
     Ok(())
 }

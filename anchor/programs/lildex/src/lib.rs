@@ -36,10 +36,9 @@ pub mod lildex {
     pub fn initialize_pool(
         ctx: Context<InitializePool>,
         bumps: WhirlpoolBumps,
-        // tick_spacing: u16,
         initial_sqrt_price: u128,
     ) -> Result<()> {
-        instructions::initialize_pool::handler(ctx, bumps, initial_sqrt_price)
+        Ok(())
     }
 
     pub fn open_position(
