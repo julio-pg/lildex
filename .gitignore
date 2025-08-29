@@ -38,3 +38,4 @@ anchor/target/sbpf-solana-solana
 /anchor/target/.rustc_info.json
 test-ledger
 **/*.rs.bk
+anchor/src/client
