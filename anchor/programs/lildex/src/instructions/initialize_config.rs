@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use anchor_lang::prelude::*;
 
 use crate::auth::admin::is_admin_key;
@@ -5,7 +7,13 @@ use crate::state::*;
 
 #[derive(Accounts)]
 pub struct InitializeConfig<'info> {
-    #[account(init, payer = funder, space = WhirlpoolsConfig::INIT_SPACE)]
+    #[account(
+        init, 
+        payer = funder,
+        space = WhirlpoolsConfig::DISCRIMINATOR.len() + WhirlpoolsConfig::INIT_SPACE,
+        seeds = [b"lil", funder.key().as_ref()],
+        bump
+    )]
     pub config: Account<'info, WhirlpoolsConfig>,
 
     #[account(mut, constraint = is_admin_key(funder.key))]

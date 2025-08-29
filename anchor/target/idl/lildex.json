@@ -1,5 +1,5 @@
 {
-  "address": "3axbTs2z5GBy6usVbNVoqEgZMng3vZvMnAoX29BFfwhr",
+  "address": "6TnPz5JHzrJdj9oBFcs87zW2ewg4C5gWDPDkBzMXTfLD",
   "metadata": {
     "name": "lildex",
     "version": "0.1.0",
@@ -84,7 +84,22 @@
         {
           "name": "config",
           "writable": true,
-          "signer": true
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "funder"
+              }
+            ]
+          }
         },
         {
           "name": "funder",
@@ -99,14 +114,6 @@
       "args": [
         {
           "name": "fee_authority",
-          "type": "pubkey"
-        },
-        {
-          "name": "collect_protocol_fees_authority",
-          "type": "pubkey"
-        },
-        {
-          "name": "reward_emissions_super_authority",
           "type": "pubkey"
         },
         {
@@ -127,74 +134,7 @@
         232,
         40
       ],
-      "accounts": [
-        {
-          "name": "whirlpools_config"
-        },
-        {
-          "name": "token_mint_a"
-        },
-        {
-          "name": "token_mint_b"
-        },
-        {
-          "name": "funder",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "whirlpool",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  119,
-                  104,
-                  105,
-                  114,
-                  108,
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "whirlpools_config"
-              },
-              {
-                "kind": "account",
-                "path": "token_mint_a"
-              },
-              {
-                "kind": "account",
-                "path": "token_mint_b"
-              }
-            ]
-          }
-        },
-        {
-          "name": "token_vault_a",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "token_vault_b",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
+      "accounts": [],
       "args": [
         {
           "name": "bumps",
@@ -429,21 +369,6 @@
         87,
         193,
         254
-      ]
-    }
-  ],
-  "events": [
-    {
-      "name": "PoolInitialized",
-      "discriminator": [
-        100,
-        118,
-        173,
-        87,
-        12,
-        198,
-        254,
-        229
       ]
     }
   ],
@@ -803,50 +728,6 @@
       }
     },
     {
-      "name": "PoolInitialized",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "whirlpool",
-            "type": "pubkey"
-          },
-          {
-            "name": "whirlpools_config",
-            "type": "pubkey"
-          },
-          {
-            "name": "token_mint_a",
-            "type": "pubkey"
-          },
-          {
-            "name": "token_mint_b",
-            "type": "pubkey"
-          },
-          {
-            "name": "token_program_a",
-            "type": "pubkey"
-          },
-          {
-            "name": "token_program_b",
-            "type": "pubkey"
-          },
-          {
-            "name": "decimals_a",
-            "type": "u8"
-          },
-          {
-            "name": "decimals_b",
-            "type": "u8"
-          },
-          {
-            "name": "initial_sqrt_price",
-            "type": "u128"
-          }
-        ]
-      }
-    },
-    {
       "name": "Position",
       "type": {
         "kind": "struct",
@@ -1007,14 +888,6 @@
         "fields": [
           {
             "name": "fee_authority",
-            "type": "pubkey"
-          },
-          {
-            "name": "collect_protocol_fees_authority",
-            "type": "pubkey"
-          },
-          {
-            "name": "reward_emissions_super_authority",
             "type": "pubkey"
           },
           {

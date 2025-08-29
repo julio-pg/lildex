@@ -90,7 +90,22 @@ export type Lildex = {
         {
           "name": "config",
           "writable": true,
-          "signer": true
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "funder"
+              }
+            ]
+          }
         },
         {
           "name": "funder",
@@ -105,14 +120,6 @@ export type Lildex = {
       "args": [
         {
           "name": "feeAuthority",
-          "type": "pubkey"
-        },
-        {
-          "name": "collectProtocolFeesAuthority",
-          "type": "pubkey"
-        },
-        {
-          "name": "rewardEmissionsSuperAuthority",
           "type": "pubkey"
         },
         {
@@ -133,74 +140,7 @@ export type Lildex = {
         232,
         40
       ],
-      "accounts": [
-        {
-          "name": "whirlpoolsConfig"
-        },
-        {
-          "name": "tokenMintA"
-        },
-        {
-          "name": "tokenMintB"
-        },
-        {
-          "name": "funder",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "whirlpool",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  119,
-                  104,
-                  105,
-                  114,
-                  108,
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "whirlpoolsConfig"
-              },
-              {
-                "kind": "account",
-                "path": "tokenMintA"
-              },
-              {
-                "kind": "account",
-                "path": "tokenMintB"
-              }
-            ]
-          }
-        },
-        {
-          "name": "tokenVaultA",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "tokenVaultB",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
+      "accounts": [],
       "args": [
         {
           "name": "bumps",
@@ -435,21 +375,6 @@ export type Lildex = {
         87,
         193,
         254
-      ]
-    }
-  ],
-  "events": [
-    {
-      "name": "poolInitialized",
-      "discriminator": [
-        100,
-        118,
-        173,
-        87,
-        12,
-        198,
-        254,
-        229
       ]
     }
   ],
@@ -809,50 +734,6 @@ export type Lildex = {
       }
     },
     {
-      "name": "poolInitialized",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "whirlpool",
-            "type": "pubkey"
-          },
-          {
-            "name": "whirlpoolsConfig",
-            "type": "pubkey"
-          },
-          {
-            "name": "tokenMintA",
-            "type": "pubkey"
-          },
-          {
-            "name": "tokenMintB",
-            "type": "pubkey"
-          },
-          {
-            "name": "tokenProgramA",
-            "type": "pubkey"
-          },
-          {
-            "name": "tokenProgramB",
-            "type": "pubkey"
-          },
-          {
-            "name": "decimalsA",
-            "type": "u8"
-          },
-          {
-            "name": "decimalsB",
-            "type": "u8"
-          },
-          {
-            "name": "initialSqrtPrice",
-            "type": "u128"
-          }
-        ]
-      }
-    },
-    {
       "name": "position",
       "type": {
         "kind": "struct",
@@ -1013,14 +894,6 @@ export type Lildex = {
         "fields": [
           {
             "name": "feeAuthority",
-            "type": "pubkey"
-          },
-          {
-            "name": "collectProtocolFeesAuthority",
-            "type": "pubkey"
-          },
-          {
-            "name": "rewardEmissionsSuperAuthority",
             "type": "pubkey"
           },
           {
