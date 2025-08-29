@@ -14,7 +14,8 @@ describe('lildex', () => {
   beforeAll(async () => {
     connection = await connect()
     lildex = await generateKeyPairSigner()
-    payer = await loadKeypairSignerFromFile(process.env.ANCHOR_WALLET!)
+    payer = await loadKeypairSignerFromFile()
+
     console.log('Payer:', payer.address)
   })
 
@@ -22,7 +23,7 @@ describe('lildex', () => {
     connection = await connect()
 
     const configPDAAndBump = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
-      'offer',
+      'lil',
       payer.address,
     ])
     const config = configPDAAndBump.pda
@@ -42,6 +43,7 @@ describe('lildex', () => {
     })
 
     // ASSERT
-    console.log(signature)
+    const accounts = await programClient.fetchAllWhirlpoolsConfig(connection.rpc, [])
+    console.log(accounts)
   })
 })

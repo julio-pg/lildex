@@ -5,8 +5,8 @@ use anchor_lang::solana_program::pubkey;
 pub const ADMINS: [Pubkey; 2] = [
     // localnet/localnet-admin-keypair-0.json
     pubkey!("tstYmkF9JHjZbSugJe1H3ygUTox1bqSxpn5QjxMwVrm"),
-    // localnet/localnet-admin-keypair-1.json
-    pubkey!("tstxHWKz4c1ChCqTcqvTMfcrxKQCs4ka1ypdTuZu5pH"),
+    // Add your own admin addreess here, you can get this run "solana address"
+    pubkey!("3wDmGCdec3eXwGYXiHAUBMuXSTskMgc2imk5vRzU5iHC"),
 ];
 
 #[cfg(feature = "devnet")]
