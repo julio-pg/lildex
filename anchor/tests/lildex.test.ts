@@ -1,4 +1,4 @@
-import { address, generateKeyPairSigner, KeyPairSigner } from 'gill'
+import { Address, address, generateKeyPairSigner, KeyPairSigner } from 'gill'
 import * as programClient from '../src/client/js/generated'
 import { loadKeypairSignerFromFile } from 'gill/node'
 import { Connection, connect } from 'solana-kite'
@@ -10,11 +10,27 @@ describe('lildex', () => {
   let connection: Connection
   let payer: KeyPairSigner
   let lildex: KeyPairSigner
-
+  let postionTokenMint: Address
+  let tokenMintA: Address
+  let tokenMintB: Address
   beforeAll(async () => {
     connection = await connect()
     lildex = await generateKeyPairSigner()
     payer = await loadKeypairSignerFromFile()
+    tokenMintA = address('So11111111111111111111111111111111111111112')
+    tokenMintB = address('USDC111111111111111111111111111111111111111')
+    // create position token mint
+    postionTokenMint = await connection.createTokenMint({
+      mintAuthority: payer,
+      decimals: 0,
+      name: 'Lil test',
+      symbol: 'LIL_TEST',
+      uri: 'https://example.com/token-a',
+      additionalMetadata: {
+        keyOne: 'valueOne',
+        keyTwo: 'valueTwo',
+      },
+    })
 
     console.log('Payer:', payer.address)
   })
@@ -49,8 +65,6 @@ describe('lildex', () => {
 
   it('Initialize pool', async () => {
     connection = await connect()
-    const tokenMintA = address('So11111111111111111111111111111111111111112')
-    const tokenMintB = address('USDC111111111111111111111111111111111111111')
 
     // get config PDA
     const configPDAAndBump = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
@@ -92,9 +106,69 @@ describe('lildex', () => {
   })
   it('Open position', async () => {
     connection = await connect()
+    const postionTokenAccount = await connection.getTokenAccountAddress(payer.address, postionTokenMint, true)
+
+    const positionPDAAndBump = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
+      'position',
+      postionTokenMint,
+    ])
+    const positionAddress = positionPDAAndBump.pda
+
+    // get config PDA
+    const configPDAAndBump = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
+      'lil',
+      payer.address,
+    ])
+    const configAddress = configPDAAndBump.pda
+
+    const lilpoolPDAAndBump = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
+      'lilpool',
+      configAddress,
+      tokenMintA,
+      tokenMintB,
+    ])
+    const lilpoolAddress = lilpoolPDAAndBump.pda
+
+    const ix = programClient.getOpenPositionInstruction({
+      funder: payer,
+      owner: payer.address,
+      positionMint: postionTokenMint,
+      positionTokenAccount: postionTokenAccount,
+      position: positionAddress,
+      lilpool: lilpoolAddress,
+    })
+
+    await connection.sendTransactionFromInstructions({
+      feePayer: payer,
+      instructions: [ix],
+    })
+
+    const accounts = await programClient.fetchAllPosition(connection.rpc, [])
+    console.log(accounts)
   })
   it('Close position', async () => {
     connection = await connect()
+    const positionPDAAndBump = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
+      'position',
+      postionTokenMint,
+    ])
+    const positionAddress = positionPDAAndBump.pda
+    const postionTokenAccount = await connection.getTokenAccountAddress(payer.address, postionTokenMint, true)
+
+    const ix = programClient.getClosePositionInstruction({
+      positionAuthority: payer,
+      receiver: payer.address,
+      position: positionAddress,
+      positionMint: postionTokenMint,
+      positionTokenAccount: postionTokenAccount,
+    })
+
+    await connection.sendTransactionFromInstructions({
+      feePayer: payer,
+      instructions: [ix],
+    })
+    const accounts = await programClient.fetchAllPosition(connection.rpc, [])
+    console.log(accounts)
   })
   it('Execute swap', async () => {
     connection = await connect()

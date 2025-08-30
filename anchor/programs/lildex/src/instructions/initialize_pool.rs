@@ -24,7 +24,7 @@ pub struct InitializePool<'info> {
       bump,
       payer = funder,
       space = Lilpool::INIT_SPACE)]
-    pub lilpool: Box<Account<'info, Lilpool>>,
+    pub lilpool: Account<'info, Lilpool>,
     #[account(
       init,
         payer = funder,

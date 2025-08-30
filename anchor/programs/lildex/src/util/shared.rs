@@ -2,15 +2,14 @@ use anchor_lang::{
     prelude::{AccountInfo, Pubkey, Signer, *},
     ToAccountInfo,
 };
-use anchor_spl::token::TokenAccount;
-use anchor_spl::token_interface::TokenAccount as TokenAccountInterface;
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 use solana_program::program_option::COption;
 use std::convert::TryFrom;
 
 use crate::errors::ErrorCode;
 
-pub fn verify_position_authority(
-    position_token_account: &TokenAccount,
+pub fn verify_position_authority<'info>(
+    position_token_account: &InterfaceAccount<'info, TokenAccount>,
     position_authority: &Signer<'_>,
 ) -> Result<()> {
     // Check token authority using validate_owner method...

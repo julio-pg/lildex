@@ -1,5 +1,5 @@
 {
-  "address": "3axbTs2z5GBy6usVbNVoqEgZMng3vZvMnAoX29BFfwhr",
+  "address": "6TnPz5JHzrJdj9oBFcs87zW2ewg4C5gWDPDkBzMXTfLD",
   "metadata": {
     "name": "lildex",
     "version": "0.1.0",
@@ -62,8 +62,7 @@
           "writable": true
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "name": "token_program"
         }
       ],
       "args": []
@@ -361,9 +360,7 @@
           }
         },
         {
-          "name": "position_mint",
-          "writable": true,
-          "signer": true
+          "name": "position_mint"
         },
         {
           "name": "position_token_account",
@@ -459,8 +456,7 @@
           "name": "lilpool"
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "name": "token_program"
         },
         {
           "name": "system_program",

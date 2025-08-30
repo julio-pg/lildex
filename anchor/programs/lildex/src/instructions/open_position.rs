@@ -1,10 +1,9 @@
 use anchor_lang::prelude::*;
-use anchor_spl::associated_token::AssociatedToken;
-use anchor_spl::token::{self, Mint, Token, TokenAccount};
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token_interface::{Mint, TokenAccount, TokenInterface},
+};
 
-use crate::errors::ErrorCode;
-// use crate::manager::tick_array_manager::collect_rent_for_ticks_in_position;
-use crate::state;
 use crate::state::*;
 use crate::util::*;
 
@@ -22,26 +21,23 @@ pub struct OpenPosition<'info> {
       seeds = [b"position".as_ref(), position_mint.key().as_ref()],
       bump,
     )]
-    pub position: Box<Account<'info, Position>>,
+    pub position: Account<'info, Position>,
 
-    #[account(init,
-        payer = funder,
-        mint::authority = lilpool,
-        mint::decimals = 0,
+    #[account(
+        mint::token_program = token_program
     )]
-    pub position_mint: Account<'info, Mint>,
+    pub position_mint: InterfaceAccount<'info, Mint>,
 
     #[account(init,
       payer = funder,
       associated_token::mint = position_mint,
       associated_token::authority = owner,
     )]
-    pub position_token_account: Box<Account<'info, TokenAccount>>,
+    pub position_token_account: InterfaceAccount<'info, TokenAccount>,
 
-    pub lilpool: Box<Account<'info, Lilpool>>,
+    pub lilpool: Account<'info, Lilpool>,
 
-    #[account(address = token::ID)]
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
     pub associated_token_program: Program<'info, AssociatedToken>,
 }

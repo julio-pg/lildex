@@ -1,7 +1,6 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Mint, Token, TokenAccount};
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
-use crate::errors::ErrorCode;
 use crate::state::*;
 use crate::util::{burn_and_close_user_position_token, verify_position_authority};
 
@@ -21,15 +20,14 @@ pub struct ClosePosition<'info> {
     pub position: Account<'info, Position>,
 
     #[account(mut, address = position.position_mint)]
-    pub position_mint: Account<'info, Mint>,
+    pub position_mint: InterfaceAccount<'info, Mint>,
 
     #[account(mut,
         constraint = position_token_account.amount == 1,
         constraint = position_token_account.mint == position.position_mint)]
-    pub position_token_account: Box<Account<'info, TokenAccount>>,
+    pub position_token_account: InterfaceAccount<'info, TokenAccount>,
 
-    #[account(address = token::ID)]
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
 }
 
 pub fn handler(ctx: Context<ClosePosition>) -> Result<()> {
