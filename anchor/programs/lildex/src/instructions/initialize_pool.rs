@@ -1,13 +1,16 @@
 use crate::state::*;
 use crate::{errors::ErrorCode, math::MAX_PROTOCOL_LIQUIDITY};
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Mint, Token, TokenAccount};
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token_interface::{Mint, TokenAccount, TokenInterface},
+};
 
 #[derive(Accounts)]
 pub struct InitializePool<'info> {
     pub lilpools_config: Box<Account<'info, LilpoolsConfig>>,
-    pub token_mint_a: Account<'info, Mint>,
-    pub token_mint_b: Account<'info, Mint>,
+    pub token_mint_a: InterfaceAccount<'info, Mint>,
+    pub token_mint_b: InterfaceAccount<'info, Mint>,
     #[account(mut)]
     pub funder: Signer<'info>,
 
@@ -22,20 +25,26 @@ pub struct InitializePool<'info> {
       payer = funder,
       space = Lilpool::INIT_SPACE)]
     pub lilpool: Box<Account<'info, Lilpool>>,
-    #[account(init,
-      payer = funder,
-      token::mint = token_mint_a,
-      token::authority = lilpool)]
-    pub token_vault_a: Box<Account<'info, TokenAccount>>,
+    #[account(
+      init,
+        payer = funder,
+        associated_token::mint = token_mint_a,
+        associated_token::authority = lilpool,
+        associated_token::token_program = token_program
+    )]
+    pub token_vault_a: InterfaceAccount<'info, TokenAccount>,
 
-    #[account(init,
-      payer = funder,
-      token::mint = token_mint_b,
-      token::authority = lilpool)]
-    pub token_vault_b: Box<Account<'info, TokenAccount>>,
+    #[account(
+      init,
+        payer = funder,
+        associated_token::mint = token_mint_b,
+        associated_token::authority = lilpool,
+        associated_token::token_program = token_program
+    )]
+    pub token_vault_b: InterfaceAccount<'info, TokenAccount>,
 
-    #[account(address = token::ID)]
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
 }
 
@@ -50,9 +59,6 @@ pub fn handler(ctx: Context<InitializePool>, initial_price: u128) -> Result<()> 
         ErrorCode::InvalidTokenMintOrder,
     );
 
-    // if !(MIN_SQRT_PRICE_X64..=MAX_SQRT_PRICE_X64).contains(&sqrt_price) {
-    //     return Err(ErrorCode::SqrtPriceOutOfBounds.into());
-    // }
     ctx.accounts.lilpool.set_inner(Lilpool {
         lilpools_config: ctx.accounts.lilpools_config.key(),
         token_mint_a: token_mint_a,
