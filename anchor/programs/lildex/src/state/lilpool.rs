@@ -6,8 +6,12 @@ pub struct Lilpool {
     pub lilpools_config: Pubkey, // 32
     // The token mint a of the pair
     pub token_mint_a: Pubkey,
+    pub token_vault_a: Pubkey, // 32
+
     // The token mint b of the pair
     pub token_mint_b: Pubkey,
+    pub token_vault_b: Pubkey, // 32
+
     // Portion of fee rate taken stored as basis points
     pub protocol_fee_rate: u16, // 2
 

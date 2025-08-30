@@ -9,7 +9,8 @@ pub mod auth;
 pub mod constants;
 #[doc(hidden)]
 pub mod errors;
-
+#[doc(hidden)]
+pub mod events;
 #[doc(hidden)]
 pub mod instructions;
 #[doc(hidden)]
@@ -36,20 +37,15 @@ pub mod lildex {
         Ok(())
     }
 
-    pub fn open_position(
-        ctx: Context<OpenPosition>,
-        bumps: state::OpenPositionBumps,
-        tick_lower_index: i32,
-        tick_upper_index: i32,
-    ) -> Result<()> {
-        instructions::open_position::handler(ctx, bumps, tick_lower_index, tick_upper_index)
+    pub fn open_position(ctx: Context<OpenPosition>) -> Result<()> {
+        instructions::open_position::handler(ctx)
     }
 
     pub fn close_position(ctx: Context<ClosePosition>) -> Result<()> {
         instructions::close_position::handler(ctx)
     }
 
-    // pub fn swap(_ctx: Context<Swap>) -> Result<()> {
-    //     Ok(())
-    // }
+    pub fn swap(_ctx: Context<Swap>) -> Result<()> {
+        Ok(())
+    }
 }

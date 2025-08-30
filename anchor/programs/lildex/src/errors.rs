@@ -172,6 +172,8 @@ pub enum ErrorCode {
 
     #[msg("This whirlpool only supports open_position_with_token_extensions instruction")]
     PositionWithTokenExtensionsRequired, // 0x17b3 (6067)
+    #[msg("Amount out slippage exceeded")]
+    SlippageExceeded, // 0x17b4 (6068)
 }
 
 impl From<TryFromIntError> for ErrorCode {

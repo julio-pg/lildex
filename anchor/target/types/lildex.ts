@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/lildex.json`.
  */
 export type Lildex = {
-  "address": "6TnPz5JHzrJdj9oBFcs87zW2ewg4C5gWDPDkBzMXTfLD",
+  "address": "3axbTs2z5GBy6usVbNVoqEgZMng3vZvMnAoX29BFfwhr",
   "metadata": {
     "name": "lildex",
     "version": "0.1.0",
@@ -140,18 +140,75 @@ export type Lildex = {
         232,
         40
       ],
-      "accounts": [],
-      "args": [
+      "accounts": [
         {
-          "name": "bumps",
-          "type": {
-            "defined": {
-              "name": "whirlpoolBumps"
-            }
+          "name": "lilpoolsConfig"
+        },
+        {
+          "name": "tokenMintA"
+        },
+        {
+          "name": "tokenMintB"
+        },
+        {
+          "name": "funder",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "lilpool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  108,
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "lilpoolsConfig"
+              },
+              {
+                "kind": "account",
+                "path": "tokenMintA"
+              },
+              {
+                "kind": "account",
+                "path": "tokenMintB"
+              }
+            ]
           }
         },
         {
-          "name": "initialSqrtPrice",
+          "name": "tokenVaultA",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tokenVaultB",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "initialPrice",
           "type": "u128"
         }
       ]
@@ -298,7 +355,7 @@ export type Lildex = {
           }
         },
         {
-          "name": "whirlpool"
+          "name": "lilpool"
         },
         {
           "name": "tokenProgram",
@@ -309,35 +366,84 @@ export type Lildex = {
           "address": "11111111111111111111111111111111"
         },
         {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
-        },
-        {
           "name": "associatedTokenProgram",
           "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         }
       ],
-      "args": [
+      "args": []
+    },
+    {
+      "name": "swap",
+      "discriminator": [
+        248,
+        198,
+        158,
+        145,
+        225,
+        117,
+        135,
+        200
+      ],
+      "accounts": [
         {
-          "name": "bumps",
-          "type": {
-            "defined": {
-              "name": "openPositionBumps"
-            }
-          }
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
-          "name": "tickLowerIndex",
-          "type": "i32"
+          "name": "tokenAuthority",
+          "signer": true
         },
         {
-          "name": "tickUpperIndex",
-          "type": "i32"
+          "name": "lilpool",
+          "writable": true
+        },
+        {
+          "name": "tokenOwnerAccountA",
+          "writable": true
+        },
+        {
+          "name": "tokenVaultA",
+          "writable": true
+        },
+        {
+          "name": "tokenOwnerAccountB",
+          "writable": true
+        },
+        {
+          "name": "tokenVaultB",
+          "writable": true
         }
-      ]
+      ],
+      "args": []
     }
   ],
   "accounts": [
+    {
+      "name": "lilpool",
+      "discriminator": [
+        80,
+        244,
+        66,
+        167,
+        64,
+        146,
+        225,
+        77
+      ]
+    },
+    {
+      "name": "lilpoolsConfig",
+      "discriminator": [
+        135,
+        205,
+        37,
+        134,
+        15,
+        158,
+        23,
+        212
+      ]
+    },
     {
       "name": "position",
       "discriminator": [
@@ -350,31 +456,20 @@ export type Lildex = {
         247,
         208
       ]
-    },
+    }
+  ],
+  "events": [
     {
-      "name": "whirlpool",
+      "name": "traded",
       "discriminator": [
-        63,
-        149,
-        209,
-        12,
         225,
-        128,
-        99,
-        9
-      ]
-    },
-    {
-      "name": "whirlpoolsConfig",
-      "discriminator": [
-        157,
-        20,
-        49,
-        224,
-        217,
-        87,
-        193,
-        254
+        202,
+        73,
+        175,
+        147,
+        43,
+        160,
+        150
       ]
     }
   ],
@@ -718,135 +813,22 @@ export type Lildex = {
       "code": 6067,
       "name": "positionWithTokenExtensionsRequired",
       "msg": "This whirlpool only supports open_position_with_token_extensions instruction"
+    },
+    {
+      "code": 6068,
+      "name": "slippageExceeded",
+      "msg": "Amount out slippage exceeded"
     }
   ],
   "types": [
     {
-      "name": "openPositionBumps",
+      "name": "lilpool",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "positionBump",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "position",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "whirlpool",
+            "name": "lilpoolsConfig",
             "type": "pubkey"
-          },
-          {
-            "name": "positionMint",
-            "type": "pubkey"
-          },
-          {
-            "name": "liquidity",
-            "type": "u128"
-          },
-          {
-            "name": "tickLowerIndex",
-            "type": "i32"
-          },
-          {
-            "name": "tickUpperIndex",
-            "type": "i32"
-          },
-          {
-            "name": "feeGrowthCheckpointA",
-            "type": "u128"
-          },
-          {
-            "name": "feeOwedA",
-            "type": "u64"
-          },
-          {
-            "name": "feeGrowthCheckpointB",
-            "type": "u128"
-          },
-          {
-            "name": "feeOwedB",
-            "type": "u64"
-          },
-          {
-            "name": "rewardInfos",
-            "type": {
-              "array": [
-                {
-                  "defined": {
-                    "name": "positionRewardInfo"
-                  }
-                },
-                3
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "positionRewardInfo",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "growthInsideCheckpoint",
-            "type": "u128"
-          },
-          {
-            "name": "amountOwed",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "whirlpool",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "whirlpoolsConfig",
-            "type": "pubkey"
-          },
-          {
-            "name": "whirlpoolBump",
-            "type": {
-              "array": [
-                "u8",
-                1
-              ]
-            }
-          },
-          {
-            "name": "feeRate",
-            "type": "u16"
-          },
-          {
-            "name": "protocolFeeRate",
-            "type": "u16"
-          },
-          {
-            "name": "liquidity",
-            "type": "u128"
-          },
-          {
-            "name": "sqrtPrice",
-            "type": "u128"
-          },
-          {
-            "name": "protocolFeeOwedA",
-            "type": "u64"
-          },
-          {
-            "name": "protocolFeeOwedB",
-            "type": "u64"
           },
           {
             "name": "tokenMintA",
@@ -857,10 +839,6 @@ export type Lildex = {
             "type": "pubkey"
           },
           {
-            "name": "feeGrowthGlobalA",
-            "type": "u128"
-          },
-          {
             "name": "tokenMintB",
             "type": "pubkey"
           },
@@ -869,26 +847,26 @@ export type Lildex = {
             "type": "pubkey"
           },
           {
-            "name": "feeGrowthGlobalB",
+            "name": "protocolFeeRate",
+            "type": "u16"
+          },
+          {
+            "name": "funder",
+            "type": "pubkey"
+          },
+          {
+            "name": "liquidity",
+            "type": "u128"
+          },
+          {
+            "name": "price",
             "type": "u128"
           }
         ]
       }
     },
     {
-      "name": "whirlpoolBumps",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "whirlpoolBump",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "whirlpoolsConfig",
+      "name": "lilpoolsConfig",
       "type": {
         "kind": "struct",
         "fields": [
@@ -899,6 +877,54 @@ export type Lildex = {
           {
             "name": "defaultProtocolFeeRate",
             "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "position",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lilpool",
+            "type": "pubkey"
+          },
+          {
+            "name": "positionMint",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "traded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lilpool",
+            "type": "pubkey"
+          },
+          {
+            "name": "aToB",
+            "type": "bool"
+          },
+          {
+            "name": "inputAmount",
+            "type": "u64"
+          },
+          {
+            "name": "outputAmount",
+            "type": "u64"
+          },
+          {
+            "name": "inputTransferFee",
+            "type": "u64"
+          },
+          {
+            "name": "outputTransferFee",
+            "type": "u64"
           }
         ]
       }

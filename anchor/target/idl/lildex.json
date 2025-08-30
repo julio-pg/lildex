@@ -1,5 +1,5 @@
 {
-  "address": "6TnPz5JHzrJdj9oBFcs87zW2ewg4C5gWDPDkBzMXTfLD",
+  "address": "3axbTs2z5GBy6usVbNVoqEgZMng3vZvMnAoX29BFfwhr",
   "metadata": {
     "name": "lildex",
     "version": "0.1.0",
@@ -134,18 +134,75 @@
         232,
         40
       ],
-      "accounts": [],
-      "args": [
+      "accounts": [
         {
-          "name": "bumps",
-          "type": {
-            "defined": {
-              "name": "WhirlpoolBumps"
-            }
+          "name": "lilpools_config"
+        },
+        {
+          "name": "token_mint_a"
+        },
+        {
+          "name": "token_mint_b"
+        },
+        {
+          "name": "funder",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "lilpool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  108,
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "lilpools_config"
+              },
+              {
+                "kind": "account",
+                "path": "token_mint_a"
+              },
+              {
+                "kind": "account",
+                "path": "token_mint_b"
+              }
+            ]
           }
         },
         {
-          "name": "initial_sqrt_price",
+          "name": "token_vault_a",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_vault_b",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "initial_price",
           "type": "u128"
         }
       ]
@@ -292,7 +349,7 @@
           }
         },
         {
-          "name": "whirlpool"
+          "name": "lilpool"
         },
         {
           "name": "token_program",
@@ -303,35 +360,84 @@
           "address": "11111111111111111111111111111111"
         },
         {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
-        },
-        {
           "name": "associated_token_program",
           "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         }
       ],
-      "args": [
+      "args": []
+    },
+    {
+      "name": "swap",
+      "discriminator": [
+        248,
+        198,
+        158,
+        145,
+        225,
+        117,
+        135,
+        200
+      ],
+      "accounts": [
         {
-          "name": "bumps",
-          "type": {
-            "defined": {
-              "name": "OpenPositionBumps"
-            }
-          }
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
-          "name": "tick_lower_index",
-          "type": "i32"
+          "name": "token_authority",
+          "signer": true
         },
         {
-          "name": "tick_upper_index",
-          "type": "i32"
+          "name": "lilpool",
+          "writable": true
+        },
+        {
+          "name": "token_owner_account_a",
+          "writable": true
+        },
+        {
+          "name": "token_vault_a",
+          "writable": true
+        },
+        {
+          "name": "token_owner_account_b",
+          "writable": true
+        },
+        {
+          "name": "token_vault_b",
+          "writable": true
         }
-      ]
+      ],
+      "args": []
     }
   ],
   "accounts": [
+    {
+      "name": "Lilpool",
+      "discriminator": [
+        80,
+        244,
+        66,
+        167,
+        64,
+        146,
+        225,
+        77
+      ]
+    },
+    {
+      "name": "LilpoolsConfig",
+      "discriminator": [
+        135,
+        205,
+        37,
+        134,
+        15,
+        158,
+        23,
+        212
+      ]
+    },
     {
       "name": "Position",
       "discriminator": [
@@ -344,31 +450,20 @@
         247,
         208
       ]
-    },
+    }
+  ],
+  "events": [
     {
-      "name": "Whirlpool",
+      "name": "Traded",
       "discriminator": [
-        63,
-        149,
-        209,
-        12,
         225,
-        128,
-        99,
-        9
-      ]
-    },
-    {
-      "name": "WhirlpoolsConfig",
-      "discriminator": [
-        157,
-        20,
-        49,
-        224,
-        217,
-        87,
-        193,
-        254
+        202,
+        73,
+        175,
+        147,
+        43,
+        160,
+        150
       ]
     }
   ],
@@ -712,135 +807,22 @@
       "code": 6067,
       "name": "PositionWithTokenExtensionsRequired",
       "msg": "This whirlpool only supports open_position_with_token_extensions instruction"
+    },
+    {
+      "code": 6068,
+      "name": "SlippageExceeded",
+      "msg": "Amount out slippage exceeded"
     }
   ],
   "types": [
     {
-      "name": "OpenPositionBumps",
+      "name": "Lilpool",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "position_bump",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Position",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "whirlpool",
+            "name": "lilpools_config",
             "type": "pubkey"
-          },
-          {
-            "name": "position_mint",
-            "type": "pubkey"
-          },
-          {
-            "name": "liquidity",
-            "type": "u128"
-          },
-          {
-            "name": "tick_lower_index",
-            "type": "i32"
-          },
-          {
-            "name": "tick_upper_index",
-            "type": "i32"
-          },
-          {
-            "name": "fee_growth_checkpoint_a",
-            "type": "u128"
-          },
-          {
-            "name": "fee_owed_a",
-            "type": "u64"
-          },
-          {
-            "name": "fee_growth_checkpoint_b",
-            "type": "u128"
-          },
-          {
-            "name": "fee_owed_b",
-            "type": "u64"
-          },
-          {
-            "name": "reward_infos",
-            "type": {
-              "array": [
-                {
-                  "defined": {
-                    "name": "PositionRewardInfo"
-                  }
-                },
-                3
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "PositionRewardInfo",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "growth_inside_checkpoint",
-            "type": "u128"
-          },
-          {
-            "name": "amount_owed",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Whirlpool",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "whirlpools_config",
-            "type": "pubkey"
-          },
-          {
-            "name": "whirlpool_bump",
-            "type": {
-              "array": [
-                "u8",
-                1
-              ]
-            }
-          },
-          {
-            "name": "fee_rate",
-            "type": "u16"
-          },
-          {
-            "name": "protocol_fee_rate",
-            "type": "u16"
-          },
-          {
-            "name": "liquidity",
-            "type": "u128"
-          },
-          {
-            "name": "sqrt_price",
-            "type": "u128"
-          },
-          {
-            "name": "protocol_fee_owed_a",
-            "type": "u64"
-          },
-          {
-            "name": "protocol_fee_owed_b",
-            "type": "u64"
           },
           {
             "name": "token_mint_a",
@@ -851,10 +833,6 @@
             "type": "pubkey"
           },
           {
-            "name": "fee_growth_global_a",
-            "type": "u128"
-          },
-          {
             "name": "token_mint_b",
             "type": "pubkey"
           },
@@ -863,26 +841,26 @@
             "type": "pubkey"
           },
           {
-            "name": "fee_growth_global_b",
+            "name": "protocol_fee_rate",
+            "type": "u16"
+          },
+          {
+            "name": "funder",
+            "type": "pubkey"
+          },
+          {
+            "name": "liquidity",
+            "type": "u128"
+          },
+          {
+            "name": "price",
             "type": "u128"
           }
         ]
       }
     },
     {
-      "name": "WhirlpoolBumps",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "whirlpool_bump",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "WhirlpoolsConfig",
+      "name": "LilpoolsConfig",
       "type": {
         "kind": "struct",
         "fields": [
@@ -893,6 +871,54 @@
           {
             "name": "default_protocol_fee_rate",
             "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Position",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lilpool",
+            "type": "pubkey"
+          },
+          {
+            "name": "position_mint",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Traded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lilpool",
+            "type": "pubkey"
+          },
+          {
+            "name": "a_to_b",
+            "type": "bool"
+          },
+          {
+            "name": "input_amount",
+            "type": "u64"
+          },
+          {
+            "name": "output_amount",
+            "type": "u64"
+          },
+          {
+            "name": "input_transfer_fee",
+            "type": "u64"
+          },
+          {
+            "name": "output_transfer_fee",
+            "type": "u64"
           }
         ]
       }

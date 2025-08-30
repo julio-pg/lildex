@@ -41,7 +41,9 @@ pub struct InitializePool<'info> {
 
 pub fn handler(ctx: Context<InitializePool>, initial_price: u128) -> Result<()> {
     let token_mint_a = ctx.accounts.token_mint_a.key();
+    let token_vault_a = ctx.accounts.token_vault_a.key();
     let token_mint_b = ctx.accounts.token_mint_b.key();
+    let token_vault_b = ctx.accounts.token_vault_b.key();
 
     require!(
         token_mint_a != token_mint_b,
@@ -54,7 +56,9 @@ pub fn handler(ctx: Context<InitializePool>, initial_price: u128) -> Result<()> 
     ctx.accounts.lilpool.set_inner(Lilpool {
         lilpools_config: ctx.accounts.lilpools_config.key(),
         token_mint_a: token_mint_a,
+        token_vault_a: token_vault_a,
         token_mint_b: token_mint_b,
+        token_vault_b: token_vault_b,
         protocol_fee_rate: ctx.accounts.lilpools_config.default_protocol_fee_rate,
         funder: ctx.accounts.funder.key(),
         liquidity: MAX_PROTOCOL_LIQUIDITY,
