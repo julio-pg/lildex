@@ -19,7 +19,6 @@ pub mod state;
 #[doc(hidden)]
 pub mod util;
 
-use crate::state::WhirlpoolBumps;
 use instructions::*;
 #[program]
 pub mod lildex {
@@ -33,11 +32,7 @@ pub mod lildex {
         instructions::initialize_config::handler(ctx, fee_authority, default_protocol_fee_rate)
     }
 
-    pub fn initialize_pool(
-        ctx: Context<InitializePool>,
-        bumps: WhirlpoolBumps,
-        initial_sqrt_price: u128,
-    ) -> Result<()> {
+    pub fn initialize_pool(ctx: Context<InitializePool>, initial_price: u128) -> Result<()> {
         Ok(())
     }
 

@@ -38,10 +38,6 @@ pub fn handler(ctx: Context<ClosePosition>) -> Result<()> {
         &ctx.accounts.position_authority,
     )?;
 
-    if !Position::is_position_empty(&ctx.accounts.position) {
-        return Err(ErrorCode::ClosePositionNotEmpty.into());
-    }
-
     burn_and_close_user_position_token(
         &ctx.accounts.position_authority,
         &ctx.accounts.receiver,

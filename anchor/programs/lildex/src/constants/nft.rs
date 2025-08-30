@@ -10,14 +10,14 @@ pub mod whirlpool_nft_update_auth {
 // METADATA_NAME   : max  32 bytes
 // METADATA_SYMBOL : max  10 bytes
 // METADATA_URI    : max 200 bytes
-pub const WP_METADATA_NAME: &str = "Lil Whirlpool Position";
-pub const WP_METADATA_SYMBOL: &str = "LWP";
-pub const WP_METADATA_URI: &str = "https://arweave.net/E19ZNY2sqMqddm1Wx7mrXPUZ0ZZ5ISizhebb0UsVEws";
+pub const WP_METADATA_NAME: &str = "Lilpool Position";
+pub const WP_METADATA_SYMBOL: &str = "LP";
+pub const WP_METADATA_URI: &str = "https://cyan-magnificent-dingo-615.mypinata.cloud/ipfs/bafkreihxt7eiszrelgc4v6t6o5oktryekkhgle2oeit2uktf2pu5w2cf6m";
 
 pub const WPB_METADATA_NAME_PREFIX: &str = "Lil Position Bundle";
 pub const WPB_METADATA_SYMBOL: &str = "LPB";
 pub const WPB_METADATA_URI: &str =
-    "https://arweave.net/A_Wo8dx2_3lSUwMIi7bdT_sqxi8soghRNAWXXiqXpgE";
+    "https://cyan-magnificent-dingo-615.mypinata.cloud/ipfs/bafkreihxt7eiszrelgc4v6t6o5oktryekkhgle2oeit2uktf2pu5w2cf6m";
 
 // Based on Token-2022 TokenMetadata extension
 //
@@ -28,4 +28,4 @@ pub const WPB_METADATA_URI: &str =
 // https://github.com/solana-labs/solana-program-library/blob/cd6ce4b7709d2420bca60b4656bbd3d15d2e1485/token-metadata/interface/src/state.rs#L25
 pub const WP_2022_METADATA_NAME_PREFIX: &str = "LWP";
 pub const WP_2022_METADATA_SYMBOL: &str = "LWP";
-pub const WP_2022_METADATA_URI_BASE: &str = "https://position-nft.orca.so/meta";
+pub const WP_2022_METADATA_URI_BASE: &str = "https://cyan-magnificent-dingo-615.mypinata.cloud/ipfs/bafkreihxt7eiszrelgc4v6t6o5oktryekkhgle2oeit2uktf2pu5w2cf6m";

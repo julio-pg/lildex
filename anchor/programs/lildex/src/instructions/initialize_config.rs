@@ -10,11 +10,11 @@ pub struct InitializeConfig<'info> {
     #[account(
         init, 
         payer = funder,
-        space = WhirlpoolsConfig::DISCRIMINATOR.len() + WhirlpoolsConfig::INIT_SPACE,
+        space = LilpoolsConfig::DISCRIMINATOR.len() + LilpoolsConfig::INIT_SPACE,
         seeds = [b"lil", funder.key().as_ref()],
         bump
     )]
-    pub config: Account<'info, WhirlpoolsConfig>,
+    pub config: Account<'info, LilpoolsConfig>,
 
     #[account(mut, constraint = is_admin_key(funder.key))]
     pub funder: Signer<'info>,
@@ -28,7 +28,7 @@ pub fn handler(
     default_protocol_fee_rate: u16,
 ) -> Result<()> {
     // Create the config account
-    ctx.accounts.config.set_inner(WhirlpoolsConfig {
+    ctx.accounts.config.set_inner(LilpoolsConfig {
         fee_authority,
         default_protocol_fee_rate,
     });

@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 
 #[account]
 #[derive(InitSpace)]
-pub struct WhirlpoolsConfig {
+pub struct LilpoolsConfig {
     pub fee_authority: Pubkey,
     pub default_protocol_fee_rate: u16,
 }
