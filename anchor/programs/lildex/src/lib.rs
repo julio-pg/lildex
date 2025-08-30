@@ -34,7 +34,7 @@ pub mod lildex {
     }
 
     pub fn initialize_pool(ctx: Context<InitializePool>, initial_price: u128) -> Result<()> {
-        Ok(())
+        instructions::initialize_pool::handler(ctx, initial_price)
     }
 
     pub fn open_position(ctx: Context<OpenPosition>) -> Result<()> {
@@ -45,7 +45,7 @@ pub mod lildex {
         instructions::close_position::handler(ctx)
     }
 
-    pub fn swap(_ctx: Context<Swap>) -> Result<()> {
-        Ok(())
+    pub fn swap(ctx: Context<Swap>, amount_in: u64, min_amount_out: u64) -> Result<()> {
+        instructions::swap::handler(ctx, amount_in, min_amount_out)
     }
 }
