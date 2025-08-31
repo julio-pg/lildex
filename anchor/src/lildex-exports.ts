@@ -2,8 +2,10 @@
 import { Account, address, getBase58Decoder, SolanaClient } from 'gill'
 import { SolanaClusterId } from '@wallet-ui/react'
 import { getProgramAccountsDecoded } from './helpers/get-program-accounts-decoded'
-import { Lildex, LILDEX_DISCRIMINATOR, LILDEX_PROGRAM_ADDRESS, getLildexDecoder } from './client/js'
+// import { Lildex, LILDEX_DISCRIMINATOR, LILDEX_PROGRAM_ADDRESS, getLildexDecoder } from './client/js/generated'
 import LildexIDL from '../target/idl/lildex.json'
+import * as programClient from '../src/client/js/generated'
+import { Lildex } from 'anchor/target/types/lildex'
 
 export type LildexAccount = Account<Lildex, string>
 
@@ -19,16 +21,16 @@ export function getLildexProgramId(cluster: SolanaClusterId) {
       return address('6z68wfurCMYkZG51s1Et9BJEd9nJGUusjHXNt4dGbNNF')
     case 'solana:mainnet':
     default:
-      return LILDEX_PROGRAM_ADDRESS
+      return programClient.LILDEX_PROGRAM_ADDRESS
   }
 }
 
-export * from './client/js'
+export * from './client/js/generated'
 
 export function getLildexProgramAccounts(rpc: SolanaClient['rpc']) {
   return getProgramAccountsDecoded(rpc, {
-    decoder: getLildexDecoder(),
-    filter: getBase58Decoder().decode(LILDEX_DISCRIMINATOR),
-    programAddress: LILDEX_PROGRAM_ADDRESS,
+    decoder: programClient.getLilpoolDecoder(),
+    filter: getBase58Decoder().decode(programClient.LILPOOL_DISCRIMINATOR),
+    programAddress: programClient.LILDEX_PROGRAM_ADDRESS,
   })
 }

@@ -2,7 +2,7 @@ import { Link } from 'react-router'
 
 const links: { label: string; path: string }[] = [
   { label: 'Terms of Use', path: '#' },
-  { label: 'Privacy', path: '#' },
+  // { label: 'Privacy', path: '#' },
 ]
 
 export function AppFooter() {

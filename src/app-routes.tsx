@@ -2,6 +2,7 @@ import { useNavigate, useRoutes } from 'react-router'
 import { lazy } from 'react'
 import Pools from './components/pools/pools-ui'
 import Launch from './components/launch/launch-ui'
+import CreatePool from './components/create/create-pool'
 
 const AccountDetailFeature = lazy(() => import('@/components/account/account-feature-detail.tsx'))
 const AccountIndexFeature = lazy(() => import('@/components/account/account-feature-index.tsx'))
@@ -36,6 +37,10 @@ export function AppRoutes() {
     {
       path: 'launch',
       element: <Launch />,
+    },
+    {
+      path: 'create',
+      element: <CreatePool />,
     },
   ])
 }

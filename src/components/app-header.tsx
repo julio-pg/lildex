@@ -24,6 +24,7 @@ export function AppHeader({ links = [] }: { links: { label: string; path: string
           <div className="hidden md:flex items-center gap-x-2">
             {links.map(({ label, path }) => (
               <Link
+                key={path}
                 className={`hover:text-neutral-500 dark:hover:text-white inline-flex  items-center justify-center whitespace-nowrap px-4 py-2.5 ${isActive(path) ? 'text-neutral-500 dark:text-white' : ''}`}
                 to={path}
               >

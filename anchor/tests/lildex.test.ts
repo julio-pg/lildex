@@ -1,4 +1,4 @@
-import { Address, address, generateKeyPairSigner, KeyPairSigner } from 'gill'
+import { Address, address, FixedSizeEncoder, generateKeyPairSigner, getAddressEncoder, KeyPairSigner } from 'gill'
 import * as programClient from '../src/client/js/generated'
 import { loadKeypairSignerFromFile } from 'gill/node'
 import { Connection, connect } from 'solana-kite'
@@ -13,12 +13,15 @@ describe('lildex', () => {
   let postionTokenMint: Address
   let tokenMintA: Address
   let tokenMintB: Address
+  let addressEncoder: FixedSizeEncoder<Address<string>, 32>
   beforeAll(async () => {
     connection = await connect()
     lildex = await generateKeyPairSigner()
     payer = await loadKeypairSignerFromFile()
-    tokenMintA = address('So11111111111111111111111111111111111111112')
-    tokenMintB = address('USDC111111111111111111111111111111111111111')
+    tokenMintA = address('So11111111111111111111111111111111111111112') //devSOL
+    tokenMintB = address('BRjpCHtyQLNCo8gqRUr8jtdAj5AjPYQaoqbvcZiHok1k') //devUSDC
+    addressEncoder = getAddressEncoder()
+
     // create position token mint
     postionTokenMint = await connection.createTokenMint({
       mintAuthority: payer,
@@ -31,36 +34,38 @@ describe('lildex', () => {
         keyTwo: 'valueTwo',
       },
     })
-
-    console.log('Payer:', payer.address)
   })
 
   it('Initialize config Lildex', async () => {
     connection = await connect()
-
     const configPDAAndBump = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
       'lil',
       payer.address,
     ])
-    const config = configPDAAndBump.pda
+    const configAccount = await programClient.fetchLilpoolsConfig(connection.rpc, configPDAAndBump.pda)
 
-    const whirpoolConfig = {
-      config,
-      funder: payer,
-      feeAuthority: payer.address,
-      defaultProtocolFeeRate: 1000, //10%
+    if (configAccount) {
+      console.log('Config already initialized')
+      console.log('configAccount:', configAccount.address)
+    } else {
+      const config = configPDAAndBump.pda
+
+      const whirpoolConfig = {
+        config,
+        funder: payer,
+        feeAuthority: payer.address,
+        defaultProtocolFeeRate: 1000, //10%
+      }
+
+      const ix = programClient.getInitializeConfigInstruction(whirpoolConfig)
+
+      await connection.sendTransactionFromInstructions({
+        feePayer: payer,
+        instructions: [ix],
+      })
+      const configAccount = await programClient.fetchLilpoolsConfig(connection.rpc, configPDAAndBump.pda)
+      console.log('configAccount:', configAccount.address)
     }
-
-    const ix = programClient.getInitializeConfigInstruction(whirpoolConfig)
-
-    await connection.sendTransactionFromInstructions({
-      feePayer: payer,
-      instructions: [ix],
-    })
-
-    // ASSERT
-    const accounts = await programClient.fetchAllLilpoolsConfig(connection.rpc, [])
-    console.log(accounts)
   })
 
   it('Initialize pool', async () => {
@@ -71,29 +76,30 @@ describe('lildex', () => {
       'lil',
       payer.address,
     ])
-    const configAddress = configPDAAndBump.pda
+
+    const configAddress = addressEncoder.encode(configPDAAndBump.pda) as Uint8Array
     // get lilpool PDA
     const lilpoolPDAAndBump = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
       'lilpool',
       configAddress,
-      tokenMintA,
-      tokenMintB,
+      addressEncoder.encode(tokenMintA) as Uint8Array,
+      addressEncoder.encode(tokenMintB) as Uint8Array,
     ])
     const lilpoolAddress = lilpoolPDAAndBump.pda
 
     // get vault PDAs
     const tokenVaultA = await connection.getTokenAccountAddress(lilpoolAddress, tokenMintA, true)
-    const tokenVaultB = await connection.getTokenAccountAddress(lilpoolAddress, tokenMintA, true)
+    const tokenVaultB = await connection.getTokenAccountAddress(lilpoolAddress, tokenMintB, false)
 
     const ix = programClient.getInitializePoolInstruction({
-      lilpoolsConfig: configAddress,
-      funder: payer,
+      lilpoolsConfig: configPDAAndBump.pda,
       tokenMintA: tokenMintA,
       tokenMintB: tokenMintB,
-      initialPrice: 100,
+      funder: payer,
       lilpool: lilpoolAddress,
-      tokenVaultA,
-      tokenVaultB,
+      tokenVaultA: tokenVaultA,
+      tokenVaultB: tokenVaultB,
+      initialPrice: 10000,
     })
 
     await connection.sendTransactionFromInstructions({
@@ -101,8 +107,8 @@ describe('lildex', () => {
       instructions: [ix],
     })
 
-    const accounts = await programClient.fetchAllLilpool(connection.rpc, [])
-    console.log(accounts)
+    const poolAccount = await programClient.fetchLilpoolsConfig(connection.rpc, configPDAAndBump.pda)
+    console.log('poolAccount:', poolAccount.address)
   })
   it('Open position', async () => {
     connection = await connect()

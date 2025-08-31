@@ -8,38 +8,44 @@ use anchor_spl::{
 
 #[derive(Accounts)]
 pub struct InitializePool<'info> {
-    pub lilpools_config: Box<Account<'info, LilpoolsConfig>>,
+    pub lilpools_config: Account<'info, LilpoolsConfig>,
+
+    #[account(mint::token_program = token_program)]
     pub token_mint_a: InterfaceAccount<'info, Mint>,
+
+    #[account(mint::token_program = token_program)]
     pub token_mint_b: InterfaceAccount<'info, Mint>,
     #[account(mut)]
     pub funder: Signer<'info>,
 
-    #[account(init,
+    #[account(
+      init,
+      payer = funder,
       seeds = [
-        b"lilpool".as_ref(),
+        b"lilpool",
         lilpools_config.key().as_ref(),
         token_mint_a.key().as_ref(),
         token_mint_b.key().as_ref(),
       ],
+      space = Lilpool::DISCRIMINATOR.len() + Lilpool::INIT_SPACE,
       bump,
-      payer = funder,
-      space = Lilpool::INIT_SPACE)]
+    )]
     pub lilpool: Account<'info, Lilpool>,
     #[account(
       init,
-        payer = funder,
-        associated_token::mint = token_mint_a,
-        associated_token::authority = lilpool,
-        associated_token::token_program = token_program
+      payer = funder,
+      associated_token::mint = token_mint_a,
+      associated_token::authority = lilpool,
+      associated_token::token_program = token_program
     )]
     pub token_vault_a: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
       init,
-        payer = funder,
-        associated_token::mint = token_mint_b,
-        associated_token::authority = lilpool,
-        associated_token::token_program = token_program
+      payer = funder,
+      associated_token::mint = token_mint_b,
+      associated_token::authority = lilpool,
+      associated_token::token_program = token_program
     )]
     pub token_vault_b: InterfaceAccount<'info, TokenAccount>,
 

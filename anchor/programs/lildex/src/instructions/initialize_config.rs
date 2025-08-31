@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use anchor_lang::prelude::*;
 
 use crate::auth::admin::is_admin_key;

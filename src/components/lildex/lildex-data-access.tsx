@@ -1,13 +1,4 @@
-import {
-  LildexAccount,
-  getCloseInstruction,
-  getLildexProgramAccounts,
-  getLildexProgramId,
-  getDecrementInstruction,
-  getIncrementInstruction,
-  getInitializeInstruction,
-  getSetInstruction,
-} from '@project/anchor'
+import { LildexAccount, getLildexProgramAccounts, getLildexProgramId } from '@project/anchor'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { toast } from 'sonner'
@@ -45,83 +36,32 @@ export function useLildexInitializeMutation() {
   const signer = useWalletUiSigner()
   const signAndSend = useWalletTransactionSignAndSend()
 
-  return useMutation({
-    mutationFn: async () => {
-      const lildex = await generateKeyPairSigner()
-      return await signAndSend(getInitializeInstruction({ payer: signer, lildex }), signer)
-    },
-    onSuccess: async (tx) => {
-      toastTx(tx)
-      await queryClient.invalidateQueries({ queryKey: ['lildex', 'accounts', { cluster }] })
-    },
-    onError: () => toast.error('Failed to run program'),
-  })
+  // return useMutation({
+  //   mutationFn: async () => {
+  //     const lildex = await generateKeyPairSigner()
+  //     return await signAndSend(getInitializeInstruction({ payer: signer, lildex }), signer)
+  //   },
+  //   onSuccess: async (tx) => {
+  //     toastTx(tx)
+  //     await queryClient.invalidateQueries({ queryKey: ['lildex', 'accounts', { cluster }] })
+  //   },
+  //   onError: () => toast.error('Failed to run program'),
+  // })
 }
 
-export function useLildexDecrementMutation({ lildex }: { lildex: LildexAccount }) {
-  const invalidateAccounts = useLildexAccountsInvalidate()
-  const signer = useWalletUiSigner()
-  const signAndSend = useWalletTransactionSignAndSend()
+// export function useLildexIncrementMutation({ lildex }: { lildex: LildexAccount }) {
+//   const invalidateAccounts = useLildexAccountsInvalidate()
+//   const signAndSend = useWalletTransactionSignAndSend()
+//   const signer = useWalletUiSigner()
 
-  return useMutation({
-    mutationFn: async () => await signAndSend(getDecrementInstruction({ lildex: lildex.address }), signer),
-    onSuccess: async (tx) => {
-      toastTx(tx)
-      await invalidateAccounts()
-    },
-  })
-}
-
-export function useLildexIncrementMutation({ lildex }: { lildex: LildexAccount }) {
-  const invalidateAccounts = useLildexAccountsInvalidate()
-  const signAndSend = useWalletTransactionSignAndSend()
-  const signer = useWalletUiSigner()
-
-  return useMutation({
-    mutationFn: async () => await signAndSend(getIncrementInstruction({ lildex: lildex.address }), signer),
-    onSuccess: async (tx) => {
-      toastTx(tx)
-      await invalidateAccounts()
-    },
-  })
-}
-
-export function useLildexSetMutation({ lildex }: { lildex: LildexAccount }) {
-  const invalidateAccounts = useLildexAccountsInvalidate()
-  const signAndSend = useWalletTransactionSignAndSend()
-  const signer = useWalletUiSigner()
-
-  return useMutation({
-    mutationFn: async (value: number) =>
-      await signAndSend(
-        getSetInstruction({
-          lildex: lildex.address,
-          value,
-        }),
-        signer,
-      ),
-    onSuccess: async (tx) => {
-      toastTx(tx)
-      await invalidateAccounts()
-    },
-  })
-}
-
-export function useLildexCloseMutation({ lildex }: { lildex: LildexAccount }) {
-  const invalidateAccounts = useLildexAccountsInvalidate()
-  const signAndSend = useWalletTransactionSignAndSend()
-  const signer = useWalletUiSigner()
-
-  return useMutation({
-    mutationFn: async () => {
-      return await signAndSend(getCloseInstruction({ payer: signer, lildex: lildex.address }), signer)
-    },
-    onSuccess: async (tx) => {
-      toastTx(tx)
-      await invalidateAccounts()
-    },
-  })
-}
+//   return useMutation({
+//     mutationFn: async () => await signAndSend(getIncrementInstruction({ lildex: lildex.address }), signer),
+//     onSuccess: async (tx) => {
+//       toastTx(tx)
+//       await invalidateAccounts()
+//     },
+//   })
+// }
 
 export function useLildexAccountsQuery() {
   const { client } = useWalletUi()
@@ -132,12 +72,12 @@ export function useLildexAccountsQuery() {
   })
 }
 
-function useLildexAccountsInvalidate() {
-  const queryClient = useQueryClient()
-  const queryKey = useLildexAccountsQueryKey()
+// function useLildexAccountsInvalidate() {
+//   const queryClient = useQueryClient()
+//   const queryKey = useLildexAccountsQueryKey()
 
-  return () => queryClient.invalidateQueries({ queryKey })
-}
+//   return () => queryClient.invalidateQueries({ queryKey })
+// }
 
 function useLildexAccountsQueryKey() {
   const { cluster } = useWalletUi()
