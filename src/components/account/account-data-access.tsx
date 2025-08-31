@@ -1,4 +1,4 @@
-import { TOKEN_2022_PROGRAM_ADDRESS, TOKEN_PROGRAM_ADDRESS } from 'gill/programs/token'
+import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS, TOKEN_PROGRAM_ADDRESS } from 'gill/programs/token'
 import { getTransferSolInstruction } from 'gill/programs'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useWalletUi } from '@wallet-ui/react'
@@ -31,11 +31,41 @@ function useInvalidateGetBalanceQuery({ address }: { address: Address }) {
 
 export function useGetBalanceQuery({ address }: { address: Address }) {
   const { client } = useWalletUi()
-
   return useQuery({
     retry: false,
     queryKey: useGetBalanceQueryKey({ address }),
     queryFn: () => client.rpc.getBalance(address).send(),
+  })
+}
+export function useGetTokenBalanceQuery({ address }: { address: Address }) {
+  const { client } = useWalletUi()
+
+  return useQuery({
+    retry: false,
+    queryKey: useGetBalanceQueryKey({ address }),
+    queryFn: () => client.rpc.getTokenAccountBalance(address).send(),
+  })
+}
+export function useGetTokenAccountAddressQuery({
+  wallet,
+  mint,
+  useTokenExtensions = false,
+}: {
+  wallet: Address
+  mint: Address
+  useTokenExtensions: boolean
+}) {
+  const { cluster } = useWalletUi()
+  const tokenProgram = useTokenExtensions ? TOKEN_2022_PROGRAM_ADDRESS : TOKEN_PROGRAM_ADDRESS
+  return useQuery({
+    retry: false,
+    queryKey: ['get-token-account-address', { cluster, wallet }],
+    queryFn: async () =>
+      await findAssociatedTokenPda({
+        mint: mint,
+        owner: wallet,
+        tokenProgram,
+      }).then(([address]) => address ?? ''),
   })
 }
 
@@ -74,7 +104,6 @@ async function getTokenAccountsByOwner(
 
 export function useGetTokenAccountsQuery({ address }: { address: Address }) {
   const { client, cluster } = useWalletUi()
-
   return useQuery({
     queryKey: ['get-token-accounts', { cluster, address }],
     queryFn: async () =>
