@@ -59,7 +59,7 @@ export function useGetTokenAccountAddressQuery({
   const tokenProgram = useTokenExtensions ? TOKEN_2022_PROGRAM_ADDRESS : TOKEN_PROGRAM_ADDRESS
   return useQuery({
     retry: false,
-    queryKey: ['get-token-account-address', { cluster, wallet }],
+    queryKey: ['get-token-account-address', { cluster, mint }],
     queryFn: async () =>
       await findAssociatedTokenPda({
         mint: mint,

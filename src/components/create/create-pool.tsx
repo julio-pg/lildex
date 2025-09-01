@@ -11,15 +11,20 @@ export default function CreatePool() {
   const { account } = useWalletUi()
   const [poolTokens, setpoolTokens] = useState({
     tokenA: address('BRjpCHtyQLNCo8gqRUr8jtdAj5AjPYQaoqbvcZiHok1k'),
-    tokenB: address('BRjpCHtyQLNCo8gqRUr8jtdAj5AjPYQaoqbvcZiHok1k'),
+    tokenB: address('So11111111111111111111111111111111111111112'),
   })
   const tokenAccountA = useGetTokenAccountAddressQuery({
     wallet: address(account?.address!),
     mint: poolTokens.tokenA,
     useTokenExtensions: false,
   })
-  console.log('tkenAcc:', tokenAccountA.data)
+  const tokenAccountB = useGetTokenAccountAddressQuery({
+    wallet: address(account?.address!),
+    mint: poolTokens.tokenB,
+    useTokenExtensions: false,
+  })
   const tokenBalanceA = useGetTokenBalanceQuery({ address: tokenAccountA.data! })
+  const tokenBalanceB = useGetTokenBalanceQuery({ address: tokenAccountB.data! })
 
   return (
     <div className="min-h-screen flex flex-col gap-y-4 items-center justify-center ">
@@ -37,7 +42,7 @@ export default function CreatePool() {
             </div>
             <Input type="number" placeholder="0" className="placeholder:text-2xl" />
 
-            <div className="text-slate-500 text-lg">{tokenBalanceA.data?.value.uiAmountString}</div>
+            <div className="text-slate-500 text-lg">{tokenBalanceA.data?.value.uiAmountString || 0}</div>
           </div>
 
           {/* Swap Arrow */}
@@ -57,7 +62,7 @@ export default function CreatePool() {
               </div>
             </div>
             <Input type="number" placeholder="0" className="placeholder:text-2xl" />
-            <div className="text-slate-500 text-lg">$0.00</div>
+            <div className="text-slate-500 text-lg">{tokenBalanceB.data?.value.uiAmountString || 0}</div>
           </div>
           {/* Initial price */}
 
