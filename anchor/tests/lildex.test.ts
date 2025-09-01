@@ -39,7 +39,7 @@ describe('lildex', () => {
   it('Initialize config Lildex', async () => {
     connection = await connect()
     const configPDAAndBump = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
-      'lil',
+      'config',
       payer.address,
     ])
     const configAccount = await programClient.fetchLilpoolsConfig(connection.rpc, configPDAAndBump.pda)
@@ -73,7 +73,7 @@ describe('lildex', () => {
 
     // get config PDA
     const configPDAAndBump = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
-      'lil',
+      'config',
       payer.address,
     ])
 

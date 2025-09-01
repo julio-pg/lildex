@@ -3,29 +3,44 @@ import { ArrowUpDown, Copy, ExternalLink } from 'lucide-react'
 import { WalletButton } from '../solana/solana-provider'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { address } from 'gill'
-import { useGetTokenAccountAddressQuery, useGetTokenBalanceQuery } from '../account/account-data-access'
+
+import { getTokenBalance, solanaTokenAddress } from '@/lib/utils'
+import { useSearchParams } from 'react-router'
+import { useInitializePoolMutation } from './create-pool-data-access'
 
 export default function CreatePool() {
   const { account } = useWalletUi()
-  const [poolTokens, setpoolTokens] = useState({
-    tokenA: address('BRjpCHtyQLNCo8gqRUr8jtdAj5AjPYQaoqbvcZiHok1k'),
-    tokenB: address('So11111111111111111111111111111111111111112'),
-  })
-  const tokenAccountA = useGetTokenAccountAddressQuery({
-    wallet: address(account?.address!),
-    mint: poolTokens.tokenA,
-    useTokenExtensions: false,
-  })
-  const tokenAccountB = useGetTokenAccountAddressQuery({
-    wallet: address(account?.address!),
-    mint: poolTokens.tokenB,
-    useTokenExtensions: false,
-  })
-  const tokenBalanceA = useGetTokenBalanceQuery({ address: tokenAccountA.data! })
-  const tokenBalanceB = useGetTokenBalanceQuery({ address: tokenAccountB.data! })
+  const [searchParams, setSearchParams] = useSearchParams()
+  // useEffect(() => {
+  //   if (!searchParams.get('tokenA') || !searchParams.get('tokenB')) {
+  //     setSearchParams({
+  //       tokenA: 'So11111111111111111111111111111111111111112',
+  //       tokenB: 'BRjpCHtyQLNCo8gqRUr8jtdAj5AjPYQaoqbvcZiHok1k',
+  //     })
+  //   }
+  //   return () => {}
+  // }, [setSearchParams])
+  const [initialPrice, setInitialPrice] = useState('0')
 
+  // const tokenA = searchParams.get('tokenA') ?? solanaTokenAddress
+  const tokenA = 'So11111111111111111111111111111111111111112'
+  // const tokenB = searchParams.get('tokenB') ?? solanaTokenAddress
+  const tokenB = 'BRjpCHtyQLNCo8gqRUr8jtdAj5AjPYQaoqbvcZiHok1k'
+  const wallletAddress = address(account?.address!) || solanaTokenAddress
+
+  // get token balances
+  const tokenBalanceA = getTokenBalance(wallletAddress, address(tokenA!), false)
+  const tokenBalanceB = getTokenBalance(wallletAddress, address(tokenB!), false)
+
+  const mutation = useInitializePoolMutation({
+    tokenMintA: address(tokenA),
+    tokenMintB: address(tokenB),
+    initialPrice: Number(initialPrice),
+  })
+
+  // TODO: round the decimal to max 3 places
   return (
     <div className="min-h-screen flex flex-col gap-y-4 items-center justify-center ">
       <div className="w-full max-w-md rounded-2xl p-6 border border-red-800 shadow-2xl bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400">
@@ -42,7 +57,7 @@ export default function CreatePool() {
             </div>
             <Input type="number" placeholder="0" className="placeholder:text-2xl" />
 
-            <div className="text-slate-500 text-lg">{tokenBalanceA.data?.value.uiAmountString || 0}</div>
+            <div className="text-slate-500 text-lg">{tokenBalanceA}</div>
           </div>
 
           {/* Swap Arrow */}
@@ -62,22 +77,32 @@ export default function CreatePool() {
               </div>
             </div>
             <Input type="number" placeholder="0" className="placeholder:text-2xl" />
-            <div className="text-slate-500 text-lg">{tokenBalanceB.data?.value.uiAmountString || 0}</div>
+            <div className="text-slate-500 text-lg">{tokenBalanceB}</div>
           </div>
           {/* Initial price */}
 
-          <div>
+          <div className="bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400 px-3 py-1 rounded-full">
             <h2 className="text-slate-400 text-sm font-medium">Initial Price</h2>
 
-            <Input type="number" placeholder="0" className="placeholder:text-2xl" />
+            <Input
+              type="number"
+              placeholder="0"
+              value={initialPrice}
+              onChange={(e) => setInitialPrice(e.target.value)}
+              className="placeholder:text-2xl"
+            />
           </div>
         </div>
 
         {/* Connect Wallet Button */}
         <div className="flex w-full justify-center items-center">
           {account ? (
-            <Button className="w-full bg-red-800 dark:text-neutral-400 font-bold text-xl" size="lg">
-              Trade
+            <Button
+              className="w-full bg-red-800 dark:text-neutral-400 font-bold text-xl"
+              size="lg"
+              onClick={() => mutation.mutateAsync().catch((err) => console.log(err))}
+            >
+              Create
             </Button>
           ) : (
             <div style={{ display: 'inline-block' }}>

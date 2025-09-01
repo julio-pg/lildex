@@ -9,7 +9,7 @@ pub struct InitializeConfig<'info> {
         init, 
         payer = funder,
         space = LilpoolsConfig::DISCRIMINATOR.len() + LilpoolsConfig::INIT_SPACE,
-        seeds = [b"lil", funder.key().as_ref()],
+        seeds = [b"config", funder.key().as_ref()],
         bump
     )]
     pub config: Account<'info, LilpoolsConfig>,
