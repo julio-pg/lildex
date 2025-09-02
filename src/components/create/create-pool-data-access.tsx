@@ -1,15 +1,7 @@
 import { getInitializePoolInstruction } from '@project/anchor'
 import { useMutation } from '@tanstack/react-query'
 import { useWalletUi, useWalletUiSigner } from '@wallet-ui/react'
-import {
-  address,
-  Address,
-  getAddressEncoder,
-  getProgramDerivedAddress,
-  getSolanaErrorFromInstructionError,
-  getSolanaErrorFromTransactionError,
-  getUtf8Encoder,
-} from 'gill'
+import { address, Address, getAddressEncoder, getProgramDerivedAddress, getUtf8Encoder } from 'gill'
 import { useWalletTransactionSignAndSend } from '../solana/use-wallet-transaction-sign-and-send'
 import { toastTx } from '../toast-tx'
 import { toast } from 'sonner'
@@ -37,17 +29,16 @@ export function useInitializePoolMutation({
   const signer = useWalletUiSigner()
   const programId = useLildexProgramId()
   const testWallet = address(import.meta.env.VITE_TEST_WALLET!)
-  const { client } = useWalletUi()
 
   const funderTokenAccountA = useGetTokenAccountAddressQuery({
     wallet: signer.address,
     mint: tokenMintA,
-    useTokenExtensions: false,
+    useTokenExtensions: true,
   })
   const funderTokenAccountB = useGetTokenAccountAddressQuery({
     wallet: signer.address,
     mint: tokenMintB,
-    useTokenExtensions: false,
+    useTokenExtensions: true,
   })
 
   const tokenABigIntAmount = getTokenBigInt(Number(tokenAAmount), 9)
@@ -79,7 +70,7 @@ export function useInitializePoolMutation({
         mint: tokenMintB,
         useTokenExtensions: true,
       })
-      return await signAndSend(
+      const txSig = await signAndSend(
         getInitializePoolInstruction({
           lilpoolsConfig: configPda,
           tokenMintA: tokenMintA,
@@ -97,6 +88,8 @@ export function useInitializePoolMutation({
         }),
         signer,
       )
+      console.log(txSig)
+      return txSig
     },
     onSuccess: async (tx) => {
       toastTx(tx)

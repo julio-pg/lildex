@@ -76,6 +76,8 @@ pub fn handler(
     token_a_amount: u64,
     token_b_amount: u64,
 ) -> Result<()> {
+    // TODO:add error if the pool already exits
+    // TODO:add error if the amount isnt 50%/50%
     // Validate amounts
     require!(token_a_amount > 0, ErrorCode::InvalidAmount);
     require!(token_b_amount > 0, ErrorCode::InvalidAmount);
