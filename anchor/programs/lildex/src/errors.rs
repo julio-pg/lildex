@@ -5,16 +5,6 @@ use anchor_lang::prelude::*;
 #[error_code]
 #[derive(PartialEq)]
 pub enum ErrorCode {
-    #[msg("Enum value could not be converted")]
-    InvalidEnum, // 0x1770 (6000)
-    #[msg("Invalid start tick index provided.")]
-    InvalidStartTick, // 0x1771 (6001)
-    #[msg("Tick-array already exists in this whirlpool")]
-    TickArrayExistInPool, // 0x1772 (6002)
-    #[msg("Attempt to search for a tick-array failed")]
-    TickArrayIndexOutofBounds, // 0x1773 (6003)
-    #[msg("Tick-spacing is not supported")]
-    InvalidTickSpacing, // 0x1774 (6004)
     #[msg("Position is not empty It cannot be closed")]
     ClosePositionNotEmpty, // 0x1775 (6005)
 
@@ -24,13 +14,6 @@ pub enum ErrorCode {
     NumberCastError, //  0x1777 (6007)
     #[msg("Unable to down cast number")]
     NumberDownCastError, //  0x1778 (6008)
-
-    #[msg("Tick not found within tick array")]
-    TickNotFound, // 0x1779 (6009)
-    #[msg("Provided tick index is either out of bounds or uninitializable")]
-    InvalidTickIndex, // 0x177a (6010)
-    #[msg("Provided sqrt price out of bounds")]
-    SqrtPriceOutOfBounds, // 0x177b (6011)
 
     #[msg("Liquidity amount must be greater than zero")]
     LiquidityZero, // 0x177c (6012)
@@ -174,6 +157,10 @@ pub enum ErrorCode {
     PositionWithTokenExtensionsRequired, // 0x17b3 (6067)
     #[msg("Amount out slippage exceeded")]
     SlippageExceeded, // 0x17b4 (6068)
+    #[msg("Insufficient token balance in funder's account")]
+    InsufficientMakerBalance, // 0x17b4 (6068)
+    #[msg("Amount must be greater than zero")]
+    InvalidAmount,
 }
 
 impl From<TryFromIntError> for ErrorCode {

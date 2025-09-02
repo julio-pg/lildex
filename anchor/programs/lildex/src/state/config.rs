@@ -1,4 +1,3 @@
-use crate::{errors::ErrorCode, math::MAX_PROTOCOL_FEE_RATE};
 use anchor_lang::prelude::*;
 
 #[account]

@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount};
 
-use crate::{errors::ErrorCode, events::*, state::*};
+use crate::{errors::ErrorCode, state::*};
 
 #[derive(Accounts)]
 pub struct Swap<'info> {

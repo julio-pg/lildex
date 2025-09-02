@@ -34,8 +34,13 @@ pub mod lildex {
         instructions::initialize_config::handler(ctx, fee_authority, default_protocol_fee_rate)
     }
 
-    pub fn initialize_pool(ctx: Context<InitializePool>, initial_price: u128) -> Result<()> {
-        instructions::initialize_pool::handler(ctx, initial_price)
+    pub fn initialize_pool(
+        ctx: Context<InitializePool>,
+        initial_price: u128,
+        token_a_amount: u64,
+        token_b_amount: u64,
+    ) -> Result<()> {
+        instructions::initialize_pool::handler(ctx, initial_price, token_a_amount, token_b_amount)
     }
 
     pub fn open_position(ctx: Context<OpenPosition>) -> Result<()> {

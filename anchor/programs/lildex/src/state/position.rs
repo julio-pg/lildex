@@ -1,7 +1,5 @@
 use anchor_lang::prelude::*;
 
-use crate::errors::ErrorCode;
-
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Copy)]
 pub struct OpenPositionBumps {
     pub position_bump: u8,

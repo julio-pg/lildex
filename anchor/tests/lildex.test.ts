@@ -1,25 +1,57 @@
-import { Address, address, FixedSizeEncoder, generateKeyPairSigner, getAddressEncoder, KeyPairSigner } from 'gill'
+import { Address, address, FixedSizeEncoder, getAddressEncoder, KeyPairSigner } from 'gill'
 import * as programClient from '../src/client/js/generated'
 import { loadKeypairSignerFromFile } from 'gill/node'
-import { Connection, connect } from 'solana-kite'
-import { before, describe } from 'node:test'
-
+import { Connection, TOKEN_EXTENSIONS_PROGRAM, connect } from 'solana-kite'
 // const { rpc, sendAndConfirmTransaction } = createSolanaClient({ urlOrMoniker: process.env.ANCHOR_PROVIDER_URL! })
 
 describe('lildex', () => {
   let connection: Connection
   let payer: KeyPairSigner
-  let lildex: KeyPairSigner
+  // let lildex: KeyPairSigner
   let postionTokenMint: Address
   let tokenMintA: Address
   let tokenMintB: Address
   let addressEncoder: FixedSizeEncoder<Address<string>, 32>
+  const tokenDecimals = 9
+  let funderTokenAccountA: Address
+  let funderTokenAccountB: Address
+
+  // Both tokens have 9 decimals, so we can use this to convert between major and minor units
+  const TOKEN = 10n ** BigInt(tokenDecimals)
+  const userInitialTokenAmount = 10n * TOKEN
+  const tokenAOfferedAmount = 1n * TOKEN
+  const tokenBWantedAmount = 1n * TOKEN
+  const initialPrice = 3n * TOKEN
+
   beforeAll(async () => {
     connection = await connect()
-    lildex = await generateKeyPairSigner()
+    // lildex = await generateKeyPairSigner()
     payer = await loadKeypairSignerFromFile()
-    tokenMintA = address('So11111111111111111111111111111111111111112') //devSOL
-    tokenMintB = address('BRjpCHtyQLNCo8gqRUr8jtdAj5AjPYQaoqbvcZiHok1k') //devUSDC
+    // Create two token mints - the factories that create token A, and token B
+    // tokenMintA = await connection.createTokenMint({
+    //   mintAuthority: payer,
+    //   decimals: tokenDecimals,
+    //   name: 'Token A',
+    //   symbol: 'TOKEN_A',
+    //   uri: 'https://example.com/token-a',
+    //   additionalMetadata: {
+    //     keyOne: 'valueOne',
+    //     keyTwo: 'valueTwo',
+    //   },
+    // })
+    tokenMintA = address('9DYjjGwGXNmGcAE5RxJU4m7pTft6ZAjrjYE9g9VQc4zN')
+    // tokenMintB = await connection.createTokenMint({
+    //   mintAuthority: payer,
+    //   decimals: tokenDecimals,
+    //   name: 'Token B',
+    //   symbol: 'TOKEN_B',
+    //   uri: 'https://example.com/token-b',
+    //   additionalMetadata: {
+    //     keyOne: 'valueOne',
+    //     keyTwo: 'valueTwo',
+    //   },
+    // })
+    tokenMintB = address('7jDq66vH7v28xQo6TNGsmaBBrsfqLC1HEXrix3a9pFzc')
     addressEncoder = getAddressEncoder()
 
     // create position token mint
@@ -34,6 +66,12 @@ describe('lildex', () => {
         keyTwo: 'valueTwo',
       },
     })
+    // Mint tokens to the user
+    // await connection.mintTokens(tokenMintA, payer, userInitialTokenAmount, payer.address)
+    // await connection.mintTokens(tokenMintB, payer, userInitialTokenAmount, payer.address)
+    // get funder token accounts
+    funderTokenAccountA = await connection.getTokenAccountAddress(payer.address, tokenMintA, true)
+    funderTokenAccountB = await connection.getTokenAccountAddress(payer.address, tokenMintB, true)
   })
 
   it('Initialize config Lildex', async () => {
@@ -89,7 +127,7 @@ describe('lildex', () => {
 
     // get vault PDAs
     const tokenVaultA = await connection.getTokenAccountAddress(lilpoolAddress, tokenMintA, true)
-    const tokenVaultB = await connection.getTokenAccountAddress(lilpoolAddress, tokenMintB, false)
+    const tokenVaultB = await connection.getTokenAccountAddress(lilpoolAddress, tokenMintB, true)
 
     const ix = programClient.getInitializePoolInstruction({
       lilpoolsConfig: configPDAAndBump.pda,
@@ -99,7 +137,12 @@ describe('lildex', () => {
       lilpool: lilpoolAddress,
       tokenVaultA: tokenVaultA,
       tokenVaultB: tokenVaultB,
-      initialPrice: 10000,
+      funderTokenAccountA: funderTokenAccountA,
+      funderTokenAccountB: funderTokenAccountB,
+      initialPrice: initialPrice,
+      tokenAAmount: tokenAOfferedAmount,
+      tokenBAmount: tokenBWantedAmount,
+      tokenProgram: TOKEN_EXTENSIONS_PROGRAM,
     })
 
     await connection.sendTransactionFromInstructions({
@@ -107,7 +150,7 @@ describe('lildex', () => {
       instructions: [ix],
     })
 
-    const poolAccount = await programClient.fetchLilpoolsConfig(connection.rpc, configPDAAndBump.pda)
+    const poolAccount = await programClient.fetchLilpool(connection.rpc, lilpoolAddress)
     console.log('poolAccount:', poolAccount.address)
   })
   it('Open position', async () => {

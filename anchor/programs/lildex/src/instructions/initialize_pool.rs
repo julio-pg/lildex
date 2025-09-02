@@ -1,4 +1,5 @@
 use crate::state::*;
+use crate::util::transfer_tokens;
 use crate::{errors::ErrorCode, math::MAX_PROTOCOL_LIQUIDITY};
 use anchor_lang::prelude::*;
 use anchor_spl::{
@@ -49,28 +50,71 @@ pub struct InitializePool<'info> {
     )]
     pub token_vault_b: InterfaceAccount<'info, TokenAccount>,
 
+    #[account(
+        mut,
+        associated_token::mint = token_mint_a,
+        associated_token::authority = funder,
+        associated_token::token_program = token_program
+    )]
+    pub funder_token_account_a: InterfaceAccount<'info, TokenAccount>,
+    #[account(
+        mut,
+        associated_token::mint = token_mint_b,
+        associated_token::authority = funder,
+        associated_token::token_program = token_program
+    )]
+    pub funder_token_account_b: InterfaceAccount<'info, TokenAccount>,
+
     pub token_program: Interface<'info, TokenInterface>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<InitializePool>, initial_price: u128) -> Result<()> {
-    let token_mint_a = ctx.accounts.token_mint_a.key();
-    let token_vault_a = ctx.accounts.token_vault_a.key();
-    let token_mint_b = ctx.accounts.token_mint_b.key();
-    let token_vault_b = ctx.accounts.token_vault_b.key();
+pub fn handler(
+    ctx: Context<InitializePool>,
+    initial_price: u128,
+    token_a_amount: u64,
+    token_b_amount: u64,
+) -> Result<()> {
+    // Validate amounts
+    require!(token_a_amount > 0, ErrorCode::InvalidAmount);
+    require!(token_b_amount > 0, ErrorCode::InvalidAmount);
 
+    // Validate token mints are different
     require!(
-        token_mint_a != token_mint_b,
+        ctx.accounts.token_mint_a.key() != ctx.accounts.token_mint_b.key(),
         ErrorCode::InvalidTokenMintOrder,
     );
 
+    // Move the tokens from the maker's ATA to the vault
+    transfer_tokens(
+        &ctx.accounts.funder_token_account_a,
+        &ctx.accounts.token_vault_a,
+        &token_a_amount,
+        &ctx.accounts.token_mint_a,
+        &ctx.accounts.funder.to_account_info(),
+        &ctx.accounts.token_program,
+        None,
+    )
+    .map_err(|_| ErrorCode::InsufficientMakerBalance)?;
+
+    transfer_tokens(
+        &ctx.accounts.funder_token_account_b,
+        &ctx.accounts.token_vault_b,
+        &token_b_amount,
+        &ctx.accounts.token_mint_b,
+        &ctx.accounts.funder.to_account_info(),
+        &ctx.accounts.token_program,
+        None,
+    )
+    .map_err(|_| ErrorCode::InsufficientMakerBalance)?;
+
     ctx.accounts.lilpool.set_inner(Lilpool {
         lilpools_config: ctx.accounts.lilpools_config.key(),
-        token_mint_a: token_mint_a,
-        token_vault_a: token_vault_a,
-        token_mint_b: token_mint_b,
-        token_vault_b: token_vault_b,
+        token_mint_a: ctx.accounts.token_mint_a.key(),
+        token_vault_a: ctx.accounts.token_vault_a.key(),
+        token_mint_b: ctx.accounts.token_mint_b.key(),
+        token_vault_b: ctx.accounts.token_vault_b.key(),
         protocol_fee_rate: ctx.accounts.lilpools_config.default_protocol_fee_rate,
         funder: ctx.accounts.funder.key(),
         liquidity: MAX_PROTOCOL_LIQUIDITY,
