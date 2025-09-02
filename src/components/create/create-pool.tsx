@@ -23,21 +23,25 @@ export default function CreatePool() {
   //   return () => {}
   // }, [setSearchParams])
   const [initialPrice, setInitialPrice] = useState('0')
+  const [tokenAAmount, setTokenAAmount] = useState('0')
+  const [tokenBAmount, setTokenBAmount] = useState('0')
 
   // const tokenA = searchParams.get('tokenA') ?? solanaTokenAddress
-  const tokenA = 'So11111111111111111111111111111111111111112'
+  const tokenA = '9DYjjGwGXNmGcAE5RxJU4m7pTft6ZAjrjYE9g9VQc4zN'
   // const tokenB = searchParams.get('tokenB') ?? solanaTokenAddress
-  const tokenB = 'BRjpCHtyQLNCo8gqRUr8jtdAj5AjPYQaoqbvcZiHok1k'
+  const tokenB = '7jDq66vH7v28xQo6TNGsmaBBrsfqLC1HEXrix3a9pFzc'
   const wallletAddress = address(account?.address!) || solanaTokenAddress
 
   // get token balances
-  const tokenBalanceA = getTokenBalance(wallletAddress, address(tokenA!), false)
-  const tokenBalanceB = getTokenBalance(wallletAddress, address(tokenB!), false)
+  const tokenBalanceA = getTokenBalance(wallletAddress, address(tokenA!), true)
+  const tokenBalanceB = getTokenBalance(wallletAddress, address(tokenB!), true)
 
   const mutation = useInitializePoolMutation({
     tokenMintA: address(tokenA),
     tokenMintB: address(tokenB),
-    initialPrice: Number(initialPrice),
+    tokenAAmount,
+    tokenBAmount,
+    initialPrice,
   })
 
   // TODO: round the decimal to max 3 places
@@ -55,7 +59,13 @@ export default function CreatePool() {
                 <span className="text-xs font-semibold">SOL</span>
               </div>
             </div>
-            <Input type="number" placeholder="0" className="placeholder:text-2xl" />
+            <Input
+              type="number"
+              placeholder="0"
+              className="placeholder:text-2xl"
+              value={tokenAAmount}
+              onChange={(e) => setTokenAAmount(e.target.value!)}
+            />
 
             <div className="text-slate-500 text-lg">{tokenBalanceA}</div>
           </div>
@@ -76,7 +86,13 @@ export default function CreatePool() {
                 <span className="text-xs font-semibold">$LIL</span>
               </div>
             </div>
-            <Input type="number" placeholder="0" className="placeholder:text-2xl" />
+            <Input
+              type="number"
+              placeholder="0"
+              className="placeholder:text-2xl"
+              value={tokenBAmount}
+              onChange={(e) => setTokenBAmount(e.target.value!)}
+            />
             <div className="text-slate-500 text-lg">{tokenBalanceB}</div>
           </div>
           {/* Initial price */}

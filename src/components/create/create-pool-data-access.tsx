@@ -1,21 +1,35 @@
 import { getInitializePoolInstruction } from '@project/anchor'
 import { useMutation } from '@tanstack/react-query'
-import { useWalletUiSigner } from '@wallet-ui/react'
-import { address, Address, getAddressEncoder, getProgramDerivedAddress, getUtf8Encoder } from 'gill'
+import { useWalletUi, useWalletUiSigner } from '@wallet-ui/react'
+import {
+  address,
+  Address,
+  getAddressEncoder,
+  getProgramDerivedAddress,
+  getSolanaErrorFromInstructionError,
+  getSolanaErrorFromTransactionError,
+  getUtf8Encoder,
+} from 'gill'
 import { useWalletTransactionSignAndSend } from '../solana/use-wallet-transaction-sign-and-send'
 import { toastTx } from '../toast-tx'
 import { toast } from 'sonner'
 import { useLildexProgramId } from '../lildex/lildex-data-access'
 import { useGetTokenAccountAddressQuery } from '../account/account-data-access'
+import { TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
+import { getTokenBigInt, useGetTokenAccountAddress } from '@/lib/utils'
 
 export function useInitializePoolMutation({
   tokenMintA,
   tokenMintB,
+  tokenAAmount,
+  tokenBAmount,
   initialPrice,
 }: {
   tokenMintA: Address
   tokenMintB: Address
-  initialPrice: number | bigint
+  tokenAAmount: string
+  tokenBAmount: string
+  initialPrice: string
 }) {
   const signAndSend = useWalletTransactionSignAndSend()
   const addressEncoder = getAddressEncoder()
@@ -23,17 +37,22 @@ export function useInitializePoolMutation({
   const signer = useWalletUiSigner()
   const programId = useLildexProgramId()
   const testWallet = address(import.meta.env.VITE_TEST_WALLET!)
+  const { client } = useWalletUi()
 
-  const tokenVaultA = useGetTokenAccountAddressQuery({
+  const funderTokenAccountA = useGetTokenAccountAddressQuery({
     wallet: signer.address,
     mint: tokenMintA,
     useTokenExtensions: false,
   })
-  const tokenVaultB = useGetTokenAccountAddressQuery({
+  const funderTokenAccountB = useGetTokenAccountAddressQuery({
     wallet: signer.address,
     mint: tokenMintB,
     useTokenExtensions: false,
   })
+
+  const tokenABigIntAmount = getTokenBigInt(Number(tokenAAmount), 9)
+  const tokenBBigIntAmount = getTokenBigInt(Number(tokenBAmount), 9)
+  const initialPriceBigIntAmount = getTokenBigInt(Number(initialPrice), 9)
   return useMutation({
     mutationFn: async () => {
       const [configPda] = await getProgramDerivedAddress({
@@ -49,6 +68,17 @@ export function useInitializePoolMutation({
           addressEncoder.encode(tokenMintB),
         ],
       })
+
+      const tokenVaultA = await useGetTokenAccountAddress({
+        wallet: lilpollPda,
+        mint: tokenMintA,
+        useTokenExtensions: true,
+      })
+      const tokenVaultB = await useGetTokenAccountAddress({
+        wallet: lilpollPda,
+        mint: tokenMintB,
+        useTokenExtensions: true,
+      })
       return await signAndSend(
         getInitializePoolInstruction({
           lilpoolsConfig: configPda,
@@ -56,9 +86,14 @@ export function useInitializePoolMutation({
           tokenMintB: tokenMintB,
           funder: signer,
           lilpool: lilpollPda,
-          tokenVaultA: tokenVaultA.data!,
-          tokenVaultB: tokenVaultB.data!,
-          initialPrice: initialPrice,
+          tokenVaultA: tokenVaultA,
+          tokenVaultB: tokenVaultB,
+          funderTokenAccountA: funderTokenAccountA.data!,
+          funderTokenAccountB: funderTokenAccountB.data!,
+          initialPrice: initialPriceBigIntAmount,
+          tokenAAmount: tokenABigIntAmount,
+          tokenBAmount: tokenBBigIntAmount,
+          tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
         }),
         signer,
       )
@@ -66,6 +101,11 @@ export function useInitializePoolMutation({
     onSuccess: async (tx) => {
       toastTx(tx)
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => {
+      toast.error(e.message)
+
+      // const errorLog = getSolanaErrorFromInstructionError()
+      // console.log(errorLog)
+    },
   })
 }
