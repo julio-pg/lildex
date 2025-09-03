@@ -27,13 +27,3 @@ export function LildexProgramGuard({ children }: { children: ReactNode }) {
 
   return children
 }
-
-// export function LildexButtonIncrement({ lildex }: { lildex: LildexAccount }) {
-//   const incrementMutation = useLildexIncrementMutation({ lildex })
-
-//   return (
-//     <Button variant="outline" onClick={() => incrementMutation.mutateAsync()} disabled={incrementMutation.isPending}>
-//       Increment
-//     </Button>
-//   )
-// }

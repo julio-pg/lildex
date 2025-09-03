@@ -24,7 +24,7 @@ export function ellipsify(str = '', len = 4, delimiter = '..') {
 
   return strLen >= limit ? str.substring(0, len) + delimiter + str.substring(strLen - len, strLen) : str
 }
-export function getTokenBalance(wallet: Address, mint: Address, useTokenExtensions: boolean): string {
+export function getTokenBalance(wallet: Address, mint: Address): string {
   let tokenBalance: string = '0'
   if (mint.toString() === solanaTokenAddress.toString()) {
     const balanceLamp = useGetBalanceQuery({
@@ -32,11 +32,9 @@ export function getTokenBalance(wallet: Address, mint: Address, useTokenExtensio
     })
     tokenBalance = lamportsToSol(balanceLamp.data?.value as Lamports)
   } else {
-    // TODO: get the data of the token to determine if this useTokenExtensions
     const tokenAccount = useGetTokenAccountAddressQuery({
       wallet: wallet,
       mint: mint,
-      useTokenExtensions: useTokenExtensions,
     })
     const { data } = useGetTokenBalanceQuery({ address: tokenAccount.data! })
     tokenBalance = data?.value.uiAmountString!

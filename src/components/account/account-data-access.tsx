@@ -46,26 +46,21 @@ export function useGetTokenBalanceQuery({ address }: { address: Address }) {
     queryFn: () => client.rpc.getTokenAccountBalance(address).send(),
   })
 }
-export function useGetTokenAccountAddressQuery({
-  wallet,
-  mint,
-  useTokenExtensions = false,
-}: {
-  wallet: Address
-  mint: Address
-  useTokenExtensions: boolean
-}) {
-  const { cluster } = useWalletUi()
-  const tokenProgram = useTokenExtensions ? TOKEN_2022_PROGRAM_ADDRESS : TOKEN_PROGRAM_ADDRESS
+export function useGetTokenAccountAddressQuery({ wallet, mint }: { wallet: Address; mint: Address }) {
+  const { cluster, client } = useWalletUi()
   return useQuery({
     retry: false,
     queryKey: ['get-token-account-address', { cluster, mint }],
-    queryFn: async () =>
-      await findAssociatedTokenPda({
+    queryFn: async () => {
+      const accountInfo = await client.rpc.getAccountInfo(mint).send()
+      return await findAssociatedTokenPda({
         mint: mint,
         owner: wallet,
-        tokenProgram,
-      }).then(([address]) => address ?? ''),
+        tokenProgram: accountInfo.value?.owner!,
+      })
+        .then(([address]) => address)
+        .catch((e) => console.log(e))
+    },
   })
 }
 

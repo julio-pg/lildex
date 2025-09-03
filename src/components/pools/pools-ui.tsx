@@ -1,14 +1,20 @@
 import { ellipsify } from '@/lib/utils'
-import ComingSoon from '../ui/coming-soon'
 import { usePoolAccountsQuery } from './pools-data-access'
 import { Button } from '../ui/button'
+import { AppModal } from '../app-modal'
+import { useState } from 'react'
+import SwapInput from '../ui/swap-input'
+import { address } from 'gill'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 
 export default function Pools() {
   const { data } = usePoolAccountsQuery()
+  const [tokenAAmount, setTokenAAmount] = useState('')
+  const [tokenBAmount, setTokenBAmount] = useState('')
   return (
     <div className="relative overflow-x-auto rounded-md">
-      <table className="w-full text-sm text-left rtl:text-right bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400">
-        <thead className="text-base uppercase bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400">
+      <Table>
+        <TableHeader>
           <tr>
             <th scope="col" className="px-6 py-3">
               Pool
@@ -23,24 +29,30 @@ export default function Pools() {
               Fee Rate
             </th>
           </tr>
-        </thead>
-        <tbody>
+        </TableHeader>
+        <TableBody>
           {data?.map(({ data }) => (
-            <tr className="bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400 ">
-              <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white text-xl">
+            <TableRow className="bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400 ">
+              <TableHead
+                scope="row"
+                className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white text-xl"
+              >
                 {`${ellipsify(data.tokenMintA)} / ${ellipsify(data.tokenMintB)}`}
-              </th>
-              <td className="px-6 py-4">${data.price / BigInt(10) ** BigInt(9)}</td>
-              <td className="px-6 py-4">{data.liquidity}</td>
-              <td className="px-6 py-4">{data.protocolFeeRate / 100}%</td>
-              <td className="space-x-2">
-                <Button variant={'secondary'}>Open</Button>
-                <Button variant={'destructive'}>Close</Button>
-              </td>
-            </tr>
+              </TableHead>
+              <TableCell className="px-6 py-4">${data.price / BigInt(10) ** BigInt(9)}</TableCell>
+              <TableCell className="px-6 py-4">{data.liquidity}</TableCell>
+              <TableCell className="px-6 py-4">{data.protocolFeeRate / 100}%</TableCell>
+              <TableCell>
+                <AppModal title="Open">
+                  <SwapInput tokenAddress={data.tokenMintA} tokenAmount={tokenAAmount} setAmount={setTokenAAmount} />
+                  <SwapInput tokenAddress={data.tokenMintB} tokenAmount={tokenBAmount} setAmount={setTokenBAmount} />
+                  <Button variant={'secondary'}>Deposit</Button>
+                </AppModal>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   )
 }
