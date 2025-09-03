@@ -19,8 +19,8 @@ pub struct Lilpool {
     pub funder: Pubkey,
     // Maximum amount that can be held by Solana account
     pub liquidity: u128, // 16
-    // Current price of token B in terms of token A, Q64.96 format
-    pub price: u128, // 16
+    // Current price of token B in terms of token A,
+    pub price: u64,
 }
 
 impl Lilpool {

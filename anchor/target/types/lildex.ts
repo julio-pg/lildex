@@ -68,6 +68,242 @@ export type Lildex = {
           "writable": true
         },
         {
+          "name": "tokenMintA"
+        },
+        {
+          "name": "tokenMintB"
+        },
+        {
+          "name": "tokenVaultA",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "position.lilpool",
+                "account": "position"
+              },
+              {
+                "kind": "account",
+                "path": "tokenProgram"
+              },
+              {
+                "kind": "account",
+                "path": "tokenMintA"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "tokenVaultB",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "position.lilpool",
+                "account": "position"
+              },
+              {
+                "kind": "account",
+                "path": "tokenProgram"
+              },
+              {
+                "kind": "account",
+                "path": "tokenMintB"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "funderTokenAccountA",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "positionAuthority"
+              },
+              {
+                "kind": "account",
+                "path": "tokenProgram"
+              },
+              {
+                "kind": "account",
+                "path": "tokenMintA"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "funderTokenAccountB",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "positionAuthority"
+              },
+              {
+                "kind": "account",
+                "path": "tokenProgram"
+              },
+              {
+                "kind": "account",
+                "path": "tokenMintB"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
           "name": "tokenProgram"
         }
       ],
@@ -432,7 +668,7 @@ export type Lildex = {
       "args": [
         {
           "name": "initialPrice",
-          "type": "u128"
+          "type": "u64"
         },
         {
           "name": "tokenAAmount",
@@ -491,7 +727,9 @@ export type Lildex = {
           }
         },
         {
-          "name": "positionMint"
+          "name": "positionMint",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "positionTokenAccount",
@@ -587,6 +825,240 @@ export type Lildex = {
           "name": "lilpool"
         },
         {
+          "name": "tokenMintA"
+        },
+        {
+          "name": "tokenMintB"
+        },
+        {
+          "name": "tokenVaultA",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "lilpool"
+              },
+              {
+                "kind": "account",
+                "path": "tokenProgram"
+              },
+              {
+                "kind": "account",
+                "path": "tokenMintA"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "tokenVaultB",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "lilpool"
+              },
+              {
+                "kind": "account",
+                "path": "tokenProgram"
+              },
+              {
+                "kind": "account",
+                "path": "tokenMintB"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "funderTokenAccountA",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "funder"
+              },
+              {
+                "kind": "account",
+                "path": "tokenProgram"
+              },
+              {
+                "kind": "account",
+                "path": "tokenMintA"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "funderTokenAccountB",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "funder"
+              },
+              {
+                "kind": "account",
+                "path": "tokenProgram"
+              },
+              {
+                "kind": "account",
+                "path": "tokenMintB"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
           "name": "tokenProgram"
         },
         {
@@ -598,7 +1070,16 @@ export type Lildex = {
           "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "tokenAAmount",
+          "type": "u64"
+        },
+        {
+          "name": "tokenBAmount",
+          "type": "u64"
+        }
+      ]
     },
     {
       "name": "swap",
@@ -728,303 +1209,113 @@ export type Lildex = {
     },
     {
       "code": 6003,
-      "name": "numberDownCastError",
-      "msg": "Unable to down cast number"
-    },
-    {
-      "code": 6004,
       "name": "liquidityZero",
       "msg": "Liquidity amount must be greater than zero"
     },
     {
-      "code": 6005,
+      "code": 6004,
       "name": "liquidityTooHigh",
       "msg": "Liquidity amount must be less than i64::MAX"
     },
     {
-      "code": 6006,
+      "code": 6005,
       "name": "liquidityOverflow",
       "msg": "Liquidity overflow"
     },
     {
-      "code": 6007,
+      "code": 6006,
       "name": "liquidityUnderflow",
       "msg": "Liquidity underflow"
     },
     {
-      "code": 6008,
-      "name": "liquidityNetError",
-      "msg": "Tick liquidity net underflowed or overflowed"
-    },
-    {
-      "code": 6009,
+      "code": 6007,
       "name": "tokenMaxExceeded",
       "msg": "Exceeded token max"
     },
     {
-      "code": 6010,
+      "code": 6008,
       "name": "tokenMinSubceeded",
       "msg": "Did not meet token min"
     },
     {
-      "code": 6011,
+      "code": 6009,
       "name": "missingOrInvalidDelegate",
       "msg": "Position token account has a missing or invalid delegate"
     },
     {
-      "code": 6012,
+      "code": 6010,
       "name": "invalidPositionTokenAmount",
       "msg": "Position token amount must be 1"
     },
     {
-      "code": 6013,
-      "name": "invalidTimestampConversion",
-      "msg": "Timestamp should be convertible from i64 to u64"
-    },
-    {
-      "code": 6014,
-      "name": "invalidTimestamp",
-      "msg": "Timestamp should be greater than the last updated timestamp"
-    },
-    {
-      "code": 6015,
-      "name": "invalidTickArraySequence",
-      "msg": "Invalid tick array sequence provided for instruction."
-    },
-    {
-      "code": 6016,
-      "name": "invalidTokenMintOrder",
-      "msg": "Token Mint in wrong order"
-    },
-    {
-      "code": 6017,
-      "name": "rewardNotInitialized",
-      "msg": "Reward not initialized"
-    },
-    {
-      "code": 6018,
-      "name": "invalidRewardIndex",
-      "msg": "Invalid reward index"
-    },
-    {
-      "code": 6019,
+      "code": 6011,
       "name": "rewardVaultAmountInsufficient",
       "msg": "Reward vault requires amount to support emissions for at least one day"
     },
     {
-      "code": 6020,
+      "code": 6012,
       "name": "feeRateMaxExceeded",
       "msg": "Exceeded max fee rate"
     },
     {
-      "code": 6021,
+      "code": 6013,
       "name": "protocolFeeRateMaxExceeded",
       "msg": "Exceeded max protocol fee rate"
     },
     {
-      "code": 6022,
-      "name": "multiplicationShiftRightOverflow",
-      "msg": "Multiplication with shift right overflow"
-    },
-    {
-      "code": 6023,
-      "name": "mulDivOverflow",
-      "msg": "Muldiv overflow"
-    },
-    {
-      "code": 6024,
-      "name": "mulDivInvalidInput",
-      "msg": "Invalid div_u256 input"
-    },
-    {
-      "code": 6025,
-      "name": "multiplicationOverflow",
-      "msg": "Multiplication overflow"
-    },
-    {
-      "code": 6026,
+      "code": 6014,
       "name": "invalidSqrtPriceLimitDirection",
       "msg": "Provided SqrtPriceLimit not in the same direction as the swap."
     },
     {
-      "code": 6027,
+      "code": 6015,
       "name": "zeroTradableAmount",
       "msg": "There are no tradable amount to swap."
     },
     {
-      "code": 6028,
+      "code": 6016,
       "name": "amountOutBelowMinimum",
       "msg": "Amount out below minimum threshold"
     },
     {
-      "code": 6029,
+      "code": 6017,
       "name": "amountInAboveMaximum",
       "msg": "Amount in above maximum threshold"
     },
     {
-      "code": 6030,
-      "name": "tickArraySequenceInvalidIndex",
-      "msg": "Invalid index for tick array sequence"
-    },
-    {
-      "code": 6031,
-      "name": "amountCalcOverflow",
-      "msg": "Amount calculated overflows"
-    },
-    {
-      "code": 6032,
-      "name": "amountRemainingOverflow",
-      "msg": "Amount remaining overflows"
-    },
-    {
-      "code": 6033,
-      "name": "invalidIntermediaryMint",
-      "msg": "Invalid intermediary mint"
-    },
-    {
-      "code": 6034,
-      "name": "duplicateTwoHopPool",
-      "msg": "Duplicate two hop pool"
-    },
-    {
-      "code": 6035,
-      "name": "invalidBundleIndex",
-      "msg": "Bundle index is out of bounds"
-    },
-    {
-      "code": 6036,
-      "name": "bundledPositionAlreadyOpened",
-      "msg": "Position has already been opened"
-    },
-    {
-      "code": 6037,
-      "name": "bundledPositionAlreadyClosed",
-      "msg": "Position has already been closed"
-    },
-    {
-      "code": 6038,
-      "name": "positionBundleNotDeletable",
-      "msg": "Unable to delete PositionBundle with open positions"
-    },
-    {
-      "code": 6039,
+      "code": 6018,
       "name": "unsupportedTokenMint",
       "msg": "Token mint has unsupported attributes"
     },
     {
-      "code": 6040,
-      "name": "remainingAccountsInvalidSlice",
-      "msg": "Invalid remaining accounts"
-    },
-    {
-      "code": 6041,
-      "name": "remainingAccountsInsufficient",
-      "msg": "Insufficient remaining accounts"
-    },
-    {
-      "code": 6042,
-      "name": "noExtraAccountsForTransferHook",
-      "msg": "Unable to call transfer hook without extra accounts"
-    },
-    {
-      "code": 6043,
-      "name": "intermediateTokenAmountMismatch",
-      "msg": "Output and input amount mismatch"
-    },
-    {
-      "code": 6044,
-      "name": "transferFeeCalculationError",
-      "msg": "Transfer fee calculation failed"
-    },
-    {
-      "code": 6045,
-      "name": "remainingAccountsDuplicatedAccountsType",
-      "msg": "Same accounts type is provided more than once"
-    },
-    {
-      "code": 6046,
-      "name": "fullRangeOnlyPool",
-      "msg": "This whirlpool only supports full-range positions"
-    },
-    {
-      "code": 6047,
-      "name": "tooManySupplementalTickArrays",
-      "msg": "Too many supplemental tick arrays provided"
-    },
-    {
-      "code": 6048,
-      "name": "differentWhirlpoolTickArrayAccount",
-      "msg": "TickArray account for different whirlpool provided"
-    },
-    {
-      "code": 6049,
-      "name": "partialFillError",
-      "msg": "Trade resulted in partial fill"
-    },
-    {
-      "code": 6050,
-      "name": "positionNotLockable",
-      "msg": "Position is not lockable"
-    },
-    {
-      "code": 6051,
-      "name": "operationNotAllowedOnLockedPosition",
-      "msg": "Operation not allowed on locked position"
-    },
-    {
-      "code": 6052,
-      "name": "sameTickRangeNotAllowed",
-      "msg": "Cannot reset position range with same tick range"
-    },
-    {
-      "code": 6053,
-      "name": "invalidAdaptiveFeeConstants",
-      "msg": "Invalid adaptive fee constants"
-    },
-    {
-      "code": 6054,
-      "name": "invalidFeeTierIndex",
-      "msg": "Invalid fee tier index"
-    },
-    {
-      "code": 6055,
-      "name": "invalidTradeEnableTimestamp",
-      "msg": "Invalid trade enable timestamp"
-    },
-    {
-      "code": 6056,
-      "name": "tradeIsNotEnabled",
-      "msg": "Trade is not enabled yet"
-    },
-    {
-      "code": 6057,
-      "name": "rentCalculationError",
-      "msg": "Rent calculation error"
-    },
-    {
-      "code": 6058,
-      "name": "featureIsNotEnabled",
-      "msg": "Feature is not enabled"
-    },
-    {
-      "code": 6059,
+      "code": 6019,
       "name": "positionWithTokenExtensionsRequired",
       "msg": "This whirlpool only supports open_position_with_token_extensions instruction"
     },
     {
-      "code": 6060,
+      "code": 6020,
       "name": "slippageExceeded",
       "msg": "Amount out slippage exceeded"
     },
     {
-      "code": 6061,
+      "code": 6021,
       "name": "insufficientMakerBalance",
       "msg": "Insufficient token balance in funder's account"
     },
     {
-      "code": 6062,
+      "code": 6022,
       "name": "invalidAmount",
       "msg": "Amount must be greater than zero"
+    },
+    {
+      "code": 6023,
+      "name": "notEqualAmount",
+      "msg": "Amount must be 50%/50%"
+    },
+    {
+      "code": 6024,
+      "name": "invalidTokenMint",
+      "msg": "Invalid token mint - must be different from offered token"
     }
   ],
   "types": [
@@ -1067,7 +1358,7 @@ export type Lildex = {
           },
           {
             "name": "price",
-            "type": "u128"
+            "type": "u64"
           }
         ]
       }
@@ -1100,6 +1391,14 @@ export type Lildex = {
           {
             "name": "positionMint",
             "type": "pubkey"
+          },
+          {
+            "name": "tokenAAmount",
+            "type": "u64"
+          },
+          {
+            "name": "tokenBAmount",
+            "type": "u64"
           }
         ]
       }

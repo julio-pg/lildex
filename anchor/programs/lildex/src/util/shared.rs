@@ -6,7 +6,6 @@ use anchor_spl::token_interface::{
     transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
 };
 use solana_program::program_option::COption;
-use std::convert::TryFrom;
 
 use crate::errors::ErrorCode;
 
@@ -35,10 +34,6 @@ pub fn validate_owner(expected_owner: &Pubkey, owner_account_info: &AccountInfo)
     }
 
     Ok(())
-}
-
-pub fn to_timestamp_u64(t: i64) -> Result<u64> {
-    u64::try_from(t).or(Err(ErrorCode::InvalidTimestampConversion.into()))
 }
 
 // Transfer tokens from one account to another

@@ -1,8 +1,9 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
+use crate::errors::ErrorCode;
 use crate::state::*;
-use crate::util::{burn_and_close_user_position_token, verify_position_authority};
+use crate::util::*;
 
 #[derive(Accounts)]
 pub struct ClosePosition<'info> {
@@ -27,6 +28,43 @@ pub struct ClosePosition<'info> {
         constraint = position_token_account.mint == position.position_mint)]
     pub position_token_account: InterfaceAccount<'info, TokenAccount>,
 
+    #[account(mint::token_program = token_program)]
+    pub token_mint_a: InterfaceAccount<'info, Mint>,
+
+    #[account(mint::token_program = token_program)]
+    pub token_mint_b: InterfaceAccount<'info, Mint>,
+
+    #[account(
+      mut,
+      associated_token::mint = token_mint_a,
+      associated_token::authority = position.lilpool,
+      associated_token::token_program = token_program
+    )]
+    pub token_vault_a: InterfaceAccount<'info, TokenAccount>,
+
+    #[account(
+      mut,
+      associated_token::mint = token_mint_b,
+      associated_token::authority = position.lilpool,
+      associated_token::token_program = token_program
+    )]
+    pub token_vault_b: InterfaceAccount<'info, TokenAccount>,
+
+    #[account(
+        mut,
+        associated_token::mint = token_mint_a,
+        associated_token::authority = position_authority,
+        associated_token::token_program = token_program
+    )]
+    pub funder_token_account_a: InterfaceAccount<'info, TokenAccount>,
+    #[account(
+        mut,
+        associated_token::mint = token_mint_b,
+        associated_token::authority = position_authority,
+        associated_token::token_program = token_program
+    )]
+    pub funder_token_account_b: InterfaceAccount<'info, TokenAccount>,
+
     pub token_program: Interface<'info, TokenInterface>,
 }
 
@@ -35,6 +73,29 @@ pub fn handler(ctx: Context<ClosePosition>) -> Result<()> {
         &ctx.accounts.position_token_account,
         &ctx.accounts.position_authority,
     )?;
+
+    // Move the tokens from the maker's vault to the ATA
+    transfer_tokens(
+        &ctx.accounts.token_vault_a,
+        &ctx.accounts.funder_token_account_a,
+        &ctx.accounts.position.token_a_amount,
+        &ctx.accounts.token_mint_a,
+        &&ctx.accounts.position_authority.to_account_info(),
+        &ctx.accounts.token_program,
+        None,
+    )
+    .map_err(|_| ErrorCode::InsufficientMakerBalance)?;
+
+    transfer_tokens(
+        &ctx.accounts.token_vault_b,
+        &ctx.accounts.funder_token_account_b,
+        &ctx.accounts.position.token_b_amount,
+        &ctx.accounts.token_mint_b,
+        &ctx.accounts.position_authority.to_account_info(),
+        &ctx.accounts.token_program,
+        None,
+    )
+    .map_err(|_| ErrorCode::InsufficientMakerBalance)?;
 
     burn_and_close_user_position_token(
         &ctx.accounts.position_authority,

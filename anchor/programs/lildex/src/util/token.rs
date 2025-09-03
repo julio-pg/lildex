@@ -7,47 +7,6 @@ use spl_token::instruction::{burn_checked, close_account, mint_to, set_authority
 
 use crate::constants::nft::{WP_METADATA_NAME, WP_METADATA_SYMBOL, WP_METADATA_URI};
 
-// pub fn transfer_from_owner_to_vault<'info>(
-//     position_authority: &Signer<'info>,
-//     token_owner_account: &Account<'info, TokenAccount>,
-//     token_vault: &Account<'info, TokenAccount>,
-//     token_program: &Program<'info, Token>,
-//     amount: u64,
-// ) -> Result<()> {
-//     token_interface::transfer(
-//         CpiContext::new(
-//             token_program.to_account_info(),
-//             Transfer {
-//                 from: token_owner_account.to_account_info(),
-//                 to: token_vault.to_account_info(),
-//                 authority: position_authority.to_account_info(),
-//             },
-//         ),
-//         amount,
-//     )
-// }
-
-// pub fn transfer_from_vault_to_owner<'info>(
-//     whirlpool: &Account<'info, Lilpool>,
-//     token_vault: &Account<'info, TokenAccount>,
-//     token_owner_account: &Account<'info, TokenAccount>,
-//     token_program: &Program<'info, Token>,
-//     amount: u64,
-// ) -> Result<()> {
-//     token::transfer(
-//         CpiContext::new_with_signer(
-//             token_program.to_account_info(),
-//             Transfer {
-//                 from: token_vault.to_account_info(),
-//                 to: token_owner_account.to_account_info(),
-//                 authority: whirlpool.to_account_info(),
-//             },
-//             &[&whirlpool.seeds()],
-//         ),
-//         amount,
-//     )
-// }
-
 pub fn burn_and_close_user_position_token<'info>(
     token_authority: &Signer<'info>,
     receiver: &UncheckedAccount<'info>,

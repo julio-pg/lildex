@@ -36,15 +36,19 @@ pub mod lildex {
 
     pub fn initialize_pool(
         ctx: Context<InitializePool>,
-        initial_price: u128,
+        initial_price: u64,
         token_a_amount: u64,
         token_b_amount: u64,
     ) -> Result<()> {
         instructions::initialize_pool::handler(ctx, initial_price, token_a_amount, token_b_amount)
     }
 
-    pub fn open_position(ctx: Context<OpenPosition>) -> Result<()> {
-        instructions::open_position::handler(ctx)
+    pub fn open_position(
+        ctx: Context<OpenPosition>,
+        token_a_amount: u64,
+        token_b_amount: u64,
+    ) -> Result<()> {
+        instructions::open_position::handler(ctx, token_a_amount, token_b_amount)
     }
 
     pub fn close_position(ctx: Context<ClosePosition>) -> Result<()> {

@@ -72,22 +72,25 @@ pub struct InitializePool<'info> {
 
 pub fn handler(
     ctx: Context<InitializePool>,
-    initial_price: u128,
+    initial_price: u64,
     token_a_amount: u64,
     token_b_amount: u64,
 ) -> Result<()> {
-    // TODO:add error if the pool already exits
-    // TODO:add error if the amount isnt 50%/50%
     // Validate amounts
     require!(token_a_amount > 0, ErrorCode::InvalidAmount);
     require!(token_b_amount > 0, ErrorCode::InvalidAmount);
+    require!(
+        token_a_amount * initial_price == token_b_amount,
+        ErrorCode::NotEqualAmount
+    );
 
     // Validate token mints are different
     require!(
         ctx.accounts.token_mint_a.key() != ctx.accounts.token_mint_b.key(),
-        ErrorCode::InvalidTokenMintOrder,
+        ErrorCode::InvalidTokenMint,
     );
 
+    // TODO: this should open a position too
     // Move the tokens from the maker's ATA to the vault
     transfer_tokens(
         &ctx.accounts.funder_token_account_a,
@@ -122,5 +125,6 @@ pub fn handler(
         liquidity: MAX_PROTOCOL_LIQUIDITY,
         price: initial_price,
     });
+
     Ok(())
 }
