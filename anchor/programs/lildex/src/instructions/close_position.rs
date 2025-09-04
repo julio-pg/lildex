@@ -20,6 +20,7 @@ pub struct ClosePosition<'info> {
         bump,
     )]
     pub position: Box<Account<'info, Position>>,
+    pub lilpool: Box<Account<'info, Lilpool>>,
 
     #[account(mut, address = position.position_mint)]
     pub position_mint: InterfaceAccount<'info, Mint>,
@@ -84,7 +85,7 @@ pub fn handler(ctx: Context<ClosePosition>) -> Result<()> {
         &ctx.accounts.token_mint_a,
         &&ctx.accounts.position_authority.to_account_info(),
         &ctx.accounts.token_program,
-        None,
+        Some(&ctx.accounts.lilpool.seeds()),
     )
     .map_err(|_| ErrorCode::InsufficientMakerBalance)?;
 
@@ -95,7 +96,7 @@ pub fn handler(ctx: Context<ClosePosition>) -> Result<()> {
         &ctx.accounts.token_mint_b,
         &ctx.accounts.position_authority.to_account_info(),
         &ctx.accounts.token_program,
-        None,
+        Some(&ctx.accounts.lilpool.seeds()),
     )
     .map_err(|_| ErrorCode::InsufficientMakerBalance)?;
 
