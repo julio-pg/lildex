@@ -13,7 +13,8 @@
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "preview": "vite preview",
-    "setup": "npm run anchor keys sync && npm run codama:js"
+    "setup": "npm run anchor keys sync && npm run codama:js",
+    "anchor-test-skip": "cd anchor && anchor test --skip-local-validator --skip-deploy"
   },
   "description": "React+Vite, Tailwind, gill (based on @solana/kit), Anchor Lildex example, Wallet UI",
   "keywords": [
