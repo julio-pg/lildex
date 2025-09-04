@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
 use crate::errors::ErrorCode;
@@ -18,7 +19,7 @@ pub struct ClosePosition<'info> {
         seeds = [b"position", position_mint.key().as_ref()],
         bump,
     )]
-    pub position: Account<'info, Position>,
+    pub position: Box<Account<'info, Position>>,
 
     #[account(mut, address = position.position_mint)]
     pub position_mint: InterfaceAccount<'info, Mint>,
@@ -26,13 +27,13 @@ pub struct ClosePosition<'info> {
     #[account(mut,
         constraint = position_token_account.amount == 1,
         constraint = position_token_account.mint == position.position_mint)]
-    pub position_token_account: InterfaceAccount<'info, TokenAccount>,
+    pub position_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(mint::token_program = token_program)]
-    pub token_mint_a: InterfaceAccount<'info, Mint>,
+    pub token_mint_a: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(mint::token_program = token_program)]
-    pub token_mint_b: InterfaceAccount<'info, Mint>,
+    pub token_mint_b: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(
       mut,
@@ -40,7 +41,7 @@ pub struct ClosePosition<'info> {
       associated_token::authority = position.lilpool,
       associated_token::token_program = token_program
     )]
-    pub token_vault_a: InterfaceAccount<'info, TokenAccount>,
+    pub token_vault_a: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
       mut,
@@ -48,7 +49,7 @@ pub struct ClosePosition<'info> {
       associated_token::authority = position.lilpool,
       associated_token::token_program = token_program
     )]
-    pub token_vault_b: InterfaceAccount<'info, TokenAccount>,
+    pub token_vault_b: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         mut,
@@ -56,16 +57,17 @@ pub struct ClosePosition<'info> {
         associated_token::authority = position_authority,
         associated_token::token_program = token_program
     )]
-    pub funder_token_account_a: InterfaceAccount<'info, TokenAccount>,
+    pub funder_token_account_a: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         mut,
         associated_token::mint = token_mint_b,
         associated_token::authority = position_authority,
         associated_token::token_program = token_program
     )]
-    pub funder_token_account_b: InterfaceAccount<'info, TokenAccount>,
+    pub funder_token_account_b: Box<InterfaceAccount<'info, TokenAccount>>,
 
     pub token_program: Interface<'info, TokenInterface>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
 pub fn handler(ctx: Context<ClosePosition>) -> Result<()> {

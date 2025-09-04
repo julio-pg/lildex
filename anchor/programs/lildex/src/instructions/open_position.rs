@@ -22,7 +22,7 @@ pub struct OpenPosition<'info> {
       seeds = [b"position", position_mint.key().as_ref()],
       bump,
     )]
-    pub position: Account<'info, Position>,
+    pub position: Box<Account<'info, Position>>,
 
     #[account(
       init,
@@ -38,14 +38,14 @@ pub struct OpenPosition<'info> {
       associated_token::mint = position_mint,
       associated_token::authority = owner,
     )]
-    pub position_token_account: InterfaceAccount<'info, TokenAccount>,
+    pub position_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
 
-    pub lilpool: Account<'info, Lilpool>,
+    pub lilpool: Box<Account<'info, Lilpool>>,
     #[account(mint::token_program = token_program)]
-    pub token_mint_a: InterfaceAccount<'info, Mint>,
+    pub token_mint_a: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(mint::token_program = token_program)]
-    pub token_mint_b: InterfaceAccount<'info, Mint>,
+    pub token_mint_b: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(
       mut,
@@ -53,7 +53,7 @@ pub struct OpenPosition<'info> {
       associated_token::authority = lilpool,
       associated_token::token_program = token_program
     )]
-    pub token_vault_a: InterfaceAccount<'info, TokenAccount>,
+    pub token_vault_a: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
       mut,
@@ -61,7 +61,7 @@ pub struct OpenPosition<'info> {
       associated_token::authority = lilpool,
       associated_token::token_program = token_program
     )]
-    pub token_vault_b: InterfaceAccount<'info, TokenAccount>,
+    pub token_vault_b: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         mut,
@@ -69,14 +69,14 @@ pub struct OpenPosition<'info> {
         associated_token::authority = funder,
         associated_token::token_program = token_program
     )]
-    pub funder_token_account_a: InterfaceAccount<'info, TokenAccount>,
+    pub funder_token_account_a: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         mut,
         associated_token::mint = token_mint_b,
         associated_token::authority = funder,
         associated_token::token_program = token_program
     )]
-    pub funder_token_account_b: InterfaceAccount<'info, TokenAccount>,
+    pub funder_token_account_b: Box<InterfaceAccount<'info, TokenAccount>>,
 
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
@@ -87,15 +87,6 @@ pub struct OpenPosition<'info> {
   Opens a new lilpool Position.
 */
 pub fn handler(ctx: Context<OpenPosition>, token_a_amount: u64, token_b_amount: u64) -> Result<()> {
-    let position_mint = &ctx.accounts.position_mint;
-    let lilpool = &ctx.accounts.lilpool;
-
-    // 🔎 Check immediately after init
-    msg!(
-        "Mint authority (on-chain): {:?}",
-        position_mint.mint_authority
-    );
-    msg!("Expected lilpool key:{:?}", lilpool.key());
     // Move the tokens from the maker's ATA to the vault
     transfer_tokens(
         &ctx.accounts.funder_token_account_a,

@@ -1,11 +1,12 @@
+use crate::constants::nft::{WP_METADATA_NAME, WP_METADATA_SYMBOL, WP_METADATA_URI};
 use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_spl::metadata::{self, mpl_token_metadata::types::DataV2, CreateMetadataAccountsV3};
+use anchor_spl::token_2022::spl_token_2022::instruction::{
+    burn_checked, close_account, mint_to, set_authority, AuthorityType,
+};
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 use solana_program::program::invoke_signed;
-use spl_token::instruction::{burn_checked, close_account, mint_to, set_authority, AuthorityType};
-
-use crate::constants::nft::{WP_METADATA_NAME, WP_METADATA_SYMBOL, WP_METADATA_URI};
 
 pub fn burn_and_close_user_position_token<'info>(
     token_authority: &Signer<'info>,

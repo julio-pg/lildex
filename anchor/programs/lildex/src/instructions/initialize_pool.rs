@@ -9,7 +9,7 @@ use anchor_spl::{
 
 #[derive(Accounts)]
 pub struct InitializePool<'info> {
-    pub lilpools_config: Account<'info, LilpoolsConfig>,
+    pub lilpools_config: Box<Account<'info, LilpoolsConfig>>,
 
     #[account(mint::token_program = token_program)]
     pub token_mint_a: InterfaceAccount<'info, Mint>,
@@ -31,7 +31,7 @@ pub struct InitializePool<'info> {
       space = Lilpool::DISCRIMINATOR.len() + Lilpool::INIT_SPACE,
       bump,
     )]
-    pub lilpool: Account<'info, Lilpool>,
+    pub lilpool: Box<Account<'info, Lilpool>>,
     #[account(
       init,
       payer = funder,
@@ -39,7 +39,7 @@ pub struct InitializePool<'info> {
       associated_token::authority = lilpool,
       associated_token::token_program = token_program
     )]
-    pub token_vault_a: InterfaceAccount<'info, TokenAccount>,
+    pub token_vault_a: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
       init,
@@ -48,7 +48,7 @@ pub struct InitializePool<'info> {
       associated_token::authority = lilpool,
       associated_token::token_program = token_program
     )]
-    pub token_vault_b: InterfaceAccount<'info, TokenAccount>,
+    pub token_vault_b: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         mut,
@@ -56,7 +56,7 @@ pub struct InitializePool<'info> {
         associated_token::authority = funder,
         associated_token::token_program = token_program
     )]
-    pub funder_token_account_a: InterfaceAccount<'info, TokenAccount>,
+    pub funder_token_account_a: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         mut,
         associated_token::mint = token_mint_b,
