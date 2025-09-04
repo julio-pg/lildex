@@ -5,11 +5,18 @@ import { AppModal } from '../app-modal'
 import { useState } from 'react'
 import SwapInput from '../ui/swap-input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
+import { useOpenPositionMutation } from '../portfolio/portfolio-data-access'
+import { Address } from 'gill'
+import { DialogClose } from '../ui/dialog'
 
 export default function Pools() {
   const { data: pools } = usePoolAccountsQuery()
   const [tokenAAmount, setTokenAAmount] = useState('')
   const [tokenBAmount, setTokenBAmount] = useState('')
+  const mutation = (tokenMintA: Address, tokenMintB: Address, tokenAAmount: string, tokenBAmount: string) =>
+    useOpenPositionMutation({ tokenMintA, tokenMintB, tokenAAmount, tokenBAmount })
+      .mutateAsync()
+      .catch((err) => console.log(err))
   return (
     <div className="relative overflow-x-auto rounded-md">
       <Table>
@@ -34,7 +41,19 @@ export default function Pools() {
                 <AppModal title="Open">
                   <SwapInput tokenAddress={data.tokenMintA} tokenAmount={tokenAAmount} setAmount={setTokenAAmount} />
                   <SwapInput tokenAddress={data.tokenMintB} tokenAmount={tokenBAmount} setAmount={setTokenBAmount} />
-                  <Button variant={'secondary'}>Deposit</Button>
+                  <DialogClose
+                    onClick={() => {
+                      setTokenAAmount('')
+                      setTokenBAmount('')
+                    }}
+                  >
+                    <Button
+                      variant={'secondary'}
+                      onClick={() => mutation(data.tokenMintA, data.tokenMintB, tokenAAmount, tokenBAmount)}
+                    >
+                      Deposit
+                    </Button>
+                  </DialogClose>
                 </AppModal>
               </TableCell>
             </TableRow>

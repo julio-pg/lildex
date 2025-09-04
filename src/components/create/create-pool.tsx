@@ -31,11 +31,6 @@ export default function CreatePool() {
   const tokenA = '9DYjjGwGXNmGcAE5RxJU4m7pTft6ZAjrjYE9g9VQc4zN'
   // const tokenB = searchParams.get('tokenB') ?? solanaTokenAddress
   const tokenB = '7jDq66vH7v28xQo6TNGsmaBBrsfqLC1HEXrix3a9pFzc'
-  const wallletAddress = address(account?.address!) || solanaTokenAddress
-
-  // get token balances
-  const tokenBalanceA = getTokenBalance(wallletAddress, address(tokenA!))
-  const tokenBalanceB = getTokenBalance(wallletAddress, address(tokenB!))
 
   const mutation = useInitializePoolMutation({
     tokenMintA: address(tokenA),
