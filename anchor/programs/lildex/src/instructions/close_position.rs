@@ -15,7 +15,7 @@ pub struct ClosePosition<'info> {
 
     #[account(mut,
         close = receiver,
-        seeds = [b"position".as_ref(), position_mint.key().as_ref()],
+        seeds = [b"position", position_mint.key().as_ref()],
         bump,
     )]
     pub position: Account<'info, Position>,

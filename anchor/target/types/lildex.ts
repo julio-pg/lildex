@@ -1359,6 +1359,15 @@ export type Lildex = {
           {
             "name": "price",
             "type": "u64"
+          },
+          {
+            "name": "lilpoolBump",
+            "type": {
+              "array": [
+                "u8",
+                1
+              ]
+            }
           }
         ]
       }

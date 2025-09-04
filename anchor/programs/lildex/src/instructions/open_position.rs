@@ -15,10 +15,11 @@ pub struct OpenPosition<'info> {
     /// CHECK: safe, the account that will be the owner of the position can be arbitrary
     pub owner: UncheckedAccount<'info>,
 
-    #[account(init,
+    #[account(
+      init,
       payer = funder,
-      space = Position::INIT_SPACE,
-      seeds = [b"position".as_ref(), position_mint.key().as_ref()],
+      space = Lilpool::DISCRIMINATOR.len() + Position::INIT_SPACE,
+      seeds = [b"position", position_mint.key().as_ref()],
       bump,
     )]
     pub position: Account<'info, Position>,
@@ -28,7 +29,6 @@ pub struct OpenPosition<'info> {
       payer=funder,
       mint::decimals = 0,
       mint::authority= lilpool,
-      mint::token_program = token_program,
     )]
     pub position_mint: InterfaceAccount<'info, Mint>,
 
@@ -87,6 +87,15 @@ pub struct OpenPosition<'info> {
   Opens a new lilpool Position.
 */
 pub fn handler(ctx: Context<OpenPosition>, token_a_amount: u64, token_b_amount: u64) -> Result<()> {
+    let position_mint = &ctx.accounts.position_mint;
+    let lilpool = &ctx.accounts.lilpool;
+
+    // 🔎 Check immediately after init
+    msg!(
+        "Mint authority (on-chain): {:?}",
+        position_mint.mint_authority
+    );
+    msg!("Expected lilpool key:{:?}", lilpool.key());
     // Move the tokens from the maker's ATA to the vault
     transfer_tokens(
         &ctx.accounts.funder_token_account_a,
@@ -113,9 +122,10 @@ pub fn handler(ctx: Context<OpenPosition>, token_a_amount: u64, token_b_amount: 
     ctx.accounts.position.set_inner(Position {
         lilpool: ctx.accounts.lilpool.key(),
         position_mint: ctx.accounts.position_mint.key(),
-        token_a_amount,
-        token_b_amount,
+        token_a_amount: token_a_amount,
+        token_b_amount: token_b_amount,
     });
+
     mint_position_token_and_remove_authority(
         &ctx.accounts.lilpool,
         &ctx.accounts.position_mint,

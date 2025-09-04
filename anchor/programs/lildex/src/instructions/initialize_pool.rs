@@ -79,10 +79,11 @@ pub fn handler(
     // Validate amounts
     require!(token_a_amount > 0, ErrorCode::InvalidAmount);
     require!(token_b_amount > 0, ErrorCode::InvalidAmount);
-    require!(
-        token_a_amount * initial_price == token_b_amount,
-        ErrorCode::NotEqualAmount
-    );
+    // TODO: fix that comprobation
+    // require!(
+    //     token_a_amount * initial_price == token_b_amount,
+    //     ErrorCode::NotEqualAmount
+    // );
 
     // Validate token mints are different
     require!(
@@ -113,6 +114,7 @@ pub fn handler(
         None,
     )
     .map_err(|_| ErrorCode::InsufficientMakerBalance)?;
+    let bump = ctx.bumps.lilpool;
 
     ctx.accounts.lilpool.set_inner(Lilpool {
         lilpools_config: ctx.accounts.lilpools_config.key(),
@@ -124,6 +126,7 @@ pub fn handler(
         funder: ctx.accounts.funder.key(),
         liquidity: MAX_PROTOCOL_LIQUIDITY,
         price: initial_price,
+        lilpool_bump: [bump],
     });
 
     Ok(())

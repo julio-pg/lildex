@@ -21,15 +21,17 @@ pub struct Lilpool {
     pub liquidity: u128, // 16
     // Current price of token B in terms of token A,
     pub price: u64,
+    pub lilpool_bump: [u8; 1], // 1
 }
 
 impl Lilpool {
-    pub fn seeds(&self) -> [&[u8]; 4] {
+    pub fn seeds(&self) -> [&[u8]; 5] {
         [
             &b"lilpool"[..],
             self.lilpools_config.as_ref(),
             self.token_mint_a.as_ref(),
             self.token_mint_b.as_ref(),
+            self.lilpool_bump.as_ref(),
         ]
     }
 }
