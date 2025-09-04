@@ -1,5 +1,10 @@
-import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS, TOKEN_PROGRAM_ADDRESS } from 'gill/programs/token'
-import { getTransferSolInstruction } from 'gill/programs'
+import {
+  fetchMint,
+  findAssociatedTokenPda,
+  TOKEN_2022_PROGRAM_ADDRESS,
+  TOKEN_PROGRAM_ADDRESS,
+} from 'gill/programs/token'
+import { fetchMetadata, getTokenMetadataAddress, getTransferSolInstruction } from 'gill/programs'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useWalletUi } from '@wallet-ui/react'
 import {
@@ -60,6 +65,16 @@ export function useGetTokenAccountAddressQuery({ wallet, mint }: { wallet: Addre
       })
         .then(([address]) => address)
         .catch((e) => console.log(e))
+    },
+  })
+}
+export function useGetTokenInfoQuery({ tokenAddress }: { tokenAddress: Address }) {
+  const { cluster, client } = useWalletUi()
+  return useQuery({
+    queryKey: ['get-token-info', { cluster, tokenAddress }],
+    queryFn: async () => {
+      const { data: metadata } = await fetchMetadata(client.rpc, tokenAddress)
+      return metadata
     },
   })
 }

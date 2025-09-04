@@ -33,12 +33,10 @@ export function useInitializePoolMutation({
   const funderTokenAccountA = useGetTokenAccountAddressQuery({
     wallet: signer.address,
     mint: tokenMintA,
-    useTokenExtensions: true,
   })
   const funderTokenAccountB = useGetTokenAccountAddressQuery({
     wallet: signer.address,
     mint: tokenMintB,
-    useTokenExtensions: true,
   })
 
   const tokenABigIntAmount = getTokenBigInt(Number(tokenAAmount), 9)
@@ -70,7 +68,7 @@ export function useInitializePoolMutation({
         mint: tokenMintB,
         useTokenExtensions: true,
       })
-      const txSig = await signAndSend(
+      return await signAndSend(
         getInitializePoolInstruction({
           lilpoolsConfig: configPda,
           tokenMintA: tokenMintA,
@@ -88,8 +86,6 @@ export function useInitializePoolMutation({
         }),
         signer,
       )
-      console.log(txSig)
-      return txSig
     },
     onSuccess: async (tx) => {
       toastTx(tx)

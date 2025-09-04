@@ -3,11 +3,15 @@ import { useWalletUi } from '@wallet-ui/react'
 import { address, Address } from 'gill'
 import { Wallet } from 'lucide-react'
 import { Dispatch, SetStateAction } from 'react'
+import { useGetTokenInfoQuery } from '../account/account-data-access'
 
 type Props = { tokenAddress: Address; tokenAmount: string; setAmount: Dispatch<SetStateAction<string>>; title?: string }
 export default function SwapInput({ tokenAddress, tokenAmount, setAmount, title }: Props) {
   const { account } = useWalletUi()
   const wallletAddress = address(account?.address!) || solanaTokenAddress
+  const { data: tokenInfo } = useGetTokenInfoQuery({
+    tokenAddress: tokenAddress,
+  })
 
   const tokenBalance = getTokenBalance(wallletAddress, tokenAddress)
   return (
@@ -33,7 +37,7 @@ export default function SwapInput({ tokenAddress, tokenAmount, setAmount, title 
       <div className="space-y-2 flex flex-col items-end">
         {title && <span>Max</span>}
         <div className="flex px-2 py-1 gap-x-1.5 text-xl font-regular text-primary items-center">
-          <img /> <span className="text-xl">SOL</span>
+          <img /> <span className="text-xl">{tokenInfo?.data.symbol || 'N/A'}</span>
         </div>
         <div className="flex items-center gap-x-1.5">
           <span className="flex text-sm gap-x-1 items-center">
