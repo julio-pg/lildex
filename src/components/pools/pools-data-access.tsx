@@ -1,8 +1,30 @@
 import { getProgramAccountsDecoded } from '@/lib/accounts'
-import { getLilpoolDecoder, LILDEX_PROGRAM_ADDRESS, Lilpool, LILPOOL_DISCRIMINATOR } from '@project/anchor'
-import { useQuery } from '@tanstack/react-query'
+import {
+  getLilpoolDecoder,
+  getOpenPositionInstruction,
+  LILDEX_PROGRAM_ADDRESS,
+  Lilpool,
+  LILPOOL_DISCRIMINATOR,
+} from '@project/anchor'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useWalletUi } from '@wallet-ui/react'
-import { Account, getBase58Decoder } from 'gill'
+import {
+  Account,
+  Address,
+  address,
+  generateKeyPairSigner,
+  getAddressEncoder,
+  getBase58Decoder,
+  getProgramDerivedAddress,
+  getUtf8Encoder,
+} from 'gill'
+import { TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
+import { toastTx } from '../toast-tx'
+import { toast } from 'sonner'
+import { numberToBigintPrice, useGetTokenAccountAddress } from '@/lib/utils'
+import { useWalletUiSigner } from '@/components/solana/use-wallet-ui-signer'
+import { useWalletTransactionSignAndSend } from '../solana/use-wallet-transaction-sign-and-send'
+import { useLildexProgramId } from '../lildex/lildex-data-access'
 
 export type PoolAccount = Account<Lilpool, string>
 export function usePoolAccountsQuery() {
@@ -17,5 +39,101 @@ export function usePoolAccountsQuery() {
         filter: getBase58Decoder().decode(LILPOOL_DISCRIMINATOR),
         programAddress: LILDEX_PROGRAM_ADDRESS,
       }) as Promise<PoolAccount[]>,
+  })
+}
+
+export function useOpenPositionMutation({
+  tokenMintA,
+  tokenMintB,
+  tokenAAmount,
+  tokenBAmount,
+}: {
+  tokenMintA: Address
+  tokenMintB: Address
+  tokenAAmount: string
+  tokenBAmount: string
+}) {
+  const signer = useWalletUiSigner()
+  const signAndSend = useWalletTransactionSignAndSend()
+  const programId = useLildexProgramId()
+  const addressEncoder = getAddressEncoder()
+  const textEncoder = getUtf8Encoder()
+  const testWallet = address(import.meta.env.VITE_TEST_WALLET!)
+  const tokenABigIntAmount = numberToBigintPrice(Number(tokenAAmount), 9n)
+  const tokenBBigIntAmount = numberToBigintPrice(Number(tokenBAmount), 9n)
+
+  return useMutation({
+    retry: false,
+    mutationFn: async () => {
+      const postionTokenMint = await generateKeyPairSigner()
+      const postionTokenAccount = await useGetTokenAccountAddress({
+        wallet: signer.address,
+        mint: postionTokenMint.address,
+        useTokenExtensions: true,
+      })
+      const [positionAddress] = await getProgramDerivedAddress({
+        programAddress: programId,
+        seeds: [textEncoder.encode('position'), addressEncoder.encode(postionTokenMint.address)],
+      })
+      const [configPda] = await getProgramDerivedAddress({
+        programAddress: programId,
+        seeds: [textEncoder.encode('config'), addressEncoder.encode(testWallet)],
+      })
+      const [lilpoolAddress] = await getProgramDerivedAddress({
+        programAddress: programId,
+        seeds: [
+          textEncoder.encode('lilpool'),
+          addressEncoder.encode(configPda),
+          addressEncoder.encode(tokenMintA),
+          addressEncoder.encode(tokenMintB),
+        ],
+      })
+      const tokenVaultA = await useGetTokenAccountAddress({
+        wallet: lilpoolAddress,
+        mint: tokenMintA,
+        useTokenExtensions: true,
+      })
+      const tokenVaultB = await useGetTokenAccountAddress({
+        wallet: lilpoolAddress,
+        mint: tokenMintB,
+        useTokenExtensions: true,
+      })
+      const funderTokenAccountA = await useGetTokenAccountAddress({
+        wallet: signer.address,
+        mint: tokenMintA,
+        useTokenExtensions: true,
+      })
+      const funderTokenAccountB = await useGetTokenAccountAddress({
+        wallet: signer.address,
+        mint: tokenMintB,
+        useTokenExtensions: true,
+      })
+      return signAndSend(
+        getOpenPositionInstruction({
+          funder: signer,
+          owner: signer.address,
+          tokenMintA: tokenMintA,
+          tokenMintB: tokenMintB,
+          positionMint: postionTokenMint,
+          positionTokenAccount: postionTokenAccount,
+          position: positionAddress,
+          lilpool: lilpoolAddress,
+          tokenVaultA: tokenVaultA,
+          tokenVaultB: tokenVaultB,
+          funderTokenAccountA: funderTokenAccountA,
+          funderTokenAccountB: funderTokenAccountB,
+          tokenAAmount: tokenABigIntAmount,
+          tokenBAmount: tokenBBigIntAmount,
+          tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
+        }),
+        signer,
+      )
+    },
+    onSuccess: async (tx) => {
+      toastTx(tx, 'Postion Open with success')
+    },
+    onError: (e) => {
+      toast.error(e.message)
+    },
   })
 }

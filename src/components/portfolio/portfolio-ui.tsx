@@ -2,8 +2,20 @@ import { data } from 'react-router'
 import { Button } from '../ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { usePositionAccountsQuery } from './portfolio-data-access'
+import { useWalletUi } from '@wallet-ui/react'
+import { WalletButton } from '../solana/solana-provider'
 
 export default function Portfolio() {
+  const { account } = useWalletUi()
+  if (!account) {
+    return (
+      <div className="hero py-[64px]">
+        <div className="hero-content text-center">
+          <WalletButton />
+        </div>
+      </div>
+    )
+  }
   const { data: postions } = usePositionAccountsQuery()
   return (
     <div className="relative overflow-x-auto rounded-md">

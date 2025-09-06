@@ -1,22 +1,40 @@
-import { ellipsify } from '@/lib/utils'
-import { usePoolAccountsQuery } from './pools-data-access'
-import { Button } from '../ui/button'
+import { bigintPriceToNumber, cn, ellipsify } from '@/lib/utils'
+import { useOpenPositionMutation, usePoolAccountsQuery } from './pools-data-access'
+import { buttonVariants } from '../ui/button'
 import { AppModal } from '../app-modal'
-import { useState } from 'react'
 import SwapInput from '../ui/swap-input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
-import { useOpenPositionMutation } from '../portfolio/portfolio-data-access'
-import { Address } from 'gill'
 import { DialogClose } from '../ui/dialog'
+import { useWalletUi } from '@wallet-ui/react'
+import { WalletButton } from '../solana/solana-provider'
+import { useAtom } from 'jotai'
+import { selectedPoolAtom, tokenAAmountAtom, tokenBAmountAtom } from '@/context/lilpool-context'
+import { Dispatch, SetStateAction } from 'react'
 
 export default function Pools() {
+  const { account } = useWalletUi()
+  if (!account) {
+    return (
+      <div className="hero py-[64px]">
+        <div className="hero-content text-center">
+          <WalletButton />
+        </div>
+      </div>
+    )
+  }
   const { data: pools } = usePoolAccountsQuery()
-  const [tokenAAmount, setTokenAAmount] = useState('')
-  const [tokenBAmount, setTokenBAmount] = useState('')
-  const mutation = (tokenMintA: Address, tokenMintB: Address, tokenAAmount: string, tokenBAmount: string) =>
-    useOpenPositionMutation({ tokenMintA, tokenMintB, tokenAAmount, tokenBAmount })
-      .mutateAsync()
-      .catch((err) => console.log(err))
+
+  const [tokenAAmount, setTokenAAmount] = useAtom(tokenAAmountAtom)
+  const [tokenBAmount, setTokenBAmount] = useAtom(tokenBAmountAtom)
+  const [selectedPool, SetSelectedPool] = useAtom(selectedPoolAtom)
+
+  const mutation = useOpenPositionMutation({
+    tokenMintA: selectedPool?.tokenMintA!,
+    tokenMintB: selectedPool?.tokenMintB!,
+    tokenAAmount,
+    tokenBAmount,
+  })
+
   return (
     <div className="relative overflow-x-auto rounded-md">
       <Table>
@@ -34,25 +52,27 @@ export default function Pools() {
               <TableHead scope="row" className=" font-medium text-gray-900 whitespace-nowrap dark:text-white text-xl">
                 {`${ellipsify(data.tokenMintA)} / ${ellipsify(data.tokenMintB)}`}
               </TableHead>
-              <TableCell>${BigInt(data?.price || 0) / BigInt(10) ** BigInt(9)}</TableCell>
+              <TableCell>${BigInt(bigintPriceToNumber(data?.price!, 9n) || 0)}</TableCell>
               <TableCell>{data.liquidity}</TableCell>
               <TableCell>{data.protocolFeeRate / 100}%</TableCell>
-              <TableCell>
+              <TableCell onClick={() => SetSelectedPool(data)}>
                 <AppModal title="Open">
                   <SwapInput tokenAddress={data.tokenMintA} tokenAmount={tokenAAmount} setAmount={setTokenAAmount} />
-                  <SwapInput tokenAddress={data.tokenMintB} tokenAmount={tokenBAmount} setAmount={setTokenBAmount} />
+                  <SwapInput
+                    tokenAddress={data.tokenMintB}
+                    tokenAmount={tokenBAmount}
+                    setAmount={setTokenBAmount as Dispatch<SetStateAction<string>>}
+                  />
                   <DialogClose
                     onClick={() => {
+                      mutation.mutateAsync().catch((err: any) => console.log(err))
                       setTokenAAmount('')
                       setTokenBAmount('')
+                      SetSelectedPool(undefined)
                     }}
+                    className={cn(buttonVariants())}
                   >
-                    <Button
-                      variant={'secondary'}
-                      onClick={() => mutation(data.tokenMintA, data.tokenMintB, tokenAAmount, tokenBAmount)}
-                    >
-                      Deposit
-                    </Button>
+                    Deposit
                   </DialogClose>
                 </AppModal>
               </TableCell>

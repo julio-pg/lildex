@@ -20,7 +20,7 @@ describe('lildex', () => {
   let configAddress: Address
   // Both tokens have 9 decimals, so we can use this to convert between major and minor units
   const TOKEN = 10n ** BigInt(tokenDecimals)
-  // const userInitialTokenAmount = 10n * TOKEN
+  const userInitialTokenAmount = 10n * TOKEN
   const tokenAOfferedAmount = 1n * TOKEN
   const tokenBWantedAmount = 1n * TOKEN
   const initialPrice = 3n * TOKEN
@@ -52,8 +52,8 @@ describe('lildex', () => {
     //     keyTwo: 'valueTwo',
     //   },
     // })
-    tokenMintA = address('7i3udnbUzToPwHbVZ4bkc4wbZnXhk5rLVFqQqKsD7WLn')
-    tokenMintB = address('GV5HY3dyP2p7eEFfLhas5x2z7a5y8mViBbvMvauRmHY6')
+    tokenMintA = address('BJiAFuRZcLFRo83AycJQP8ZtmJFBz2PfAGhBpSZE21Tu')
+    tokenMintB = address('FLZ5izQ6jKyf1XE8huG8SrJaoUbucL4Ra59k49EvQcrE')
     // Mint tokens to the user
     // await connection.mintTokens(tokenMintA, payer, userInitialTokenAmount, payer.address)
     // await connection.mintTokens(tokenMintB, payer, userInitialTokenAmount, payer.address)

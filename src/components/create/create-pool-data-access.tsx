@@ -8,7 +8,7 @@ import { toast } from 'sonner'
 import { useLildexProgramId } from '../lildex/lildex-data-access'
 import { useGetTokenAccountAddressQuery } from '../account/account-data-access'
 import { TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
-import { getTokenBigInt, useGetTokenAccountAddress } from '@/lib/utils'
+import { numberToBigintPrice, useGetTokenAccountAddress } from '@/lib/utils'
 
 export function useInitializePoolMutation({
   tokenMintA,
@@ -39,9 +39,9 @@ export function useInitializePoolMutation({
     mint: tokenMintB,
   })
 
-  const tokenABigIntAmount = getTokenBigInt(Number(tokenAAmount), 9)
-  const tokenBBigIntAmount = getTokenBigInt(Number(tokenBAmount), 9)
-  const initialPriceBigIntAmount = getTokenBigInt(Number(initialPrice), 9)
+  const tokenABigIntAmount = numberToBigintPrice(Number(tokenAAmount), 9n)
+  const tokenBBigIntAmount = numberToBigintPrice(Number(tokenBAmount), 9n)
+  const initialPriceBigIntAmount = numberToBigintPrice(Number(initialPrice), 9n)
   return useMutation({
     mutationFn: async () => {
       const [configPda] = await getProgramDerivedAddress({

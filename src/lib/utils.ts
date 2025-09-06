@@ -9,10 +9,6 @@ import { twMerge } from 'tailwind-merge'
 import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS, TOKEN_PROGRAM_ADDRESS } from 'gill/programs/token'
 
 export const solanaTokenAddress = address('So11111111111111111111111111111111111111112')
-export function getTokenBigInt(amount: number, tokenDecimals: number) {
-  const token = BigInt(amount) ** BigInt(tokenDecimals)
-  return token
-}
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -59,3 +55,14 @@ export async function useGetTokenAccountAddress({
   }).then(([address]) => address ?? '')
   return address
 }
+
+export function bigintPriceToNumber(price: bigint, decimals: bigint): number {
+  const scale = 10n ** decimals
+  return Number(price) / Number(scale)
+}
+export function numberToBigintPrice(value: number, decimals: bigint): bigint {
+  const scale = 10n ** decimals
+  return BigInt(Math.round(value * Number(scale)))
+}
+
+// export const decimalFormatter = new Big(255.5)
