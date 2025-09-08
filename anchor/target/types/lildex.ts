@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/lildex.json`.
  */
 export type Lildex = {
-  "address": "3axbTs2z5GBy6usVbNVoqEgZMng3vZvMnAoX29BFfwhr",
+  "address": "6TnPz5JHzrJdj9oBFcs87zW2ewg4C5gWDPDkBzMXTfLD",
   "metadata": {
     "name": "lildex",
     "version": "0.1.0",
@@ -1102,11 +1102,7 @@ export type Lildex = {
       ],
       "accounts": [
         {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "tokenAuthority",
+          "name": "receiver",
           "signer": true
         },
         {
@@ -1114,7 +1110,11 @@ export type Lildex = {
           "writable": true
         },
         {
-          "name": "tokenOwnerAccountA",
+          "name": "tokenReceiverAccountA",
+          "writable": true
+        },
+        {
+          "name": "tokenReceiverAccountB",
           "writable": true
         },
         {
@@ -1122,12 +1122,25 @@ export type Lildex = {
           "writable": true
         },
         {
-          "name": "tokenOwnerAccountB",
+          "name": "tokenVaultB",
           "writable": true
         },
         {
-          "name": "tokenVaultB",
-          "writable": true
+          "name": "tokenMintA"
+        },
+        {
+          "name": "tokenMintB"
+        },
+        {
+          "name": "tokenProgram"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "associatedTokenProgram",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         }
       ],
       "args": [
@@ -1136,8 +1149,12 @@ export type Lildex = {
           "type": "u64"
         },
         {
-          "name": "minAmountOut",
+          "name": "amountOut",
           "type": "u64"
+        },
+        {
+          "name": "aToB",
+          "type": "bool"
         }
       ]
     }
@@ -1433,23 +1450,15 @@ export type Lildex = {
             "type": "pubkey"
           },
           {
-            "name": "aToB",
-            "type": "bool"
+            "name": "receiver",
+            "type": "pubkey"
           },
           {
-            "name": "inputAmount",
+            "name": "amountIn",
             "type": "u64"
           },
           {
-            "name": "outputAmount",
-            "type": "u64"
-          },
-          {
-            "name": "inputTransferFee",
-            "type": "u64"
-          },
-          {
-            "name": "outputTransferFee",
+            "name": "amountOut",
             "type": "u64"
           }
         ]

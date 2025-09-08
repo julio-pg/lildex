@@ -1096,11 +1096,7 @@
       ],
       "accounts": [
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "token_authority",
+          "name": "receiver",
           "signer": true
         },
         {
@@ -1108,7 +1104,11 @@
           "writable": true
         },
         {
-          "name": "token_owner_account_a",
+          "name": "token_receiver_account_a",
+          "writable": true
+        },
+        {
+          "name": "token_receiver_account_b",
           "writable": true
         },
         {
@@ -1116,12 +1116,25 @@
           "writable": true
         },
         {
-          "name": "token_owner_account_b",
+          "name": "token_vault_b",
           "writable": true
         },
         {
-          "name": "token_vault_b",
-          "writable": true
+          "name": "token_mint_a"
+        },
+        {
+          "name": "token_mint_b"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         }
       ],
       "args": [
@@ -1130,8 +1143,12 @@
           "type": "u64"
         },
         {
-          "name": "min_amount_out",
+          "name": "amount_out",
           "type": "u64"
+        },
+        {
+          "name": "a_to_b",
+          "type": "bool"
         }
       ]
     }
@@ -1427,23 +1444,15 @@
             "type": "pubkey"
           },
           {
-            "name": "a_to_b",
-            "type": "bool"
+            "name": "receiver",
+            "type": "pubkey"
           },
           {
-            "name": "input_amount",
+            "name": "amount_in",
             "type": "u64"
           },
           {
-            "name": "output_amount",
-            "type": "u64"
-          },
-          {
-            "name": "input_transfer_fee",
-            "type": "u64"
-          },
-          {
-            "name": "output_transfer_fee",
+            "name": "amount_out",
             "type": "u64"
           }
         ]
