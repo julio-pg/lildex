@@ -1405,6 +1405,10 @@ export type Lildex = {
             "type": "pubkey"
           },
           {
+            "name": "funder",
+            "type": "pubkey"
+          },
+          {
             "name": "positionMint",
             "type": "pubkey"
           },

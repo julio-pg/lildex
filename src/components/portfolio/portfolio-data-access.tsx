@@ -9,15 +9,7 @@ import {
 } from '@project/anchor'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useWalletUi } from '@wallet-ui/react'
-import {
-  Account,
-  Address,
-  address,
-  getAddressEncoder,
-  getBase58Decoder,
-  getProgramDerivedAddress,
-  getUtf8Encoder,
-} from 'gill'
+import { Account, Address, getAddressEncoder, getBase58Decoder, getUtf8Encoder } from 'gill'
 import { useLildexProgramId } from '../lildex/lildex-data-access'
 import { useWalletUiSigner } from '../solana/use-wallet-ui-signer'
 import { useWalletTransactionSignAndSend } from '../solana/use-wallet-transaction-sign-and-send'
@@ -27,7 +19,7 @@ import { toastTx } from '../toast-tx'
 import { toast } from 'sonner'
 
 export type PositonAccount = Account<Position, string>
-export function usePositionAccountsQuery() {
+export function usePositionAccountsQuery({ walletAddress }: { walletAddress?: string }) {
   const { client } = useWalletUi()
   const programId = useLildexProgramId()
   return useQuery({
@@ -38,6 +30,7 @@ export function usePositionAccountsQuery() {
         decoder: getPositionDecoder(),
         filter: getBase58Decoder().decode(POSITION_DISCRIMINATOR),
         programAddress: programId,
+        walletAddress: getUtf8Encoder().encode(walletAddress!),
       }) as Promise<PositonAccount[]>,
   })
 }

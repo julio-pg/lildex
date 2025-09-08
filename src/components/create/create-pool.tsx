@@ -10,6 +10,8 @@ import { getTokenBalance, solanaTokenAddress } from '@/lib/utils'
 import { useSearchParams } from 'react-router'
 import { useInitializePoolMutation } from './create-pool-data-access'
 import SwapInput from '../ui/swap-input'
+import { useAtom } from 'jotai'
+import { createAAmountAtom, createBAmountAtom, createInitialPriceAtom } from '@/context/create-pool-context'
 
 export default function CreatePool() {
   const { account } = useWalletUi()
@@ -23,9 +25,9 @@ export default function CreatePool() {
   //   }
   //   return () => {}
   // }, [setSearchParams])
-  const [initialPrice, setInitialPrice] = useState('')
-  const [tokenAAmount, setTokenAAmount] = useState('')
-  const [tokenBAmount, setTokenBAmount] = useState('')
+  const [initialPrice, setInitialPrice] = useAtom(createInitialPriceAtom)
+  const [tokenAAmount, setTokenAAmount] = useAtom(createAAmountAtom)
+  const [tokenBAmount, setTokenBAmount] = useAtom(createBAmountAtom)
 
   // const tokenA = searchParams.get('tokenA') ?? solanaTokenAddress
   const tokenA = '9DYjjGwGXNmGcAE5RxJU4m7pTft6ZAjrjYE9g9VQc4zN'

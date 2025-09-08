@@ -5,6 +5,7 @@ import { useClosePositionMutation, usePositionAccountsQuery } from './portfolio-
 import { useWalletUi } from '@wallet-ui/react'
 import { WalletButton } from '../solana/solana-provider'
 import { Address } from 'gill'
+import { ellipsify } from '@/lib/utils'
 
 export default function Portfolio() {
   const { account } = useWalletUi()
@@ -17,7 +18,8 @@ export default function Portfolio() {
       </div>
     )
   }
-  const { data: postions } = usePositionAccountsQuery()
+  const { data: postions } = usePositionAccountsQuery({ walletAddress: account.address })
+  console.log(postions)
   const mutation = (lilpoolAddress: Address, positionAddress: Address, positionMint: Address) =>
     useClosePositionMutation({ lilpoolAddress, positionAddress, positionMint })
   return (
@@ -35,7 +37,7 @@ export default function Portfolio() {
           {postions?.map(({ data, address }) => (
             <TableRow key={address} className="bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400 ">
               <TableHead className=" font-medium text-gray-900 whitespace-nowrap dark:text-white text-xl">
-                {data.lilpool}
+                {ellipsify(address)}
               </TableHead>
               <TableCell>{BigInt(data?.tokenAAmount || 0) / 10n ** BigInt(9)}</TableCell>
               <TableCell>{BigInt(data?.tokenBAmount || 0) / 10n ** BigInt(9)}</TableCell>

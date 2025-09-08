@@ -30,7 +30,7 @@ export const amountIsValidAtom = atom((get) => {
   const tokenb = get(tokenBAmountAtom)
   const pool = get(selectedPoolAtom)
   const poolPrice = pool?.price || 1n
-  console.log(Number(tokenb))
+  // console.log(Number(tokenb))
   // console.log(Number(tokenA) * bigintPriceToNumber(poolPrice, 9n))
   const isValid = Number(tokenb) == Number(tokenA) * bigintPriceToNumber(poolPrice, 9n)
   return isValid
