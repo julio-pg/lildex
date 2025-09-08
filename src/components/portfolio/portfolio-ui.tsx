@@ -1,9 +1,10 @@
 import { data } from 'react-router'
 import { Button } from '../ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
-import { usePositionAccountsQuery } from './portfolio-data-access'
+import { useClosePositionMutation, usePositionAccountsQuery } from './portfolio-data-access'
 import { useWalletUi } from '@wallet-ui/react'
 import { WalletButton } from '../solana/solana-provider'
+import { Address } from 'gill'
 
 export default function Portfolio() {
   const { account } = useWalletUi()
@@ -17,6 +18,8 @@ export default function Portfolio() {
     )
   }
   const { data: postions } = usePositionAccountsQuery()
+  const mutation = (lilpoolAddress: Address, positionAddress: Address, positionMint: Address) =>
+    useClosePositionMutation({ lilpoolAddress, positionAddress, positionMint })
   return (
     <div className="relative overflow-x-auto rounded-md">
       <Table>
@@ -38,7 +41,15 @@ export default function Portfolio() {
               <TableCell>{BigInt(data?.tokenBAmount || 0) / 10n ** BigInt(9)}</TableCell>
               {/* <TableCell >${data.positionMint / BigInt(10) ** BigInt(9)}</TableCell> */}
               <TableCell>
-                <Button>Close</Button>
+                <Button
+                  onClick={() =>
+                    mutation(data.lilpool, address, data.positionMint)
+                      .mutateAsync()
+                      .catch((err: any) => console.log(err))
+                  }
+                >
+                  Close
+                </Button>
               </TableCell>
             </TableRow>
           ))}

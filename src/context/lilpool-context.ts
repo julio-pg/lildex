@@ -10,7 +10,7 @@ export const tokenBAmountAtom = atom(
     const tokenA = get(tokenAAmountAtom)
     const pool = get(selectedPoolAtom)
     const poolPrice = pool?.price || 1n
-    const newTokenBValue = Number(tokenA) * bigintPriceToNumber(poolPrice, 9n)
+    const newTokenBValue: number = Number(tokenA) * bigintPriceToNumber(poolPrice, 9n)
     return newTokenBValue.toString()
   },
   (get, set, newTokenB: string) => {
@@ -24,3 +24,14 @@ export const tokenBAmountAtom = atom(
     set(tokenAAmountAtom, newTokenAValue.toString())
   },
 )
+
+export const amountIsValidAtom = atom((get) => {
+  const tokenA = get(tokenAAmountAtom)
+  const tokenb = get(tokenBAmountAtom)
+  const pool = get(selectedPoolAtom)
+  const poolPrice = pool?.price || 1n
+  console.log(Number(tokenb))
+  // console.log(Number(tokenA) * bigintPriceToNumber(poolPrice, 9n))
+  const isValid = Number(tokenb) == Number(tokenA) * bigintPriceToNumber(poolPrice, 9n)
+  return isValid
+})

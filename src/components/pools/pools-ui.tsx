@@ -8,7 +8,7 @@ import { DialogClose } from '../ui/dialog'
 import { useWalletUi } from '@wallet-ui/react'
 import { WalletButton } from '../solana/solana-provider'
 import { useAtom } from 'jotai'
-import { selectedPoolAtom, tokenAAmountAtom, tokenBAmountAtom } from '@/context/lilpool-context'
+import { amountIsValidAtom, selectedPoolAtom, tokenAAmountAtom, tokenBAmountAtom } from '@/context/lilpool-context'
 import { Dispatch, SetStateAction } from 'react'
 
 export default function Pools() {
@@ -34,7 +34,7 @@ export default function Pools() {
     tokenAAmount,
     tokenBAmount,
   })
-
+  const [amountIsValid] = useAtom(amountIsValidAtom)
   return (
     <div className="relative overflow-x-auto rounded-md">
       <Table>
@@ -66,11 +66,12 @@ export default function Pools() {
                   <DialogClose
                     onClick={() => {
                       mutation.mutateAsync().catch((err: any) => console.log(err))
-                      // setTokenAAmount('')
-                      // setTokenBAmount('')
+                      setTokenAAmount('')
+                      setTokenBAmount('')
                       SetSelectedPool(undefined)
                     }}
                     className={cn(buttonVariants())}
+                    disabled={!amountIsValid}
                   >
                     Deposit
                   </DialogClose>

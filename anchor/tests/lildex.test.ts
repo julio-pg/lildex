@@ -169,100 +169,100 @@ describe('lildex', () => {
       }
     }
   })
-  // it('Open position', async () => {
-  //   connection = await connect()
-  //   const postionTokenAccount = await connection.getTokenAccountAddress(payer.address, postionTokenMint.address, true)
-  //   const positionPDAAndBump = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
-  //     'position',
-  //     postionTokenMint.address,
-  //   ])
-  //   const positionAddress = positionPDAAndBump.pda
+  it('Open position', async () => {
+    connection = await connect()
+    const postionTokenAccount = await connection.getTokenAccountAddress(payer.address, postionTokenMint.address, true)
+    const positionPDAAndBump = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
+      'position',
+      postionTokenMint.address,
+    ])
+    const positionAddress = positionPDAAndBump.pda
 
-  //   const lilpoolPDAAndBump = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
-  //     'lilpool',
-  //     configAddress,
-  //     tokenMintA,
-  //     tokenMintB,
-  //   ])
-  //   const lilpoolAddress = lilpoolPDAAndBump.pda
+    const lilpoolPDAAndBump = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
+      'lilpool',
+      configAddress,
+      tokenMintA,
+      tokenMintB,
+    ])
+    const lilpoolAddress = lilpoolPDAAndBump.pda
 
-  //   const ix = programClient.getOpenPositionInstruction({
-  //     funder: payer,
-  //     owner: payer.address,
-  //     tokenMintA: tokenMintA,
-  //     tokenMintB: tokenMintB,
-  //     positionMint: postionTokenMint,
-  //     positionTokenAccount: postionTokenAccount,
-  //     position: positionAddress,
-  //     lilpool: lilpoolAddress,
-  //     tokenVaultA: tokenVaultA,
-  //     tokenVaultB: tokenVaultB,
-  //     funderTokenAccountA: funderTokenAccountA,
-  //     funderTokenAccountB: funderTokenAccountB,
-  //     tokenAAmount: tokenAOfferedAmount,
-  //     tokenBAmount: tokenBWantedAmount,
-  //     tokenProgram: TOKEN_EXTENSIONS_PROGRAM,
-  //   })
+    const ix = programClient.getOpenPositionInstruction({
+      funder: payer,
+      owner: payer.address,
+      tokenMintA: tokenMintA,
+      tokenMintB: tokenMintB,
+      positionMint: postionTokenMint,
+      positionTokenAccount: postionTokenAccount,
+      position: positionAddress,
+      lilpool: lilpoolAddress,
+      tokenVaultA: tokenVaultA,
+      tokenVaultB: tokenVaultB,
+      funderTokenAccountA: funderTokenAccountA,
+      funderTokenAccountB: funderTokenAccountB,
+      tokenAAmount: tokenAOfferedAmount,
+      tokenBAmount: tokenBWantedAmount,
+      tokenProgram: TOKEN_EXTENSIONS_PROGRAM,
+    })
 
-  //   try {
-  //     await connection.sendTransactionFromInstructions({
-  //       feePayer: payer,
-  //       instructions: [ix],
-  //     })
-  //   } catch (err: any) {
-  //     const msg = err.message || String(err)
+    try {
+      await connection.sendTransactionFromInstructions({
+        feePayer: payer,
+        instructions: [ix],
+      })
+    } catch (err: any) {
+      const msg = err.message || String(err)
 
-  //     if (msg.includes('Allocate: account already in use')) {
-  //       console.warn('⚠️ Position already initialized, treating as success')
-  //       const positionAccount = await programClient.fetchPosition(connection.rpc, positionAddress)
-  //       console.log('✅ positionAccount:', positionAccount.address)
-  //       expect(true).toBe(true) // pass
-  //     } else {
-  //       throw err
-  //     }
-  //   }
-  // })
-  // it('Close position', async () => {
-  //   connection = await connect()
-  //   // TODO: get a position alredy created not a new one since the position token mint always is different
-  //   const positionPDAAndBump = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
-  //     'position',
-  //     postionTokenMint.address,
-  //   ])
-  //   const positionAddress = positionPDAAndBump.pda
-  //   const postionTokenAccount = await connection.getTokenAccountAddress(payer.address, postionTokenMint.address, true)
+      if (msg.includes('Allocate: account already in use')) {
+        console.warn('⚠️ Position already initialized, treating as success')
+        const positionAccount = await programClient.fetchPosition(connection.rpc, positionAddress)
+        console.log('✅ positionAccount:', positionAccount.address)
+        expect(true).toBe(true) // pass
+      } else {
+        throw err
+      }
+    }
+  })
+  it('Close position', async () => {
+    connection = await connect()
+    // TODO: get a position alredy created not a new one since the position token mint always is different
+    const positionPDAAndBump = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
+      'position',
+      postionTokenMint.address,
+    ])
+    const positionAddress = positionPDAAndBump.pda
+    const postionTokenAccount = await connection.getTokenAccountAddress(payer.address, postionTokenMint.address, true)
 
-  //   const ix = programClient.getClosePositionInstruction({
-  //     positionAuthority: payer,
-  //     receiver: payer.address,
-  //     position: positionAddress,
-  //     positionMint: postionTokenMint.address,
-  //     positionTokenAccount: postionTokenAccount,
-  //     tokenMintA: tokenMintA,
-  //     tokenMintB: tokenMintB,
-  //     tokenVaultA: tokenVaultA,
-  //     tokenVaultB: tokenVaultB,
-  //     funderTokenAccountA: funderTokenAccountA,
-  //     funderTokenAccountB: funderTokenAccountB,
-  //     tokenProgram: TOKEN_EXTENSIONS_PROGRAM,
-  //   })
+    const ix = programClient.getClosePositionInstruction({
+      positionAuthority: payer,
+      receiver: payer.address,
+      position: positionAddress,
+      positionMint: postionTokenMint.address,
+      positionTokenAccount: postionTokenAccount,
+      tokenMintA: tokenMintA,
+      tokenMintB: tokenMintB,
+      tokenVaultA: tokenVaultA,
+      tokenVaultB: tokenVaultB,
+      funderTokenAccountA: funderTokenAccountA,
+      funderTokenAccountB: funderTokenAccountB,
+      tokenProgram: TOKEN_EXTENSIONS_PROGRAM,
+    })
 
-  //   try {
-  //     await connection.sendTransactionFromInstructions({
-  //       feePayer: payer,
-  //       instructions: [ix],
-  //     })
-  //   } catch (err: any) {
-  //     const msg = err.message || String(err)
+    try {
+      await connection.sendTransactionFromInstructions({
+        feePayer: payer,
+        instructions: [ix],
+      })
+    } catch (err: any) {
+      const msg = err.message || String(err)
 
-  //     if (msg.includes('Allocate: account already in use')) {
-  //       console.warn('⚠️ close position already initialized, treating as success')
-  //       const positionAccount = await programClient.fetchPosition(connection.rpc, positionAddress)
-  //       console.log('✅ positionAccount:', positionAccount.address)
-  //       expect(true).toBe(true) // pass
-  //     }
-  //   }
-  // })
+      if (msg.includes('Allocate: account already in use')) {
+        console.warn('⚠️ close position already initialized, treating as success')
+        const positionAccount = await programClient.fetchPosition(connection.rpc, positionAddress)
+        console.log('✅ positionAccount:', positionAccount.address)
+        expect(true).toBe(true) // pass
+      }
+    }
+  })
   it('Execute swap', async () => {
     connection = await connect()
   })
