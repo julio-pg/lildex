@@ -55,7 +55,7 @@ pub mod lildex {
         instructions::close_position::handler(ctx)
     }
 
-    pub fn swap(ctx: Context<Swap>, amount_in: u64, min_amount_out: u64) -> Result<()> {
-        instructions::swap::handler(ctx, amount_in, min_amount_out)
+    pub fn swap(ctx: Context<Swap>, amount_in: u64, amount_out: u64, a_to_b: bool) -> Result<()> {
+        instructions::swap::handler(ctx, amount_in, amount_out, a_to_b)
     }
 }
