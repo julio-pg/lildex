@@ -1,3 +1,4 @@
+use anchor_lang::solana_program::program_option::COption;
 use anchor_lang::{
     prelude::{AccountInfo, Pubkey, Signer, *},
     ToAccountInfo,
@@ -5,7 +6,6 @@ use anchor_lang::{
 use anchor_spl::token_interface::{
     transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
 };
-use solana_program::program_option::COption;
 
 use crate::errors::ErrorCode;
 
