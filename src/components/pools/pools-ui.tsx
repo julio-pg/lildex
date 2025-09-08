@@ -66,8 +66,8 @@ export default function Pools() {
                   <DialogClose
                     onClick={() => {
                       mutation.mutateAsync().catch((err: any) => console.log(err))
-                      setTokenAAmount('')
-                      setTokenBAmount('')
+                      // setTokenAAmount('')
+                      // setTokenBAmount('')
                       SetSelectedPool(undefined)
                     }}
                     className={cn(buttonVariants())}
