@@ -112,6 +112,7 @@ pub fn handler(ctx: Context<OpenPosition>, token_a_amount: u64, token_b_amount: 
 
     ctx.accounts.position.set_inner(Position {
         lilpool: ctx.accounts.lilpool.key(),
+        funder: ctx.accounts.funder.key(),
         position_mint: ctx.accounts.position_mint.key(),
         token_a_amount: token_a_amount,
         token_b_amount: token_b_amount,
