@@ -11,20 +11,21 @@ import { Button } from './button'
 import { _ } from 'vitest/dist/chunks/reporters.d.BFLkQcL6.js'
 
 type Props = {
-  tokenAddress: Address
   tokenAmount: string
   setAmount: Dispatch<SetStateAction<string>>
+  selectedToken: TokenMetadata
+  setSelectedToken: Dispatch<SetStateAction<TokenMetadata | undefined>>
   listedTokens: TokenMetadata[]
   title?: string
 }
-export default function SwapInputWithModal({ tokenAddress, tokenAmount, setAmount, listedTokens, title }: Props) {
-  const { account } = useWalletUi()
-  const walletAddress = address(account?.address!) || solanaTokenAddress
-  const { data: tokenInfo } = useGetTokenInfoQuery({
-    tokenAddress: tokenAddress,
-  })
-
-  const tokenBalance = getTokenBalance(walletAddress, tokenAddress)
+export default function SwapInputWithModal({
+  tokenAmount,
+  setAmount,
+  listedTokens,
+  selectedToken,
+  setSelectedToken,
+  title,
+}: Props) {
   return (
     <div
       className={cn(
@@ -42,7 +43,7 @@ export default function SwapInputWithModal({ tokenAddress, tokenAmount, setAmoun
           decimalScale={3}
           onChange={(e) => setAmount(e.target.value)}
         />
-        <span className="h-5 inline-flex items-center whitespace-nowrap text-sm">$0.00</span>
+        <span className="h-5 inline-flex items-center whitespace-nowrap text-sm">$1.00</span>
       </div>
       <div className="space-y-2 flex flex-col items-end">
         {title && <span>Max</span>}
@@ -52,21 +53,21 @@ export default function SwapInputWithModal({ tokenAddress, tokenAmount, setAmoun
               variant="outline"
               className="flex px-2 py-1 gap-x-1.5 text-xl font-regular text-primary items-center"
             >
-              <img src="/img/lil-logo.png" className="w-5 h-auto" />{' '}
-              <span className="text-xl">{tokenInfo?.data.symbol || 'N/A'}</span>
+              <img src={selectedToken?.logoURI} className="w-5 h-auto aspect-square rounded-full" />{' '}
+              <span className="text-xl">{selectedToken?.symbol || 'N/A'}</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[525px]">
             <DialogTitle>Select a token</DialogTitle>
             {listedTokens?.map((data) => (
-              <TokenRowData key={data.address} {...data}></TokenRowData>
+              <TokenRowData key={data.address} tokenData={data} setSelectedToken={setSelectedToken}></TokenRowData>
             ))}
           </DialogContent>
         </Dialog>
         <div className="flex items-center gap-x-1.5">
           <span className="flex text-sm gap-x-1 items-center">
             <Wallet size={15} />
-            <span>{Number(tokenBalance || 0).toFixed(3)}</span>
+            <span>{Number(selectedToken?.balance || 0).toFixed(3)}</span>
           </span>
         </div>
       </div>
@@ -74,8 +75,14 @@ export default function SwapInputWithModal({ tokenAddress, tokenAmount, setAmoun
   )
 }
 
-function TokenRowData({ name, symbol, address, balance, logoURI }: TokenMetadata) {
-  const [textToCopy] = useState(address)
+function TokenRowData({
+  tokenData,
+  setSelectedToken,
+}: {
+  tokenData: TokenMetadata
+  setSelectedToken: Dispatch<SetStateAction<TokenMetadata | undefined>>
+}) {
+  const [textToCopy] = useState(tokenData?.address)
   const [copySuccess, setCopySuccess] = useState('')
 
   const handleCopyClick = async () => {
@@ -89,27 +96,28 @@ function TokenRowData({ name, symbol, address, balance, logoURI }: TokenMetadata
     }
   }
   return (
-    <DialogClose className="flex select-none items-center rounded-sm py-1.5 text-sm outline-none hover:bg-red-700/30 transition duration-200 cursor-pointer px-6 gap-x-3 h-[4.25rem] w-full">
+    <DialogClose
+      onClick={() => setSelectedToken(tokenData)}
+      className="flex select-none items-center rounded-sm py-1.5 text-sm outline-none hover:bg-red-700/30 transition duration-200 cursor-pointer px-6 gap-x-3 h-[4.25rem] w-full"
+    >
       <div className="flex w-full gap-x-3 items-center font-regular">
         <span
           className="relative flex min-h-4 min-w-4 shrink-0 rounded-full shadow-box h-6 w-6"
           data-sentry-element="Avatar"
-          data-sentry-component="TokenAvatar"
-          data-sentry-source-file="TokenAvatar.tsx"
         >
           {/* TODO: add actual image */}
           <img
             className="aspect-square h-full w-full rounded-full"
             data-sentry-element="AvatarImage"
             data-sentry-source-file="TokenAvatar.tsx"
-            src={logoURI || ''}
+            src={tokenData?.logoURI || ''}
           />
         </span>
         <div className="flex flex-col mr-auto gap-y-0.5 min-w-0">
           <div className="flex gap-x-1.5 items-center min-w-0">
-            <span className="font-medium text-base">{symbol}</span>
+            <span className="font-medium text-base">{tokenData?.symbol}</span>
             <span className="text-sm text-primary/50 text-left overflow-hidden text-ellipsis whitespace-nowrap min-w-0">
-              {name}
+              {tokenData?.name}
             </span>
           </div>
           <div className="flex gap-x-1.5 items-center">
@@ -119,14 +127,14 @@ function TokenRowData({ name, symbol, address, balance, logoURI }: TokenMetadata
                 data-sentry-element="CopyToClipboard"
                 onClick={handleCopyClick}
               >
-                {ellipsify(address, 4, '...')}
+                {ellipsify(tokenData?.address, 4, '...')}
                 {copySuccess ? <Check size={12} /> : <Copy size={12} />}
               </button>
               <div className="h-5 py-0.5">
                 <div data-orientation="vertical" role="none" className="shrink-0 bg-red-300/10 h-full w-[1px]"></div>
               </div>
               <a
-                href={`https://solscan.io/token/${address}?cluster=devnet`}
+                href={`https://solscan.io/token/${tokenData?.address}?cluster=devnet`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-base font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-border-focus disabled:cursor-not-allowed text-button-link disabled:text-tertiary hover:brightness-125 disabled:hover:brightness-100 active:brightness-150 duration-100 p-0 h-5"
@@ -140,7 +148,7 @@ function TokenRowData({ name, symbol, address, balance, logoURI }: TokenMetadata
         <div className="text-xs text-right flex flex-col text-secondary">
           <NumericFormat
             displayType="text"
-            value={balance}
+            value={tokenData?.balance}
             decimalScale={3}
             className="text-base font-medium text-primary"
           />

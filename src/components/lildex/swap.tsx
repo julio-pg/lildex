@@ -8,6 +8,13 @@ import SwapInputWithModal from '../ui/swap-input-with-modal'
 import { useGetListedTokensQuery } from './swap-data-access'
 import { address } from 'gill'
 import listedTokens from '@/lib/listed-tokens.json'
+import { useAtom } from 'jotai'
+import {
+  selectedAtokenAtom,
+  selectedBtokenAtom,
+  swapTokenAAmountAtom,
+  swapTokenBAmountAtom,
+} from '@/context/swap-context'
 function Swap() {
   const { account } = useWalletUi()
   if (!account) {
@@ -19,8 +26,10 @@ function Swap() {
       </div>
     )
   }
-  const [tokenAAmount, setTokenAAmount] = useState('')
-  const [tokenBAmount, setTokenBAmount] = useState('')
+  const [tokenAAmount, setTokenAAmount] = useAtom(swapTokenAAmountAtom)
+  const [tokenBAmount, setTokenBAmount] = useAtom(swapTokenBAmountAtom)
+  const [selectedAtoken, setSelectedAtoken] = useAtom(selectedAtokenAtom)
+  const [selectedBtoken, setSelectedBtoken] = useAtom(selectedBtokenAtom)
   const walletAddress = address(account?.address!) || solanaTokenAddress
 
   const { data: tokensWithBalances } = useGetListedTokensQuery({
@@ -35,9 +44,10 @@ function Swap() {
         <div className="flex flex-col items-center -space-y-3 mb-3">
           {/* Pay Section */}
           <SwapInputWithModal
-            tokenAddress={solanaTokenAddress}
             tokenAmount={tokenAAmount}
             setAmount={setTokenAAmount}
+            selectedToken={selectedAtoken!}
+            setSelectedToken={setSelectedAtoken}
             listedTokens={tokensWithBalances!}
             title="Pay"
           />
@@ -49,9 +59,10 @@ function Swap() {
 
           {/* Receive Section */}
           <SwapInputWithModal
-            tokenAddress={solanaTokenAddress}
             tokenAmount={tokenBAmount}
             setAmount={setTokenBAmount}
+            selectedToken={selectedBtoken!}
+            setSelectedToken={setSelectedBtoken}
             listedTokens={tokensWithBalances!}
             title="Receive"
           />
@@ -75,34 +86,40 @@ function Swap() {
         {/* SOL Token */}
         <div className="flex items-center justify-between p-4 ">
           <div className="flex items-center space-x-3">
-            <img className="w-8 h-8 rounded-full mr-2 flex items-center justify-center" src="/img/lil-logo.png" />
+            <img
+              className="w-8 h-8 rounded-full mr-2 flex items-center justify-center"
+              src={selectedAtoken?.logoURI! || ''}
+            />
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-white font-medium">SOL</span>
-                <span className="text-slate-400 text-sm">Solana</span>
+                <span className="text-white font-medium">{selectedAtoken?.symbol}</span>
+                <span className="text-slate-400 text-sm">{selectedAtoken?.name}</span>
               </div>
-              <AddressLink address="111" />
+              <AddressLink address={selectedAtoken?.address!} />
             </div>
           </div>
           <div className="text-right">
-            <div className="text-white font-semibold">$194.92</div>
+            <div className="text-white font-semibold">$1</div>
           </div>
         </div>
 
         {/* ORCA Token */}
         <div className="flex items-center justify-between p-4 ">
           <div className="flex items-center space-x-3">
-            <img className="w-8 h-8 rounded-full mr-2 flex items-center justify-center" src="/img/lil-logo.png" />
+            <img
+              className="w-8 h-8 rounded-full mr-2 flex items-center justify-center"
+              src={selectedBtoken?.logoURI! || ''}
+            />
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-white font-medium">$LIL</span>
-                <span className="text-slate-400 text-sm">Lil</span>
+                <span className="text-white font-medium">{selectedBtoken?.symbol}</span>
+                <span className="text-slate-400 text-sm">{selectedBtoken?.name}</span>
               </div>
-              <AddressLink address="333" />
+              <AddressLink address={selectedBtoken?.address!} />
             </div>
           </div>
           <div className="text-right">
-            <div className="text-white font-semibold">$2.2165</div>
+            <div className="text-white font-semibold">$1</div>
           </div>
         </div>
       </div>
