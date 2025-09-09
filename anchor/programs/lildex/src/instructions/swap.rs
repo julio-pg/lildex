@@ -9,16 +9,27 @@ use crate::{errors::ErrorCode, events::Traded, state::*};
 
 #[derive(Accounts)]
 pub struct Swap<'info> {
+    #[account(mut)]
     pub receiver: Signer<'info>,
 
     #[account(mut)]
     pub lilpool: Box<Account<'info, Lilpool>>,
 
-    #[account(mut, constraint = token_receiver_account_a.mint == lilpool.token_mint_a)]
+    #[account(
+        mut,
+        associated_token::mint = token_mint_a,
+        associated_token::authority = receiver,
+        associated_token::token_program = token_program)]
     pub token_receiver_account_a: Box<InterfaceAccount<'info, TokenAccount>>,
 
-    #[account(mut, constraint = token_receiver_account_b.mint == lilpool.token_mint_b)]
+    #[account(
+        init_if_needed, 
+        payer = receiver,
+        associated_token::mint = token_mint_b,
+        associated_token::authority = receiver,
+        associated_token::token_program = token_program)]
     pub token_receiver_account_b: Box<InterfaceAccount<'info, TokenAccount>>,
+    
     #[account(mut, address = lilpool.token_vault_a)]
     pub token_vault_a: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(mut, address = lilpool.token_vault_b)]
