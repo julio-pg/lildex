@@ -1,11 +1,11 @@
 import { useWalletUi } from '@wallet-ui/react'
-import { ArrowUpDown, Check, Copy, ExternalLink } from 'lucide-react'
+import { ArrowUpDown, Check, CircleX, Copy, ExternalLink, X } from 'lucide-react'
 import { WalletButton } from '../solana/solana-provider'
 import { Button } from '../ui/button'
 import { ellipsify, solanaTokenAddress } from '@/lib/utils'
 import { useState } from 'react'
 import SwapInputWithModal from '../ui/swap-input-with-modal'
-import { useGetListedTokensQuery } from './swap-data-access'
+import { useCreateSwapMutation, useGetLilpoolAddressQuery, useGetListedTokensQuery } from './swap-data-access'
 import { address } from 'gill'
 import listedTokens from '@/lib/listed-tokens.json'
 import { useAtom } from 'jotai'
@@ -35,6 +35,16 @@ function Swap() {
   const { data: tokensWithBalances } = useGetListedTokensQuery({
     wallet: walletAddress,
     listedTokens: listedTokens,
+  })
+  const { data: lilpool } = useGetLilpoolAddressQuery({
+    tokenMintA: selectedAtoken?.address!,
+    tokenMintB: selectedBtoken?.address!,
+  })
+  const mutation = useCreateSwapMutation({
+    amountIn: tokenAAmount,
+    amountOut: tokenBAmount,
+    aToB: true,
+    lilpoolAddress: address(lilpool?.address! || solanaTokenAddress),
   })
 
   return (
@@ -69,14 +79,30 @@ function Swap() {
         </div>
 
         {/* Connect Wallet Button */}
-        <div className="flex w-full justify-center items-center">
+        <div className="flex flex-col gap-y-2 w-full justify-center items-center">
           {account ? (
-            <Button className="w-full bg-red-800 dark:text-neutral-400 font-bold text-xl" size="lg">
+            <Button
+              onClick={() => mutation.mutateAsync().catch((e) => console.log(e))}
+              disabled={!lilpool?.exists}
+              className="w-full bg-red-800 hover:bg-red-800/75 dark:text-neutral-400 font-bold text-xl"
+              size="lg"
+            >
               Trade
             </Button>
           ) : (
             <div style={{ display: 'inline-block' }}>
               <WalletButton />
+            </div>
+          )}
+          {account && !lilpool?.exists && (
+            <div
+              role="alert"
+              className="items-start gap-x-2 flex relative w-full rounded-md py-2.5 px-3 border border-orange-400 text-sm text-orange-400"
+            >
+              <CircleX />
+              <div className="flex flex-col gap-1">
+                <h5 className="font-medium">Sorry, that token pair is not supported. Try a different combination.</h5>
+              </div>
             </div>
           )}
         </div>

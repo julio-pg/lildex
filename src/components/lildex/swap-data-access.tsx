@@ -3,9 +3,10 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useWalletTransactionSignAndSend } from '../solana/use-wallet-transaction-sign-and-send'
 import { useWalletUiSigner } from '../solana/use-wallet-ui-signer'
 import { getUserListedTokens, numberToBigintPrice, TokenMetadata, useGetTokenAccountAddress } from '@/lib/utils'
-import { Address } from 'gill'
+import { address, Address, getAddressEncoder, getProgramDerivedAddress, getUtf8Encoder } from 'gill'
 import { TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
 import { useWalletUi } from '@wallet-ui/react'
+import { useLildexProgramId } from './lildex-data-access'
 
 export function useGetListedTokensQuery({ wallet, listedTokens }: { wallet: Address; listedTokens: TokenMetadata[] }) {
   const { client } = useWalletUi()
@@ -13,6 +14,39 @@ export function useGetListedTokensQuery({ wallet, listedTokens }: { wallet: Addr
   return useQuery({
     queryKey: ['listed-tokens'],
     queryFn: async () => await getUserListedTokens(client, wallet, listedTokens),
+  })
+}
+
+export function useGetLilpoolAddressQuery({ tokenMintA, tokenMintB }: { tokenMintA: string; tokenMintB: string }) {
+  const addressEncoder = getAddressEncoder()
+  const textEncoder = getUtf8Encoder()
+  const testWallet = address(import.meta.env.VITE_TEST_WALLET!)
+  const programId = useLildexProgramId()
+  const { client } = useWalletUi()
+
+  return useQuery({
+    queryKey: ['lilpool-Address', tokenMintA, tokenMintB],
+    queryFn: async () => {
+      const [configPda] = await getProgramDerivedAddress({
+        programAddress: programId,
+        seeds: [textEncoder.encode('config'), addressEncoder.encode(testWallet)],
+      })
+      const [lilpollPda] = await getProgramDerivedAddress({
+        programAddress: programId,
+        seeds: [
+          textEncoder.encode('lilpool'),
+          addressEncoder.encode(configPda),
+          addressEncoder.encode(address(tokenMintA)),
+          addressEncoder.encode(address(tokenMintB)),
+        ],
+      })
+      const lilpoolData = await fetchLilpool(client.rpc, lilpollPda)
+      if (lilpoolData) {
+        return { address: lilpollPda, exists: true }
+      } else {
+        return { address: lilpollPda, exists: false }
+      }
+    },
   })
 }
 

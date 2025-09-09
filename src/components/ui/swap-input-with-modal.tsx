@@ -67,7 +67,7 @@ export default function SwapInputWithModal({
         <div className="flex items-center gap-x-1.5">
           <span className="flex text-sm gap-x-1 items-center">
             <Wallet size={15} />
-            <span>{Number(selectedToken?.balance || 0).toFixed(3)}</span>
+            <NumericFormat displayType="text" value={selectedToken?.balance} decimalScale={3} />
           </span>
         </div>
       </div>
@@ -122,14 +122,14 @@ function TokenRowData({
           </div>
           <div className="flex gap-x-1.5 items-center">
             <div className="px-2 flex gap-x-1.5 items-center justify-center whitespace-nowrap rounded border-none bg-red-400/20 text-button-link font-mono transition-all duration-100 focus-visible:outline-none disabled:cursor-not-allowed hover:brightness-125">
-              <button
+              <div
                 className="flex gap-x-1 items-center h-5"
                 data-sentry-element="CopyToClipboard"
                 onClick={handleCopyClick}
               >
                 {ellipsify(tokenData?.address, 4, '...')}
                 {copySuccess ? <Check size={12} /> : <Copy size={12} />}
-              </button>
+              </div>
               <div className="h-5 py-0.5">
                 <div data-orientation="vertical" role="none" className="shrink-0 bg-red-300/10 h-full w-[1px]"></div>
               </div>
