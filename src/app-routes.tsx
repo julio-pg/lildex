@@ -2,7 +2,7 @@ import { useNavigate, useRoutes } from 'react-router'
 import { lazy } from 'react'
 import Pools from './components/pools/pools-ui'
 import Launch from './components/launch/launch-ui'
-import CreatePool from './components/create/create-pool'
+import CreatePool from './components/create/create-pool-ui'
 import Portfolio from './components/portfolio/portfolio-ui'
 
 const AccountDetailFeature = lazy(() => import('@/components/account/account-feature-detail.tsx'))
