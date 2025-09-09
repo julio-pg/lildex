@@ -1,9 +1,9 @@
 import { useWalletUi } from '@wallet-ui/react'
-import { ArrowUpDown, Copy, ExternalLink } from 'lucide-react'
+import { ArrowUpDown, Check, Copy, ExternalLink } from 'lucide-react'
 import { WalletButton } from '../solana/solana-provider'
 import { Button } from '../ui/button'
 import SwapInput from '../ui/swap-input'
-import { solanaTokenAddress } from '@/lib/utils'
+import { ellipsify, solanaTokenAddress } from '@/lib/utils'
 import { useState } from 'react'
 import SwapInputWithModal from '../ui/swap-input-with-modal'
 
@@ -11,6 +11,19 @@ function Swap() {
   const { account } = useWalletUi()
   const [tokenAAmount, setTokenAAmount] = useState('')
   const [tokenBAmount, setTokenBAmount] = useState('')
+  const [textToCopy, setTextToCopy] = useState('')
+  const [copySuccess, setCopySuccess] = useState('')
+
+  const handleCopyClick = async () => {
+    try {
+      await navigator.clipboard.writeText(textToCopy)
+      setCopySuccess('Copied!')
+      setTimeout(() => setCopySuccess(''), 2000) // Clear success message after 2 seconds
+    } catch (err) {
+      setCopySuccess('Failed to copy!')
+      console.error('Failed to copy text: ', err)
+    }
+  }
   return (
     <div className="min-h-screen flex flex-col gap-y-4 items-center justify-center">
       <div className="w-full max-w-md rounded-2xl p-6 shadow-2xl bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400">
@@ -62,11 +75,7 @@ function Swap() {
                 <span className="text-white font-medium">SOL</span>
                 <span className="text-slate-400 text-sm">Solana</span>
               </div>
-              <div className="flex items-center space-x-1 mt-1">
-                <span className="text-xs text-slate-500 bg-slate-700 px-2 py-0.5 rounded">Sol1...1112</span>
-                <Copy className="w-3 h-3 text-slate-500" />
-                <ExternalLink className="w-3 h-3 text-slate-500" />
-              </div>
+              <AddressLink address="111" />
             </div>
           </div>
           <div className="text-right">
@@ -83,11 +92,7 @@ function Swap() {
                 <span className="text-white font-medium">$LIL</span>
                 <span className="text-slate-400 text-sm">Lil</span>
               </div>
-              <div className="flex items-center space-x-1 mt-1">
-                <span className="text-xs text-slate-500 bg-slate-700 px-2 py-0.5 rounded">orcA...kt2E</span>
-                <Copy className="w-3 h-3 text-slate-500" />
-                <ExternalLink className="w-3 h-3 text-slate-500" />
-              </div>
+              <AddressLink address="333" />
             </div>
           </div>
           <div className="text-right">
@@ -98,5 +103,46 @@ function Swap() {
     </div>
   )
 }
-
 export default Swap
+
+function AddressLink({ address }: { address: string }) {
+  const [textToCopy] = useState(address)
+  const [copySuccess, setCopySuccess] = useState('')
+
+  const handleCopyClick = async () => {
+    try {
+      await navigator.clipboard.writeText(textToCopy)
+      setCopySuccess('Copied!')
+      setTimeout(() => setCopySuccess(''), 2000) // Clear success message after 2 seconds
+    } catch (err) {
+      setCopySuccess('Failed to copy!')
+      console.error('Failed to copy text: ', err)
+    }
+  }
+  return (
+    <div className="flex gap-x-1.5 items-center">
+      <div className="px-2 flex gap-x-1.5 items-center justify-center whitespace-nowrap rounded border-none bg-red-400/20 text-button-link font-mono transition-all duration-100 focus-visible:outline-none disabled:cursor-not-allowed hover:brightness-125">
+        <button
+          className="flex gap-x-1 items-center h-5"
+          data-sentry-element="CopyToClipboard"
+          onClick={handleCopyClick}
+        >
+          {ellipsify(address, 4, '...')}
+          {copySuccess ? <Check size={12} /> : <Copy size={12} />}
+        </button>
+        <div className="h-5 py-0.5">
+          <div data-orientation="vertical" role="none" className="shrink-0 bg-red-300/10 h-full w-[1px]"></div>
+        </div>
+        <a
+          href={`https://solscan.io/token/${address}?cluster=devnet`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-base font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-border-focus disabled:cursor-not-allowed text-button-link disabled:text-tertiary hover:brightness-125 disabled:hover:brightness-100 active:brightness-150 duration-100 p-0 h-5"
+          aria-disabled="false"
+        >
+          <ExternalLink size={12} />
+        </a>
+      </div>
+    </div>
+  )
+}
