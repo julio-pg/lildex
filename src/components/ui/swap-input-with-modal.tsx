@@ -54,7 +54,7 @@ export default function SwapInputWithModal({
               className="flex px-2 py-1 gap-x-1.5 text-xl font-regular text-primary items-center"
             >
               <img src={selectedToken?.logoURI} className="w-5 h-auto aspect-square rounded-full" />{' '}
-              <span className="text-xl">{selectedToken?.symbol || 'N/A'}</span>
+              <span className="text-xl">{selectedToken?.symbol || 'Select Token'}</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[525px]">

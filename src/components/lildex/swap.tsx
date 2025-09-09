@@ -114,7 +114,7 @@ function Swap() {
           <div className="flex items-center space-x-3">
             <img
               className="w-8 h-8 rounded-full mr-2 flex items-center justify-center"
-              src={selectedAtoken?.logoURI! || ''}
+              src={selectedAtoken?.logoURI!}
             />
             <div>
               <div className="flex items-center space-x-2">
@@ -134,7 +134,7 @@ function Swap() {
           <div className="flex items-center space-x-3">
             <img
               className="w-8 h-8 rounded-full mr-2 flex items-center justify-center"
-              src={selectedBtoken?.logoURI! || ''}
+              src={selectedBtoken?.logoURI!}
             />
             <div>
               <div className="flex items-center space-x-2">

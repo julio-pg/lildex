@@ -10,6 +10,9 @@ export const tokenBAmountAtom = atom(
     const tokenA = get(tokenAAmountAtom)
     const pool = get(selectedPoolAtom)
     const poolPrice = pool?.price || 1n
+    // TODO: get the decimal of the token onchain
+    // const decimals = BigInt(tokenAInfo?.decimals! || 1n)
+
     const newTokenBValue: number = Number(tokenA) * bigintPriceToNumber(poolPrice, 9n)
     return newTokenBValue.toString()
   },

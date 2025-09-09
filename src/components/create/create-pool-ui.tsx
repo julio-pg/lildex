@@ -1,69 +1,86 @@
 import { useWalletUi } from '@wallet-ui/react'
-import { ArrowUpDown, Copy, Droplet, DropletsIcon, ExternalLink } from 'lucide-react'
+import { DropletsIcon } from 'lucide-react'
 import { WalletButton } from '../solana/solana-provider'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
-import { useEffect, useState } from 'react'
+import { Dispatch, SetStateAction } from 'react'
 import { address } from 'gill'
 
-import { getTokenBalance, solanaTokenAddress } from '@/lib/utils'
-import { useSearchParams } from 'react-router'
+import { solanaTokenAddress } from '@/lib/utils'
 import { useInitializePoolMutation } from './create-pool-data-access'
-import SwapInput from '../ui/swap-input'
 import { useAtom } from 'jotai'
-import { createAAmountAtom, createBAmountAtom, createInitialPriceAtom } from '@/context/create-pool-context'
+import {
+  createAAmountAtom,
+  createBAmountAtom,
+  createInitialPriceAtom,
+  createTokenADataAtom,
+  createTokenBDataAtom,
+  isPairSelectedAtom,
+} from '@/context/create-pool-context'
+import SwapInputWithModal from '../ui/swap-input-with-modal'
+import { useGetListedTokensQuery } from '../lildex/swap-data-access'
+import listedTokens from '@/lib/listed-tokens.json'
+import { amountIsValidAtom } from '@/context/lilpool-context'
 
 export default function CreatePool() {
   const { account } = useWalletUi()
-  const [searchParams, setSearchParams] = useSearchParams()
-  // useEffect(() => {
-  //   if (!searchParams.get('tokenA') || !searchParams.get('tokenB')) {
-  //     setSearchParams({
-  //       tokenA: 'So11111111111111111111111111111111111111112',
-  //       tokenB: 'BRjpCHtyQLNCo8gqRUr8jtdAj5AjPYQaoqbvcZiHok1k',
-  //     })
-  //   }
-  //   return () => {}
-  // }, [setSearchParams])
+  // const [searchParams, setSearchParams] = useSearchParams()
+  if (!account) {
+    return (
+      <div className="hero py-[64px]">
+        <div className="hero-content text-center">
+          <WalletButton />
+        </div>
+      </div>
+    )
+  }
   const [initialPrice, setInitialPrice] = useAtom(createInitialPriceAtom)
   const [tokenAAmount, setTokenAAmount] = useAtom(createAAmountAtom)
   const [tokenBAmount, setTokenBAmount] = useAtom(createBAmountAtom)
+  const [selectedAtoken, setSelectedAtoken] = useAtom(createTokenADataAtom)
+  const [selectedBtoken, setSelectedBtoken] = useAtom(createTokenBDataAtom)
+  const [isPairSelected] = useAtom(isPairSelectedAtom)
+  const [amountIsValid] = useAtom(amountIsValidAtom)
+  const walletAddress = address(account?.address! || solanaTokenAddress)
 
-  // const tokenA = searchParams.get('tokenA') ?? solanaTokenAddress
-  const tokenA = '9DYjjGwGXNmGcAE5RxJU4m7pTft6ZAjrjYE9g9VQc4zN'
-  // const tokenB = searchParams.get('tokenB') ?? solanaTokenAddress
-  const tokenB = '7jDq66vH7v28xQo6TNGsmaBBrsfqLC1HEXrix3a9pFzc'
+  const { data: tokensWithBalances } = useGetListedTokensQuery({
+    wallet: walletAddress,
+    listedTokens: listedTokens,
+  })
 
   const mutation = useInitializePoolMutation({
-    tokenMintA: address(tokenA),
-    tokenMintB: address(tokenB),
+    tokenMintA: address(selectedAtoken?.address! || solanaTokenAddress),
+    tokenMintB: address(selectedBtoken?.address! || solanaTokenAddress),
     tokenAAmount,
     tokenBAmount,
     initialPrice,
   })
 
-  // TODO: round the decimal to max 3 places
   return (
-    <div className="min-h-screen flex flex-col gap-y-4 items-center justify-center">
+    <div className="min-h-screen flex flex-col gap-y-4 items-center">
       <div className="flex items-center gap-x-2 font-medium text-2xl text-slate-50">
-        <span>Lil Pool</span> <DropletsIcon />
+        <span>Create LilPool</span> <DropletsIcon />
       </div>
       <div className="w-full max-w-md rounded-2xl p-6  shadow-2xl bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400">
         {/* token selection section*/}
         <div className="space-y-3 mb-8">
           {/* token A section */}
-          <SwapInput
-            tokenAddress={solanaTokenAddress}
+          <SwapInputWithModal
             tokenAmount={tokenAAmount}
             setAmount={setTokenAAmount}
+            selectedToken={selectedAtoken!}
+            setSelectedToken={setSelectedAtoken}
+            listedTokens={tokensWithBalances!}
             title="Pay"
           />
 
-          {/* Receive Section */}
-          <SwapInput
-            tokenAddress={solanaTokenAddress}
-            tokenAmount={tokenAAmount}
-            setAmount={setTokenAAmount}
+          {/* token b Section */}
+          <SwapInputWithModal
+            tokenAmount={tokenBAmount}
+            setAmount={setTokenBAmount as Dispatch<SetStateAction<string>>}
+            selectedToken={selectedBtoken!}
+            setSelectedToken={setSelectedBtoken}
+            listedTokens={tokensWithBalances!}
             title="Pay"
           />
           {/* Initial price */}
@@ -86,7 +103,8 @@ export default function CreatePool() {
         <div className="flex w-full justify-center items-center">
           {account ? (
             <Button
-              className="w-full bg-red-800 dark:text-neutral-400 font-bold text-xl"
+              disabled={!(isPairSelected && amountIsValid)}
+              className="w-full bg-red-800 hover:bg-red-800/75 dark:text-neutral-400 font-bold text-xl"
               size="lg"
               onClick={() => mutation.mutateAsync().catch((err) => console.log(err))}
             >
