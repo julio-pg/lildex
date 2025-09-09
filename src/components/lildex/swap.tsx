@@ -1,11 +1,11 @@
 import { useWalletUi } from '@wallet-ui/react'
 import { ArrowUpDown, Copy, ExternalLink } from 'lucide-react'
 import { WalletButton } from '../solana/solana-provider'
-import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import SwapInput from '../ui/swap-input'
 import { solanaTokenAddress } from '@/lib/utils'
 import { useState } from 'react'
+import SwapInputWithModal from '../ui/swap-input-with-modal'
 
 function Swap() {
   const { account } = useWalletUi()
@@ -17,7 +17,7 @@ function Swap() {
         {/* Pay and Receive Section */}
         <div className="flex flex-col items-center -space-y-3 mb-3">
           {/* Pay Section */}
-          <SwapInput
+          <SwapInputWithModal
             tokenAddress={solanaTokenAddress}
             tokenAmount={tokenAAmount}
             setAmount={setTokenAAmount}
@@ -30,7 +30,7 @@ function Swap() {
           </button>
 
           {/* Receive Section */}
-          <SwapInput
+          <SwapInputWithModal
             tokenAddress={solanaTokenAddress}
             tokenAmount={tokenBAmount}
             setAmount={setTokenBAmount}

@@ -10,7 +10,6 @@ type Props = {
   tokenAddress: Address
   tokenAmount: string
   setAmount: Dispatch<SetStateAction<string>>
-
   title?: string
 }
 export default function SwapInput({ tokenAddress, tokenAmount, setAmount, title }: Props) {
