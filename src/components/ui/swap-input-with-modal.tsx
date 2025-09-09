@@ -1,4 +1,4 @@
-import { cn, ellipsify, getTokenBalance, solanaTokenAddress } from '@/lib/utils'
+import { cn, ellipsify, getTokenBalance, solanaTokenAddress, TokenMetadata } from '@/lib/utils'
 import { address, Address } from 'gill'
 import { SetStateAction } from 'jotai'
 import { Dispatch, useState } from 'react'
@@ -10,18 +10,14 @@ import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '
 import { Button } from './button'
 import { _ } from 'vitest/dist/chunks/reporters.d.BFLkQcL6.js'
 
-const testData = [
-  { name: 'Solana', symbol: 'SOL', address: 'So11111111111111111111111111111111111111112', balance: 0 },
-  { name: 'USDT', symbol: 'USDT', address: 'H8UekPGwePSmQ3ttuYGPU1szyFfjZR4N53rymSFwpLPm', balance: 0 },
-  { name: 'Lilcoin', symbol: '$LIL', address: 'xx11111111111111111111111111111111111111112', balance: 0 },
-]
 type Props = {
   tokenAddress: Address
   tokenAmount: string
   setAmount: Dispatch<SetStateAction<string>>
+  listedTokens: TokenMetadata[]
   title?: string
 }
-export default function SwapInputWithModal({ tokenAddress, tokenAmount, setAmount, title }: Props) {
+export default function SwapInputWithModal({ tokenAddress, tokenAmount, setAmount, listedTokens, title }: Props) {
   const { account } = useWalletUi()
   const walletAddress = address(account?.address!) || solanaTokenAddress
   const { data: tokenInfo } = useGetTokenInfoQuery({
@@ -62,7 +58,7 @@ export default function SwapInputWithModal({ tokenAddress, tokenAmount, setAmoun
           </DialogTrigger>
           <DialogContent className="sm:max-w-[525px]">
             <DialogTitle>Select a token</DialogTitle>
-            {testData.map((data) => (
+            {listedTokens?.map((data) => (
               <TokenRowData key={data.address} {...data}></TokenRowData>
             ))}
           </DialogContent>
@@ -78,17 +74,7 @@ export default function SwapInputWithModal({ tokenAddress, tokenAmount, setAmoun
   )
 }
 
-function TokenRowData({
-  name,
-  symbol,
-  address,
-  balance,
-}: {
-  name: string
-  symbol: string
-  address: string
-  balance: number
-}) {
+function TokenRowData({ name, symbol, address, balance, logoURI }: TokenMetadata) {
   const [textToCopy] = useState(address)
   const [copySuccess, setCopySuccess] = useState('')
 
@@ -116,7 +102,7 @@ function TokenRowData({
             className="aspect-square h-full w-full rounded-full"
             data-sentry-element="AvatarImage"
             data-sentry-source-file="TokenAvatar.tsx"
-            src="https://assets.coingecko.com/coins/images/21629/large/solana.jpg?1639626543"
+            src={logoURI || ''}
           />
         </span>
         <div className="flex flex-col mr-auto gap-y-0.5 min-w-0">
@@ -152,7 +138,12 @@ function TokenRowData({
           </div>
         </div>
         <div className="text-xs text-right flex flex-col text-secondary">
-          <span className="text-base font-medium text-primary">{balance || 0}</span>
+          <NumericFormat
+            displayType="text"
+            value={balance}
+            decimalScale={3}
+            className="text-base font-medium text-primary"
+          />
           <span className="" data-sentry-component="SimpleUSD" data-sentry-source-file="SimpleNumbers.tsx">
             $1
           </span>

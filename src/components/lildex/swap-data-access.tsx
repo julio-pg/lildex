@@ -1,11 +1,20 @@
 import { fetchLilpool, getSwapInstruction } from '@project/anchor'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useWalletTransactionSignAndSend } from '../solana/use-wallet-transaction-sign-and-send'
 import { useWalletUiSigner } from '../solana/use-wallet-ui-signer'
-import { numberToBigintPrice, useGetTokenAccountAddress } from '@/lib/utils'
+import { getUserListedTokens, numberToBigintPrice, TokenMetadata, useGetTokenAccountAddress } from '@/lib/utils'
 import { Address } from 'gill'
 import { TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
 import { useWalletUi } from '@wallet-ui/react'
+
+export function useGetListedTokensQuery({ wallet, listedTokens }: { wallet: Address; listedTokens: TokenMetadata[] }) {
+  const { client } = useWalletUi()
+
+  return useQuery({
+    queryKey: ['listed-tokens'],
+    queryFn: async () => await getUserListedTokens(client, wallet, listedTokens),
+  })
+}
 
 export function useCreateSwapMutation({
   aToB,

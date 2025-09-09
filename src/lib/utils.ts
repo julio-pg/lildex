@@ -4,7 +4,7 @@ import {
   useGetTokenAccountAddressQuery,
 } from '@/components/account/account-data-access'
 import { type ClassValue, clsx } from 'clsx'
-import { address, Address, Lamports, lamportsToSol } from 'gill'
+import { address, Address, Lamports, lamportsToSol, SolanaClient } from 'gill'
 import { twMerge } from 'tailwind-merge'
 import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS, TOKEN_PROGRAM_ADDRESS } from 'gill/programs/token'
 
@@ -65,4 +65,44 @@ export function numberToBigintPrice(value: number, decimals: bigint): bigint {
   return BigInt(Math.round(value * Number(scale)))
 }
 
-// export const decimalFormatter = new Big(255.5)
+export type TokenMetadata = {
+  address: string
+  symbol: string
+  name: string
+  decimals: number
+  logoURI?: string
+  balance?: number
+}
+
+export async function getUserListedTokens(client: SolanaClient, wallet: Address, listedTokens: TokenMetadata[]) {
+  const results = []
+  for (const token of listedTokens) {
+    let balance = 0
+    const mint = address(token.address)
+    try {
+      if (mint == solanaTokenAddress) {
+        const { value: balanceLamp } = await client.rpc.getBalance(wallet).send()
+        balance = Number(lamportsToSol(balanceLamp))
+      } else {
+        const { value: tokenInfo } = await client.rpc.getAccountInfo(mint).send()
+
+        const [ata] = await findAssociatedTokenPda({
+          mint: mint,
+          owner: wallet,
+          tokenProgram: tokenInfo?.owner!,
+        })
+        const { value: account } = await client.rpc.getTokenAccountBalance(ata).send()
+        balance = Number(account.amount) / Math.pow(10, token.decimals)
+      }
+    } catch (err) {
+      // User may not have an ATA or balance
+      balance = 0
+    }
+
+    results.push({
+      ...token,
+      balance,
+    })
+  }
+  return results
+}

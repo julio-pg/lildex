@@ -2,28 +2,32 @@ import { useWalletUi } from '@wallet-ui/react'
 import { ArrowUpDown, Check, Copy, ExternalLink } from 'lucide-react'
 import { WalletButton } from '../solana/solana-provider'
 import { Button } from '../ui/button'
-import SwapInput from '../ui/swap-input'
 import { ellipsify, solanaTokenAddress } from '@/lib/utils'
 import { useState } from 'react'
 import SwapInputWithModal from '../ui/swap-input-with-modal'
-
+import { useGetListedTokensQuery } from './swap-data-access'
+import { address } from 'gill'
+import listedTokens from '@/lib/listed-tokens.json'
 function Swap() {
   const { account } = useWalletUi()
+  if (!account) {
+    return (
+      <div className="hero py-[64px]">
+        <div className="hero-content text-center">
+          <WalletButton />
+        </div>
+      </div>
+    )
+  }
   const [tokenAAmount, setTokenAAmount] = useState('')
   const [tokenBAmount, setTokenBAmount] = useState('')
-  const [textToCopy, setTextToCopy] = useState('')
-  const [copySuccess, setCopySuccess] = useState('')
+  const walletAddress = address(account?.address!) || solanaTokenAddress
 
-  const handleCopyClick = async () => {
-    try {
-      await navigator.clipboard.writeText(textToCopy)
-      setCopySuccess('Copied!')
-      setTimeout(() => setCopySuccess(''), 2000) // Clear success message after 2 seconds
-    } catch (err) {
-      setCopySuccess('Failed to copy!')
-      console.error('Failed to copy text: ', err)
-    }
-  }
+  const { data: tokensWithBalances } = useGetListedTokensQuery({
+    wallet: walletAddress,
+    listedTokens: listedTokens,
+  })
+
   return (
     <div className="min-h-screen flex flex-col gap-y-4 items-center justify-center">
       <div className="w-full max-w-md rounded-2xl p-6 shadow-2xl bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400">
@@ -34,6 +38,7 @@ function Swap() {
             tokenAddress={solanaTokenAddress}
             tokenAmount={tokenAAmount}
             setAmount={setTokenAAmount}
+            listedTokens={tokensWithBalances!}
             title="Pay"
           />
 
@@ -47,6 +52,7 @@ function Swap() {
             tokenAddress={solanaTokenAddress}
             tokenAmount={tokenBAmount}
             setAmount={setTokenBAmount}
+            listedTokens={tokensWithBalances!}
             title="Receive"
           />
         </div>

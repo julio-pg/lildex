@@ -32,7 +32,7 @@ export function usePoolAccountsQuery() {
 
   return useQuery({
     retry: false,
-    queryKey: ['get-pool accounts'],
+    queryKey: ['get-pool-accounts'],
     queryFn: () =>
       getProgramAccountsDecoded(client.rpc, {
         decoder: getLilpoolDecoder(),

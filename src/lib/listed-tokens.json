@@ -1,0 +1,23 @@
+[
+  {
+    "address": "So11111111111111111111111111111111111111112",
+    "symbol": "SOL",
+    "name": "Solana",
+    "decimals": 9,
+    "logoURI": "https://assets.coingecko.com/coins/images/21629/large/solana.jpg?1639626543"
+  },
+  {
+    "address": "H8UekPGwePSmQ3ttuYGPU1szyFfjZR4N53rymSFwpLPm",
+    "symbol": "devUSDT",
+    "name": "devUSDT",
+    "decimals": 6,
+    "logoURI": "https://everlastingsong.github.io/nebula/devtoken_metadata/devUSDT/image.png"
+  },
+  {
+    "address": "BRjpCHtyQLNCo8gqRUr8jtdAj5AjPYQaoqbvcZiHok1k",
+    "symbol": "devUSDC",
+    "name": "devUSDC",
+    "decimals": 6,
+    "logoURI": "https://everlastingsong.github.io/nebula/devtoken_metadata/devUSDC/image.png"
+  }
+]
