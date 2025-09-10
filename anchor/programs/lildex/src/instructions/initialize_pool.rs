@@ -1,5 +1,5 @@
 use crate::state::*;
-use crate::util::transfer_tokens;
+use crate::util::*;
 use crate::{errors::ErrorCode, math::MAX_PROTOCOL_LIQUIDITY};
 use anchor_lang::prelude::*;
 use anchor_spl::{
@@ -18,6 +18,34 @@ pub struct InitializePool<'info> {
     pub token_mint_b: InterfaceAccount<'info, Mint>,
     #[account(mut)]
     pub funder: Signer<'info>,
+
+    /// CHECK: safe, the account that will be the owner of the position can be arbitrary
+    pub owner: UncheckedAccount<'info>,
+
+    #[account(
+      init,
+      payer = funder,
+      space = Lilpool::DISCRIMINATOR.len() + Position::INIT_SPACE,
+      seeds = [b"position", position_mint.key().as_ref()],
+      bump,
+    )]
+    pub position: Box<Account<'info, Position>>,
+
+    #[account(
+      init,
+      payer=funder,
+      mint::decimals = 0,
+      mint::authority= lilpool,
+    )]
+    pub position_mint: InterfaceAccount<'info, Mint>,
+
+    #[account(
+      init,
+      payer = funder,
+      associated_token::mint = position_mint,
+      associated_token::authority = owner,
+    )]
+    pub position_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
       init,
@@ -114,6 +142,7 @@ pub fn handler(
         None,
     )
     .map_err(|_| ErrorCode::InsufficientMakerBalance)?;
+
     let bump = ctx.bumps.lilpool;
 
     ctx.accounts.lilpool.set_inner(Lilpool {
@@ -129,5 +158,17 @@ pub fn handler(
         lilpool_bump: [bump],
     });
 
-    Ok(())
+    ctx.accounts.position.set_inner(Position {
+        lilpool: ctx.accounts.lilpool.key(),
+        funder: ctx.accounts.funder.key(),
+        position_mint: ctx.accounts.position_mint.key(),
+        token_a_amount: token_a_amount,
+        token_b_amount: token_b_amount,
+    });
+    mint_position_token_and_remove_authority(
+        &ctx.accounts.lilpool,
+        &ctx.accounts.position_mint,
+        &ctx.accounts.position_token_account,
+        &ctx.accounts.token_program,
+    )
 }

@@ -72,17 +72,20 @@ export type TokenMetadata = {
   decimals: number
   logoURI?: string
   balance?: number
+  tokenProgram?: string
 }
 
 export async function getUserListedTokens(client: SolanaClient, wallet: Address, listedTokens: TokenMetadata[]) {
   const results = []
   for (const token of listedTokens) {
     let balance = 0
+    let tokenProgram = ''
     const mint = address(token.address)
     try {
       if (mint == solanaTokenAddress) {
         const { value: balanceLamp } = await client.rpc.getBalance(wallet).send()
         balance = Number(lamportsToSol(balanceLamp))
+        tokenProgram = TOKEN_PROGRAM_ADDRESS
       } else {
         const { value: tokenInfo } = await client.rpc.getAccountInfo(mint).send()
 
@@ -93,15 +96,18 @@ export async function getUserListedTokens(client: SolanaClient, wallet: Address,
         })
         const { value: account } = await client.rpc.getTokenAccountBalance(ata).send()
         balance = Number(account.amount) / Math.pow(10, token.decimals)
+        tokenProgram = tokenInfo?.owner!
       }
     } catch (err) {
       // User may not have an ATA or balance
       balance = 0
+      tokenProgram = TOKEN_PROGRAM_ADDRESS
     }
 
     results.push({
       ...token,
       balance,
+      tokenProgram,
     })
   }
   return results

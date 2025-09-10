@@ -81,7 +81,7 @@ describe('lildex', () => {
     tokenVaultB = await connection.getTokenAccountAddress(lilpoolAddress, tokenMintB, true)
     postionTokenMint = await generateKeyPairSigner()
   })
-
+  // add it.only and connect('devnet) when wat to create this config in devnet
   it('Initialize config Lildex', async () => {
     connection = await connect()
     const configPDAAndBump = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
@@ -109,7 +109,7 @@ describe('lildex', () => {
       // ✅ success path: no error
       const configAccount = await programClient.fetchLilpoolsConfig(connection.rpc, configPDAAndBump.pda)
       expect(configAccount).toBeDefined()
-      console.log('✅ poolAccount:', configAccount.address)
+      console.log('✅ configAccount:', configAccount.address)
     } catch (err: any) {
       const msg = err.message || String(err)
 

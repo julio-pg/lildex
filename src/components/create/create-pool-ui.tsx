@@ -49,8 +49,8 @@ export default function CreatePool() {
   })
 
   const mutation = useInitializePoolMutation({
-    tokenMintA: address(selectedAtoken?.address! || solanaTokenAddress),
-    tokenMintB: address(selectedBtoken?.address! || solanaTokenAddress),
+    tokenAData: selectedAtoken!,
+    tokenBData: selectedBtoken!,
     tokenAAmount,
     tokenBAmount,
     initialPrice,
