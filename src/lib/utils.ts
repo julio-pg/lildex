@@ -9,6 +9,7 @@ import { twMerge } from 'tailwind-merge'
 import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS, TOKEN_PROGRAM_ADDRESS } from 'gill/programs/token'
 
 export const solanaTokenAddress = address('So11111111111111111111111111111111111111112')
+export const initialPriceDecimals = 9n
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))

@@ -1,4 +1,4 @@
-import { bigintPriceToNumber, numberToBigintPrice, TokenMetadata } from '@/lib/utils'
+import { bigintPriceToNumber, initialPriceDecimals, numberToBigintPrice, TokenMetadata } from '@/lib/utils'
 import { atom } from 'jotai'
 
 export const createTokenADataAtom = atom<TokenMetadata>()
@@ -9,22 +9,30 @@ export const createAAmountAtom = atom('')
 export const createBAmountAtom = atom(
   (get) => {
     const tokenA = get(createAAmountAtom)
-    const tokenBInfo = get(createTokenBDataAtom)
-    const decimals = BigInt(tokenBInfo?.decimals! || 1n)
+    const tokenAInfo = get(createTokenADataAtom)
+    const tokenAdecimals = BigInt(tokenAInfo?.decimals! || 1n)
+
+    const tokenARaw = numberToBigintPrice(Number(tokenA), tokenAdecimals)
     const poolPrice = get(createInitialPriceAtom)
-    const priceBigInt = numberToBigintPrice(Number(poolPrice), decimals)
-    const newTokenBValue = Number(tokenA) * bigintPriceToNumber(priceBigInt, decimals)
+    const priceBigInt = numberToBigintPrice(Number(poolPrice), initialPriceDecimals)
+
+    const tokenBRaw = (tokenARaw * priceBigInt) / BigInt(10 ** 9)
+    const newTokenBValue = bigintPriceToNumber(tokenBRaw, initialPriceDecimals)
     return newTokenBValue.toString()
   },
   (get, set, newTokenB: string) => {
     if (newTokenB == '') return
 
-    const poolPrice = get(createInitialPriceAtom)
-    const tokenAInfo = get(createTokenADataAtom)
-    const decimals = BigInt(tokenAInfo?.decimals! || 1n)
-    const priceBigInt = numberToBigintPrice(Number(poolPrice), decimals)
+    const tokenBInfo = get(createTokenBDataAtom)
+    const tokenBdecimals = BigInt(tokenBInfo?.decimals! || 1n)
+    const tokenBRaw = numberToBigintPrice(Number(newTokenB), tokenBdecimals)
 
-    const newTokenAValue = Number(newTokenB) / bigintPriceToNumber(priceBigInt, decimals)
+    const poolPrice = get(createInitialPriceAtom)
+    const priceBigInt = numberToBigintPrice(Number(poolPrice), initialPriceDecimals)
+
+    const tokenARaw = (tokenBRaw * BigInt(10 ** 9)) / priceBigInt
+
+    const newTokenAValue = bigintPriceToNumber(tokenARaw, tokenBdecimals)
     set(createAAmountAtom, newTokenAValue.toString())
   },
 )

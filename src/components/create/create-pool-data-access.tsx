@@ -15,7 +15,13 @@ import { toast } from 'sonner'
 import { useLildexProgramId } from '../lildex/lildex-data-access'
 import { useGetTokenAccountAddressQuery } from '../account/account-data-access'
 import { TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
-import { numberToBigintPrice, solanaTokenAddress, TokenMetadata, useGetTokenAccountAddress } from '@/lib/utils'
+import {
+  initialPriceDecimals,
+  numberToBigintPrice,
+  solanaTokenAddress,
+  TokenMetadata,
+  useGetTokenAccountAddress,
+} from '@/lib/utils'
 
 export function useInitializePoolMutation({
   tokenAData,
@@ -53,7 +59,7 @@ export function useInitializePoolMutation({
 
   const tokenABigIntAmount = numberToBigintPrice(Number(tokenAAmount), decimalsA)
   const tokenBBigIntAmount = numberToBigintPrice(Number(tokenBAmount), decimalsB)
-  const initialPriceBigIntAmount = numberToBigintPrice(Number(initialPrice), 9n)
+  const initialPriceBigIntAmount = numberToBigintPrice(Number(initialPrice), initialPriceDecimals)
   return useMutation({
     mutationFn: async () => {
       const postionTokenMint = await generateKeyPairSigner()
