@@ -11,6 +11,7 @@ import { useInitializePoolMutation } from './create-pool-data-access'
 import { useAtom } from 'jotai'
 import {
   createAAmountAtom,
+  createAmountIsValidAtom,
   createBAmountAtom,
   createInitialPriceAtom,
   createTokenADataAtom,
@@ -20,7 +21,6 @@ import {
 import SwapInputWithModal from '../ui/swap-input-with-modal'
 import { useGetListedTokensQuery } from '../lildex/swap-data-access'
 import listedTokens from '@/lib/listed-tokens.json'
-import { amountIsValidAtom } from '@/context/lilpool-context'
 
 export default function CreatePool() {
   const { account } = useWalletUi()
@@ -40,7 +40,7 @@ export default function CreatePool() {
   const [selectedAtoken, setSelectedAtoken] = useAtom(createTokenADataAtom)
   const [selectedBtoken, setSelectedBtoken] = useAtom(createTokenBDataAtom)
   const [isPairSelected] = useAtom(isPairSelectedAtom)
-  const [amountIsValid] = useAtom(amountIsValidAtom)
+  const [amountIsValid] = useAtom(createAmountIsValidAtom)
   const walletAddress = address(account?.address! || solanaTokenAddress)
 
   const { data: tokensWithBalances } = useGetListedTokensQuery({

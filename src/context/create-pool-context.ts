@@ -31,27 +31,28 @@ export const createBAmountAtom = atom(
 export const isPairSelectedAtom = atom((get) => {
   const tokenAInfo = get(createTokenADataAtom)
   const tokenBInfo = get(createTokenBDataAtom)
-  if (tokenAInfo && tokenBInfo != undefined) {
+  const tokenAAddress = tokenAInfo?.address
+  const tokenBAddress = tokenBInfo?.address
+  if (tokenAInfo && tokenBInfo != undefined && tokenAAddress != tokenBAddress) {
     return true
   } else {
     return false
   }
 })
-export const amountIsValidAtom = atom((get) => {
+export const createAmountIsValidAtom = atom((get) => {
+  const tokenAInfo = get(createTokenADataAtom)
+  const tokenBInfo = get(createTokenBDataAtom)
+  const tokenABalance = tokenAInfo?.balance!
+  const tokenBBalance = tokenBInfo?.balance!
   const tokenA = get(createAAmountAtom)
-  const tokenb = get(createBAmountAtom)
+  const tokenB = get(createBAmountAtom)
   const initialPrice = get(createInitialPriceAtom)
 
-  if (
-    Number(tokenb) &&
-    Number(tokenA) &&
-    Number(initialPrice) != 0 &&
-    Number(tokenb) &&
-    Number(tokenA) &&
-    Number(initialPrice) >= 1
-  ) {
-    return true
-  } else {
-    false
+  if (Number(tokenB) <= 0 || Number(tokenA) <= 0 || Number(initialPrice) <= 0) {
+    return false
   }
+  if (tokenABalance < Number(tokenA) || tokenBBalance < Number(tokenB)) {
+    return false
+  }
+  return true
 })
