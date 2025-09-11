@@ -23,7 +23,8 @@ describe('lildex', () => {
   const userInitialTokenAmount = 10n * TOKEN
   const tokenAOfferedAmount = 1n * TOKEN
   const initialPrice = 3n * TOKEN
-  const tokenBWantedAmount = (tokenAOfferedAmount * initialPrice) / TOKEN
+  const tokenBRaw = (tokenAOfferedAmount * initialPrice) / BigInt(10 ** 9)
+  const tokenBWantedAmount = tokenBRaw
 
   beforeAll(async () => {
     connection = await connect()
@@ -61,6 +62,8 @@ describe('lildex', () => {
     // get funder token accounts
     funderTokenAccountA = await connection.getTokenAccountAddress(payer.address, tokenMintA, true)
     funderTokenAccountB = await connection.getTokenAccountAddress(payer.address, tokenMintB, true)
+    console.log('funderA:', funderTokenAccountA)
+    console.log('funderB:', funderTokenAccountB)
     // get config PDA
     const configPDAAndBump = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
       'config',
@@ -126,14 +129,24 @@ describe('lildex', () => {
     }
   })
 
-  it('Initialize pool', async () => {
+  it.only('Initialize pool', async () => {
     connection = await connect()
+
+    const postionTokenAccount = await connection.getTokenAccountAddress(payer.address, postionTokenMint.address, true)
+    const { pda: positionAddress } = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
+      'position',
+      postionTokenMint.address,
+    ])
 
     const ix = programClient.getInitializePoolInstruction({
       lilpoolsConfig: configAddress,
       tokenMintA: tokenMintA,
       tokenMintB: tokenMintB,
+      positionMint: postionTokenMint,
+      positionTokenAccount: postionTokenAccount,
+      position: positionAddress,
       funder: payer,
+      owner: payer.address,
       lilpool: lilpoolAddress,
       tokenVaultA: tokenVaultA,
       tokenVaultB: tokenVaultB,
@@ -165,6 +178,9 @@ describe('lildex', () => {
         expect(true).toBe(true) // pass
       } else {
         console.error('❌ Unexpected error:', msg)
+        if (err.cause) {
+          console.error('Cause of failure:', err.cause)
+        }
         throw err // fail test for any other error
       }
     }

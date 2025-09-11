@@ -7,6 +7,7 @@ import {
   generateKeyPairSigner,
   getAddressEncoder,
   getProgramDerivedAddress,
+  getSolanaErrorFromInstructionError,
   getUtf8Encoder,
 } from 'gill'
 import { useWalletTransactionSignAndSend } from '../solana/use-wallet-transaction-sign-and-send'
@@ -14,7 +15,7 @@ import { toastTx } from '../toast-tx'
 import { toast } from 'sonner'
 import { useLildexProgramId } from '../lildex/lildex-data-access'
 import { useGetTokenAccountAddressQuery } from '../account/account-data-access'
-import { TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
+import { findAssociatedTokenPda, isExtension, TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
 import {
   initialPriceDecimals,
   numberToBigintPrice,
@@ -63,6 +64,7 @@ export function useInitializePoolMutation({
   return useMutation({
     mutationFn: async () => {
       const postionTokenMint = await generateKeyPairSigner()
+
       const postionTokenAccount = await useGetTokenAccountAddress({
         wallet: signer.address,
         mint: postionTokenMint.address,
@@ -86,16 +88,17 @@ export function useInitializePoolMutation({
         seeds: [textEncoder.encode('position'), addressEncoder.encode(postionTokenMint.address)],
       })
 
-      const tokenVaultA = await useGetTokenAccountAddress({
-        wallet: lilpollPda,
+      const [tokenVaultA] = await findAssociatedTokenPda({
+        owner: lilpollPda,
         mint: tokenMintA,
-        useTokenExtensions: false,
+        tokenProgram: address(tokenAData?.tokenProgram!),
       })
-      const tokenVaultB = await useGetTokenAccountAddress({
-        wallet: lilpollPda,
+      const [tokenVaultB] = await findAssociatedTokenPda({
+        owner: lilpollPda,
         mint: tokenMintB,
-        useTokenExtensions: false,
+        tokenProgram: address(tokenAData?.tokenProgram!),
       })
+
       return await signAndSend(
         getInitializePoolInstruction({
           lilpoolsConfig: configPda,
@@ -122,11 +125,11 @@ export function useInitializePoolMutation({
     onSuccess: async (tx) => {
       toastTx(tx)
     },
-    onError: (e) => {
+    onError: (e: any) => {
       toast.error(e.message)
-
-      // const errorLog = getSolanaErrorFromInstructionError()
-      // console.log(errorLog)
+      if (e.cause) {
+        console.error('Cause of failure:', e.cause)
+      }
     },
   })
 }

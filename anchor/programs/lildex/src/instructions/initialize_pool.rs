@@ -12,10 +12,10 @@ pub struct InitializePool<'info> {
     pub lilpools_config: Box<Account<'info, LilpoolsConfig>>,
 
     #[account(mint::token_program = token_program)]
-    pub token_mint_a: InterfaceAccount<'info, Mint>,
+    pub token_mint_a: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(mint::token_program = token_program)]
-    pub token_mint_b: InterfaceAccount<'info, Mint>,
+    pub token_mint_b: Box<InterfaceAccount<'info, Mint>>,
     #[account(mut)]
     pub funder: Signer<'info>,
 
@@ -119,7 +119,6 @@ pub fn handler(
         ErrorCode::InvalidTokenMint,
     );
 
-    // TODO: this should open a position too
     // Move the tokens from the maker's ATA to the vault
     transfer_tokens(
         &ctx.accounts.funder_token_account_a,
