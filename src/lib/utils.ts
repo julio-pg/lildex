@@ -88,7 +88,7 @@ export async function getUserListedTokens(client: SolanaClient, wallet: Address,
         balance = Number(lamportsToSol(balanceLamp))
         tokenProgram = TOKEN_PROGRAM_ADDRESS
       } else {
-        const { value: tokenInfo } = await client.rpc.getAccountInfo(mint).send()
+        const { value: tokenInfo } = await client.rpc.getAccountInfo(mint, { encoding: 'base64' }).send()
 
         const [ata] = await findAssociatedTokenPda({
           mint: mint,

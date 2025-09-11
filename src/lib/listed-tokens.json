@@ -19,5 +19,19 @@
     "name": "devUSDC",
     "decimals": 6,
     "logoURI": "https://everlastingsong.github.io/nebula/devtoken_metadata/devUSDC/image.png"
+  },
+  {
+    "address": "G2uaA9VLQD9sJXnYMYT2Pjk6kaSv3CdnAA4rcWvBREVw",
+    "symbol": "$LIL",
+    "name": "Lilcoin",
+    "decimals": 9,
+    "logoURI": "https://cyan-magnificent-dingo-615.mypinata.cloud/ipfs/bafkreig5ron7etz4rtvzlpnsnqq5yfjavd7cfyvzm7t5haduqch7c46j4m"
+  },
+  {
+    "address": "BPacU77oBuEGZ9Kkmyi9Y5iiUKkB1tCVjEcbi7TarbeS",
+    "symbol": "WOW",
+    "name": "Wowcoin",
+    "decimals": 9,
+    "logoURI": ""
   }
 ]

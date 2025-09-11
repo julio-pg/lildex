@@ -127,9 +127,6 @@ export function useInitializePoolMutation({
     },
     onError: (e: any) => {
       toast.error(e.message)
-      if (e.cause) {
-        console.error('Cause of failure:', e.cause)
-      }
     },
   })
 }

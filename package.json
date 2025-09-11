@@ -14,7 +14,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "setup": "npm run anchor keys sync && npm run codama:js",
-    "anchor-test-skip": "cd anchor && anchor test --skip-local-validator --skip-deploy"
+    "anchor-test-skip": "cd anchor && anchor test --skip-local-validator --skip-deploy",
+    "deploy-devnet": "cd anchor && anchor deploy --provider.cluster devnet"
   },
   "description": "React+Vite, Tailwind, gill (based on @solana/kit), Anchor Lildex example, Wallet UI",
   "keywords": [

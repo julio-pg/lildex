@@ -1,10 +1,7 @@
-import { cn, ellipsify, getTokenBalance, solanaTokenAddress, TokenMetadata } from '@/lib/utils'
-import { address, Address } from 'gill'
+import { cn, ellipsify, TokenMetadata } from '@/lib/utils'
 import { SetStateAction } from 'jotai'
 import { Dispatch, useState } from 'react'
 import { NumericFormat } from 'react-number-format'
-import { useGetTokenInfoQuery } from '../account/account-data-access'
-import { useWalletUi } from '@wallet-ui/react'
 import { Check, Copy, ExternalLink, Wallet } from 'lucide-react'
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from './dialog'
 import { Button } from './button'
@@ -53,7 +50,12 @@ export default function SwapInputWithModal({
               variant="outline"
               className="flex px-2 py-1 gap-x-1.5 text-xl font-regular text-primary items-center"
             >
-              <img src={selectedToken?.logoURI} className="w-5 h-auto aspect-square rounded-full" />{' '}
+              {selectedToken && (
+                <img
+                  src={selectedToken?.logoURI || '/img/fallback-coin.png'}
+                  className="w-5 h-auto aspect-square rounded-full"
+                />
+              )}
               <span className="text-xl">{selectedToken?.symbol || 'Select Token'}</span>
             </Button>
           </DialogTrigger>
@@ -105,12 +107,11 @@ function TokenRowData({
           className="relative flex min-h-4 min-w-4 shrink-0 rounded-full shadow-box h-6 w-6"
           data-sentry-element="Avatar"
         >
-          {/* TODO: add actual image */}
           <img
             className="aspect-square h-full w-full rounded-full"
             data-sentry-element="AvatarImage"
             data-sentry-source-file="TokenAvatar.tsx"
-            src={tokenData?.logoURI || ''}
+            src={tokenData?.logoURI || '/img/fallback-coin.png'}
           />
         </span>
         <div className="flex flex-col mr-auto gap-y-0.5 min-w-0">

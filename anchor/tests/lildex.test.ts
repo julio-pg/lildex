@@ -20,7 +20,7 @@ describe('lildex', () => {
   let configAddress: Address
   // Both tokens have 9 decimals, so we can use this to convert between major and minor units
   const TOKEN = 10n ** BigInt(tokenDecimals)
-  const userInitialTokenAmount = 10n * TOKEN
+  // const userInitialTokenAmount = 10n * TOKEN
   const tokenAOfferedAmount = 1n * TOKEN
   const initialPrice = 3n * TOKEN
   const tokenBRaw = (tokenAOfferedAmount * initialPrice) / BigInt(10 ** 9)
@@ -53,8 +53,8 @@ describe('lildex', () => {
     //     keyTwo: 'valueTwo',
     //   },
     // })
-    tokenMintA = address('GzqqMo5rnSYqfwX3gvkMUyogdSgQsbvgjXQi6VnHvEhU')
-    tokenMintB = address('DtmYC5ms4v2mP61FcwceA1Sf7PttWefqzvhbcNv8smqs')
+    tokenMintA = address('G2uaA9VLQD9sJXnYMYT2Pjk6kaSv3CdnAA4rcWvBREVw')
+    tokenMintB = address('BPacU77oBuEGZ9Kkmyi9Y5iiUKkB1tCVjEcbi7TarbeS')
     // Mint tokens to the user
     // const appWallet = address('Cp3hG8RqRV7ifQaNoXQSxQVc63wSNyj9Junjs14LEQqQ')
     // await connection.mintTokens(tokenMintA, payer, userInitialTokenAmount, payer.address)
@@ -130,14 +130,16 @@ describe('lildex', () => {
   })
 
   it.only('Initialize pool', async () => {
-    connection = await connect()
+    connection = await connect('devnet')
 
     const postionTokenAccount = await connection.getTokenAccountAddress(payer.address, postionTokenMint.address, true)
     const { pda: positionAddress } = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
       'position',
       postionTokenMint.address,
     ])
-
+    console.log('initialPrice:', initialPrice)
+    console.log('tokenAAmount:', tokenAOfferedAmount)
+    console.log('tokenBAmount:', tokenBWantedAmount)
     const ix = programClient.getInitializePoolInstruction({
       lilpoolsConfig: configAddress,
       tokenMintA: tokenMintA,
