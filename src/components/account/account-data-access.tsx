@@ -52,7 +52,7 @@ export function useGetTokenAccountAddressQuery({ wallet, mint }: { wallet: Addre
     retry: false,
     queryKey: ['get-token-account-address', { cluster, mint }],
     queryFn: async () => {
-      const accountInfo = await client.rpc.getAccountInfo(mint).send()
+      const accountInfo = await client.rpc.getAccountInfo(mint, { encoding: 'base64' }).send()
       return await findAssociatedTokenPda({
         mint: mint,
         owner: wallet,

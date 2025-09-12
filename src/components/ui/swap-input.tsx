@@ -1,25 +1,22 @@
 import { cn, getTokenBalance, solanaTokenAddress } from '@/lib/utils'
 import { useWalletUi } from '@wallet-ui/react'
-import { address, Address } from 'gill'
+import { address } from 'gill'
 import { Wallet } from 'lucide-react'
 import { Dispatch, SetStateAction } from 'react'
-import { useGetTokenInfoQuery } from '../account/account-data-access'
 import { NumericFormat } from 'react-number-format'
+import { Extension } from 'gill/programs'
 
 type Props = {
-  tokenAddress: Address
+  tokenData: Extract<Extension, { __kind: 'TokenMetadata' }> & { decimals: number }
   tokenAmount: string
   setAmount: Dispatch<SetStateAction<string>>
   title?: string
 }
-export default function SwapInput({ tokenAddress, tokenAmount, setAmount, title }: Props) {
+export default function SwapInput({ tokenData, tokenAmount, setAmount, title }: Props) {
   const { account } = useWalletUi()
   const walletAddress = address(account?.address!) || solanaTokenAddress
-  const { data: tokenInfo } = useGetTokenInfoQuery({
-    tokenAddress: tokenAddress,
-  })
 
-  const tokenBalance = getTokenBalance(walletAddress, tokenAddress)
+  const tokenBalance = getTokenBalance(walletAddress, tokenData.mint)
 
   return (
     <div
@@ -43,12 +40,13 @@ export default function SwapInput({ tokenAddress, tokenAmount, setAmount, title 
       <div className="space-y-2 flex flex-col items-end">
         {title && <span>Max</span>}
         <div className="flex px-2 py-1 gap-x-1.5 text-xl font-regular text-primary items-center">
-          <img /> <span className="text-xl">{tokenInfo?.data.symbol || 'N/A'}</span>
+          {tokenData && <img src={'/img/fallback-coin.png'} className="w-5 h-auto aspect-square rounded-full" />}
+          <span className="text-xl">{tokenData?.symbol || 'Select Token'}</span>
         </div>
         <div className="flex items-center gap-x-1.5">
           <span className="flex text-sm gap-x-1 items-center">
             <Wallet size={15} />
-            <span>{Number(tokenBalance || 0).toFixed(3)}</span>
+            <NumericFormat displayType="text" value={tokenBalance} decimalScale={3} />
           </span>
         </div>
       </div>

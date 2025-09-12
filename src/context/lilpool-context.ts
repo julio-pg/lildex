@@ -1,40 +1,56 @@
-import { bigintPriceToNumber } from '@/lib/utils'
+import { bigintPriceToNumber, initialPriceDecimals, numberToBigintPrice } from '@/lib/utils'
 import { Lilpool } from '@project/anchor'
+import { Extension } from 'gill/programs'
 import { atom } from 'jotai'
 
-export const selectedPoolAtom = atom<Lilpool>()
-export const tokenAAmountAtom = atom('')
+type parsedLilpool = Lilpool & {
+  metadataTokenA: Extract<Extension, { __kind: 'TokenMetadata' }> & { decimals: number }
+} & { metadataTokenB: Extract<Extension, { __kind: 'TokenMetadata' }> & { decimals: number } }
+export const selectedPoolAtom = atom<parsedLilpool>()
+export const poolAAmountAtom = atom('')
 
-export const tokenBAmountAtom = atom(
+export const poolBAmountAtom = atom(
   (get) => {
-    const tokenA = get(tokenAAmountAtom)
+    const tokenA = get(poolAAmountAtom)
     const pool = get(selectedPoolAtom)
-    const poolPrice = pool?.price || 1n
-    // TODO: get the decimal of the token onchain
-    // const decimals = BigInt(tokenAInfo?.decimals! || 1n)
+    const tokenAInfo = pool?.metadataTokenA
 
-    const newTokenBValue: number = Number(tokenA) * bigintPriceToNumber(poolPrice, 9n)
+    const tokenAdecimals = BigInt(tokenAInfo?.decimals! || 1n)
+
+    const tokenARaw = numberToBigintPrice(Number(tokenA), tokenAdecimals)
+    const poolPrice = pool?.price || 1n
+
+    const tokenBRaw = (tokenARaw * poolPrice) / BigInt(10 ** 9)
+    const newTokenBValue = bigintPriceToNumber(tokenBRaw, initialPriceDecimals)
     return newTokenBValue.toString()
   },
   (get, set, newTokenB: string) => {
-    const pool = get(selectedPoolAtom)
-    if (!pool?.price) return
     if (newTokenB == '') return
+    const pool = get(selectedPoolAtom)
+
+    const tokenBInfo = pool?.metadataTokenB
+    const tokenBdecimals = BigInt(tokenBInfo?.decimals! || 1n)
+    const tokenBRaw = numberToBigintPrice(Number(newTokenB), tokenBdecimals)
 
     const poolPrice = pool?.price || 1n
-    // convert tokenB → tokenA
-    const newTokenAValue = Number(newTokenB) / bigintPriceToNumber(poolPrice, 9n)
-    set(tokenAAmountAtom, newTokenAValue.toString())
+
+    const tokenARaw = (tokenBRaw * BigInt(10 ** 9)) / poolPrice
+
+    const newTokenAValue = bigintPriceToNumber(tokenARaw, tokenBdecimals)
+    set(poolAAmountAtom, newTokenAValue.toString())
   },
 )
 
 export const amountIsValidAtom = atom((get) => {
-  const tokenA = get(tokenAAmountAtom)
-  const tokenb = get(tokenBAmountAtom)
-  const pool = get(selectedPoolAtom)
-  const poolPrice = pool?.price || 1n
-  // console.log(Number(tokenb))
-  // console.log(Number(tokenA) * bigintPriceToNumber(poolPrice, 9n))
-  const isValid = Number(tokenb) == Number(tokenA) * bigintPriceToNumber(poolPrice, 9n)
-  return isValid
+  const tokenA = get(poolAAmountAtom)
+  const tokenB = get(poolBAmountAtom)
+  // const pool = get(selectedPoolAtom)
+
+  if (Number(tokenB) <= 0 || Number(tokenA) <= 0) {
+    return false
+  }
+  // if (tokenABalance < Number(tokenA) || tokenBBalance < Number(tokenB)) {
+  //   return false
+  // }
+  return true
 })

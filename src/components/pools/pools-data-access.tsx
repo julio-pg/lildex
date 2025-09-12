@@ -17,28 +17,88 @@ import {
   getBase58Decoder,
   getProgramDerivedAddress,
   getUtf8Encoder,
+  none,
 } from 'gill'
-import { TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
+import { Extension, fetchMint, TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
 import { toastTx } from '../toast-tx'
 import { toast } from 'sonner'
-import { numberToBigintPrice, useGetTokenAccountAddress } from '@/lib/utils'
+import { numberToBigintPrice, solanaTokenAddress, useGetTokenAccountAddress } from '@/lib/utils'
 import { useWalletUiSigner } from '@/components/solana/use-wallet-ui-signer'
 import { useWalletTransactionSignAndSend } from '../solana/use-wallet-transaction-sign-and-send'
 import { useLildexProgramId } from '../lildex/lildex-data-access'
 
+export function useGetMintQuery({ mint }: { mint: Address }) {
+  const { client } = useWalletUi()
+  return useQuery({
+    retry: false,
+    queryKey: ['get-account-info', mint],
+    queryFn: async () => {
+      const { data: tokenInfo } = await fetchMint(client.rpc, mint)
+      return tokenInfo
+    },
+  })
+}
+
 export type PoolAccount = Account<Lilpool, string>
 export function usePoolAccountsQuery() {
   const { client } = useWalletUi()
+  const programId = useLildexProgramId()
 
   return useQuery({
     retry: false,
     queryKey: ['get-pool-accounts'],
-    queryFn: () =>
-      getProgramAccountsDecoded(client.rpc, {
+    queryFn: async () => {
+      const pools = (await getProgramAccountsDecoded(client.rpc, {
         decoder: getLilpoolDecoder(),
         filter: getBase58Decoder().decode(LILPOOL_DISCRIMINATOR),
         programAddress: LILDEX_PROGRAM_ADDRESS,
-      }) as Promise<PoolAccount[]>,
+      })) as PoolAccount[]
+
+      const results = []
+      for (const { data: pool, address } of pools) {
+        let metadataTokenA!: Extract<Extension, { __kind: 'TokenMetadata' }> & { decimals: number }
+        let metadataTokenB!: Extract<Extension, { __kind: 'TokenMetadata' }> & { decimals: number }
+        try {
+          const { data: tokenAInfo } = await fetchMint(client.rpc, pool.tokenMintA)
+          if (tokenAInfo.extensions.__option === 'Some') {
+            const extensionTokenA = tokenAInfo.extensions.value.find((ext) => ext.__kind === 'TokenMetadata')
+            metadataTokenA = {
+              ...extensionTokenA!,
+              decimals: tokenAInfo.decimals,
+            }
+          }
+
+          const { data: tokenBInfo } = await fetchMint(client.rpc, pool.tokenMintB)
+          if (tokenBInfo.extensions.__option === 'Some') {
+            const extensionTokenB = tokenBInfo.extensions.value.find((ext) => ext.__kind === 'TokenMetadata')
+            metadataTokenB = {
+              ...extensionTokenB!,
+              decimals: tokenBInfo.decimals,
+            }
+          }
+        } catch (error) {
+          const fallBackData: Extract<Extension, { __kind: 'TokenMetadata' }> & { decimals: number } = {
+            __kind: 'TokenMetadata',
+            updateAuthority: none(),
+            mint: solanaTokenAddress,
+            name: '',
+            symbol: '',
+            uri: '',
+            additionalMetadata: new Map(),
+            decimals: 1,
+          }
+          metadataTokenA = fallBackData
+          metadataTokenB = fallBackData
+        }
+        results.push({
+          ...pool,
+          address,
+          metadataTokenA,
+          metadataTokenB,
+        })
+      }
+      return results
+    },
   })
 }
 

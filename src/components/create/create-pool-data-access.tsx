@@ -15,7 +15,7 @@ import { toastTx } from '../toast-tx'
 import { toast } from 'sonner'
 import { useLildexProgramId } from '../lildex/lildex-data-access'
 import { useGetTokenAccountAddressQuery } from '../account/account-data-access'
-import { findAssociatedTokenPda, isExtension, TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
+import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
 import {
   initialPriceDecimals,
   numberToBigintPrice,

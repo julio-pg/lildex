@@ -8,7 +8,7 @@ import { DialogClose } from '../ui/dialog'
 import { useWalletUi } from '@wallet-ui/react'
 import { WalletButton } from '../solana/solana-provider'
 import { useAtom } from 'jotai'
-import { amountIsValidAtom, selectedPoolAtom, tokenAAmountAtom, tokenBAmountAtom } from '@/context/lilpool-context'
+import { amountIsValidAtom, poolAAmountAtom, poolBAmountAtom, selectedPoolAtom } from '@/context/lilpool-context'
 import { Dispatch, SetStateAction } from 'react'
 
 export default function Pools() {
@@ -24,8 +24,8 @@ export default function Pools() {
   }
   const { data: pools } = usePoolAccountsQuery()
 
-  const [tokenAAmount, setTokenAAmount] = useAtom(tokenAAmountAtom)
-  const [tokenBAmount, setTokenBAmount] = useAtom(tokenBAmountAtom)
+  const [tokenAAmount, setTokenAAmount] = useAtom(poolAAmountAtom)
+  const [tokenBAmount, setTokenBAmount] = useAtom(poolBAmountAtom)
   const [selectedPool, SetSelectedPool] = useAtom(selectedPoolAtom)
 
   const mutation = useOpenPositionMutation({
@@ -35,6 +35,7 @@ export default function Pools() {
     tokenBAmount,
   })
   const [amountIsValid] = useAtom(amountIsValidAtom)
+
   return (
     <div className="relative overflow-x-auto rounded-md">
       <Table>
@@ -47,19 +48,23 @@ export default function Pools() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {pools?.map(({ data, address }) => (
-            <TableRow key={address} className="bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400 ">
+          {pools?.map((data) => (
+            <TableRow key={data.address} className="bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400 ">
               <TableHead scope="row" className=" font-medium text-gray-900 whitespace-nowrap dark:text-white text-xl">
-                {`${ellipsify(data.tokenMintA)} / ${ellipsify(data.tokenMintB)}`}
+                {`${data.metadataTokenA.symbol || ellipsify(data.tokenMintA)} / ${ellipsify(data.metadataTokenB.symbol || data.tokenMintB)}`}
               </TableHead>
               <TableCell>${BigInt(bigintPriceToNumber(data?.price!, 9n) || 0)}</TableCell>
               <TableCell>{data.liquidity}</TableCell>
               <TableCell>{data.protocolFeeRate / 100}%</TableCell>
               <TableCell onClick={() => SetSelectedPool(data)}>
                 <AppModal title="Open">
-                  <SwapInput tokenAddress={data.tokenMintA} tokenAmount={tokenAAmount} setAmount={setTokenAAmount} />
                   <SwapInput
-                    tokenAddress={data.tokenMintB}
+                    tokenData={selectedPool?.metadataTokenA!}
+                    tokenAmount={tokenAAmount}
+                    setAmount={setTokenAAmount}
+                  />
+                  <SwapInput
+                    tokenData={selectedPool?.metadataTokenB!}
                     tokenAmount={tokenBAmount}
                     setAmount={setTokenBAmount as Dispatch<SetStateAction<string>>}
                   />
