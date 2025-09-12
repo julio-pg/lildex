@@ -30,6 +30,7 @@ describe('lildex', () => {
     connection = await connect()
     // lildex = await generateKeyPairSigner()
     payer = await loadKeypairSignerFromFile()
+
     // Create two token mints - the factories that create token A, and token B
     // tokenMintA = await connection.createTokenMint({
     //   mintAuthority: payer,
@@ -53,8 +54,10 @@ describe('lildex', () => {
     //     keyTwo: 'valueTwo',
     //   },
     // })
-    tokenMintA = address('G2uaA9VLQD9sJXnYMYT2Pjk6kaSv3CdnAA4rcWvBREVw')
-    tokenMintB = address('BPacU77oBuEGZ9Kkmyi9Y5iiUKkB1tCVjEcbi7TarbeS')
+    // tokenMintA = address('G2uaA9VLQD9sJXnYMYT2Pjk6kaSv3CdnAA4rcWvBREVw')
+    // tokenMintB = address('BPacU77oBuEGZ9Kkmyi9Y5iiUKkB1tCVjEcbi7TarbeS')
+    tokenMintA = address('GzqqMo5rnSYqfwX3gvkMUyogdSgQsbvgjXQi6VnHvEhU')
+    tokenMintB = address('DtmYC5ms4v2mP61FcwceA1Sf7PttWefqzvhbcNv8smqs')
     // Mint tokens to the user
     // const appWallet = address('Cp3hG8RqRV7ifQaNoXQSxQVc63wSNyj9Junjs14LEQqQ')
     // await connection.mintTokens(tokenMintA, payer, userInitialTokenAmount, payer.address)
@@ -129,8 +132,8 @@ describe('lildex', () => {
     }
   })
 
-  it.only('Initialize pool', async () => {
-    connection = await connect('devnet')
+  it('Initialize pool', async () => {
+    connection = await connect()
 
     const postionTokenAccount = await connection.getTokenAccountAddress(payer.address, postionTokenMint.address, true)
     const { pda: positionAddress } = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
@@ -238,7 +241,7 @@ describe('lildex', () => {
       }
     }
   })
-  it('Close position', async () => {
+  it.only('Close position', async () => {
     connection = await connect()
 
     const getOffers = connection.getAccountsFactory(
@@ -250,18 +253,21 @@ describe('lildex', () => {
     const positions = await getOffers()
     const position1 = positions[0]
 
-    const postionTokenAccount = await connection.getTokenAccountAddress(payer.address, postionTokenMint.address, true)
+    let postionTokenAccount
     let lilpool
+    let positionMint
     if (position1.exists) {
       lilpool = position1.data.lilpool
+      positionMint = position1.data.positionMint
     }
+    postionTokenAccount = await connection.getTokenAccountAddress(payer.address, positionMint!, true)
     const ix = programClient.getClosePositionInstruction({
       lilpool: lilpool!,
       positionAuthority: payer,
       receiver: payer.address,
       position: position1.address,
-      positionMint: postionTokenMint.address,
-      positionTokenAccount: postionTokenAccount,
+      positionMint: positionMint!,
+      positionTokenAccount: postionTokenAccount!,
       tokenMintA: tokenMintA,
       tokenMintB: tokenMintB,
       tokenVaultA: tokenVaultA,
@@ -277,14 +283,10 @@ describe('lildex', () => {
         instructions: [ix],
       })
     } catch (err: any) {
-      const msg = err.message || String(err)
-
-      if (msg.includes('Allocate: account already in use')) {
-        console.warn('⚠️ close position already initialized, treating as success')
-        const positionAccount = await programClient.fetchPosition(connection.rpc, position1.address)
-        console.log('✅ positionAccount:', positionAccount.address)
-        expect(true).toBe(true) // pass
+      if (err.cause) {
+        console.error('Cause of failure:', err.cause)
       }
+      throw err
     }
   })
   it('Execute swap', async () => {

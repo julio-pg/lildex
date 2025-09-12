@@ -6,6 +6,8 @@ import { useWalletUi } from '@wallet-ui/react'
 import { WalletButton } from '../solana/solana-provider'
 import { Address } from 'gill'
 import { ellipsify } from '@/lib/utils'
+import { useAtom } from 'jotai'
+import { portSelectedPositionAtom } from '@/context/portfolio-context'
 
 export default function Portfolio() {
   const { account } = useWalletUi()
@@ -19,9 +21,12 @@ export default function Portfolio() {
     )
   }
   const { data: postions } = usePositionAccountsQuery({ walletAddress: account.address })
-  console.log(postions)
-  const mutation = (lilpoolAddress: Address, positionAddress: Address, positionMint: Address) =>
-    useClosePositionMutation({ lilpoolAddress, positionAddress, positionMint })
+  const [selectedPostion, SetSelectedPosition] = useAtom(portSelectedPositionAtom)
+  const mutation = useClosePositionMutation({
+    lilpoolAddress: selectedPostion?.data.lilpool!,
+    positionAddress: selectedPostion?.address!,
+    positionMint: selectedPostion?.data.positionMint!,
+  })
   return (
     <div className="relative overflow-x-auto rounded-md">
       <Table>
@@ -34,21 +39,20 @@ export default function Portfolio() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {postions?.map(({ data, address }) => (
-            <TableRow key={address} className="bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400 ">
+          {postions?.map((position) => (
+            <TableRow key={position.address} className="bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400 ">
               <TableHead className=" font-medium text-gray-900 whitespace-nowrap dark:text-white text-xl">
-                {ellipsify(address)}
+                {ellipsify(position.address)}
               </TableHead>
-              <TableCell>{BigInt(data?.tokenAAmount || 0) / 10n ** BigInt(9)}</TableCell>
-              <TableCell>{BigInt(data?.tokenBAmount || 0) / 10n ** BigInt(9)}</TableCell>
+              <TableCell>{BigInt(position.data?.tokenAAmount || 0) / 10n ** BigInt(9)}</TableCell>
+              <TableCell>{BigInt(position.data?.tokenBAmount || 0) / 10n ** BigInt(9)}</TableCell>
               {/* <TableCell >${data.positionMint / BigInt(10) ** BigInt(9)}</TableCell> */}
               <TableCell>
                 <Button
-                  onClick={() =>
-                    mutation(data.lilpool, address, data.positionMint)
-                      .mutateAsync()
-                      .catch((err: any) => console.log(err))
-                  }
+                  onClick={() => {
+                    SetSelectedPosition(position)
+                    mutation.mutateAsync().catch((err: any) => console.log(err))
+                  }}
                 >
                   Close
                 </Button>

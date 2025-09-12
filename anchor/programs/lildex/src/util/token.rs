@@ -61,6 +61,7 @@ pub fn mint_position_token_and_remove_authority<'info>(
     position_token_account: &InterfaceAccount<'info, TokenAccount>,
     token_program: &Interface<'info, TokenInterface>,
 ) -> Result<()> {
+    // TODO: update this to the token 2022-program and turn into a nft
     mint_position_token(
         lilpool,
         position_mint,

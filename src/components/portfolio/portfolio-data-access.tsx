@@ -83,6 +83,7 @@ export function useClosePositionMutation({
           positionAuthority: signer,
           receiver: signer.address,
           position: positionAddress,
+          lilpool: lilpoolAddress,
           positionMint: positionMint,
           positionTokenAccount: postionTokenAccount,
           tokenMintA: lilpoolData.tokenMintA,

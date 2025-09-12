@@ -83,7 +83,7 @@ pub fn handler(ctx: Context<ClosePosition>) -> Result<()> {
         &ctx.accounts.funder_token_account_a,
         &ctx.accounts.position.token_a_amount,
         &ctx.accounts.token_mint_a,
-        &&ctx.accounts.position_authority.to_account_info(),
+        &&ctx.accounts.lilpool.to_account_info(),
         &ctx.accounts.token_program,
         Some(&ctx.accounts.lilpool.seeds()),
     )
@@ -94,7 +94,7 @@ pub fn handler(ctx: Context<ClosePosition>) -> Result<()> {
         &ctx.accounts.funder_token_account_b,
         &ctx.accounts.position.token_b_amount,
         &ctx.accounts.token_mint_b,
-        &ctx.accounts.position_authority.to_account_info(),
+        &ctx.accounts.lilpool.to_account_info(),
         &ctx.accounts.token_program,
         Some(&ctx.accounts.lilpool.seeds()),
     )
