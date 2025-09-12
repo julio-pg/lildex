@@ -87,6 +87,8 @@ pub struct OpenPosition<'info> {
   Opens a new lilpool Position.
 */
 pub fn handler(ctx: Context<OpenPosition>, token_a_amount: u64, token_b_amount: u64) -> Result<()> {
+    require!(token_a_amount > 0, ErrorCode::InvalidAmount);
+    require!(token_b_amount > 0, ErrorCode::InvalidAmount);
     // Move the tokens from the maker's ATA to the vault
     transfer_tokens(
         &ctx.accounts.funder_token_account_a,

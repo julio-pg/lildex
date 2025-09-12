@@ -17,8 +17,6 @@ export function getLildexProgramId(cluster: SolanaClusterId) {
   switch (cluster) {
     case 'solana:devnet':
     case 'solana:testnet':
-      // This is the program ID for the Lildex program on devnet and testnet.
-      return address('6z68wfurCMYkZG51s1Et9BJEd9nJGUusjHXNt4dGbNNF')
     case 'solana:mainnet':
     default:
       return programClient.LILDEX_PROGRAM_ADDRESS

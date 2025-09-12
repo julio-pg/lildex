@@ -1,11 +1,11 @@
+import { ExtensionMetadata } from '@/components/pools/pool-types'
 import { bigintPriceToNumber, initialPriceDecimals, numberToBigintPrice } from '@/lib/utils'
 import { Lilpool } from '@project/anchor'
-import { Extension } from 'gill/programs'
 import { atom } from 'jotai'
 
 type parsedLilpool = Lilpool & {
-  metadataTokenA: Extract<Extension, { __kind: 'TokenMetadata' }> & { decimals: number }
-} & { metadataTokenB: Extract<Extension, { __kind: 'TokenMetadata' }> & { decimals: number } }
+  metadataTokenA: ExtensionMetadata
+} & { metadataTokenB: ExtensionMetadata }
 export const selectedPoolAtom = atom<parsedLilpool>()
 export const poolAAmountAtom = atom('')
 

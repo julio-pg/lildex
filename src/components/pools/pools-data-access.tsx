@@ -26,6 +26,7 @@ import { numberToBigintPrice, solanaTokenAddress, useGetTokenAccountAddress } fr
 import { useWalletUiSigner } from '@/components/solana/use-wallet-ui-signer'
 import { useWalletTransactionSignAndSend } from '../solana/use-wallet-transaction-sign-and-send'
 import { useLildexProgramId } from '../lildex/lildex-data-access'
+import { ExtensionMetadata } from './pool-types'
 
 export function useGetMintQuery({ mint }: { mint: Address }) {
   const { client } = useWalletUi()
@@ -51,13 +52,13 @@ export function usePoolAccountsQuery() {
       const pools = (await getProgramAccountsDecoded(client.rpc, {
         decoder: getLilpoolDecoder(),
         filter: getBase58Decoder().decode(LILPOOL_DISCRIMINATOR),
-        programAddress: LILDEX_PROGRAM_ADDRESS,
+        programAddress: programId,
       })) as PoolAccount[]
 
       const results = []
       for (const { data: pool, address } of pools) {
-        let metadataTokenA!: Extract<Extension, { __kind: 'TokenMetadata' }> & { decimals: number }
-        let metadataTokenB!: Extract<Extension, { __kind: 'TokenMetadata' }> & { decimals: number }
+        let metadataTokenA!: ExtensionMetadata
+        let metadataTokenB!: ExtensionMetadata
         try {
           const { data: tokenAInfo } = await fetchMint(client.rpc, pool.tokenMintA)
           if (tokenAInfo.extensions.__option === 'Some') {
@@ -77,7 +78,7 @@ export function usePoolAccountsQuery() {
             }
           }
         } catch (error) {
-          const fallBackData: Extract<Extension, { __kind: 'TokenMetadata' }> & { decimals: number } = {
+          const fallBackData: ExtensionMetadata = {
             __kind: 'TokenMetadata',
             updateAuthority: none(),
             mint: solanaTokenAddress,
@@ -103,13 +104,13 @@ export function usePoolAccountsQuery() {
 }
 
 export function useOpenPositionMutation({
-  tokenMintA,
-  tokenMintB,
+  metadataTokenA,
+  metadataTokenB,
   tokenAAmount,
   tokenBAmount,
 }: {
-  tokenMintA: Address
-  tokenMintB: Address
+  metadataTokenA: ExtensionMetadata
+  metadataTokenB: ExtensionMetadata
   tokenAAmount: string
   tokenBAmount: string
 }) {
@@ -119,8 +120,10 @@ export function useOpenPositionMutation({
   const addressEncoder = getAddressEncoder()
   const textEncoder = getUtf8Encoder()
   const testWallet = address(import.meta.env.VITE_TEST_WALLET!)
-  const tokenABigIntAmount = numberToBigintPrice(Number(tokenAAmount), 9n)
-  const tokenBBigIntAmount = numberToBigintPrice(Number(tokenBAmount), 9n)
+  const tokenMintA = metadataTokenA?.mint
+  const tokenMintB = metadataTokenB?.mint
+  const tokenABigIntAmount = numberToBigintPrice(Number(tokenAAmount), BigInt(metadataTokenA?.decimals || 1))
+  const tokenBBigIntAmount = numberToBigintPrice(Number(tokenBAmount), BigInt(metadataTokenB?.decimals || 1))
 
   return useMutation({
     retry: false,
@@ -168,6 +171,7 @@ export function useOpenPositionMutation({
         mint: tokenMintB,
         useTokenExtensions: true,
       })
+
       return signAndSend(
         getOpenPositionInstruction({
           funder: signer,
