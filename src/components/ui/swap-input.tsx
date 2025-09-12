@@ -15,8 +15,8 @@ type Props = {
 export default function SwapInput({ tokenData, tokenAmount, setAmount, title }: Props) {
   const { account } = useWalletUi()
   const walletAddress = address(account?.address!) || solanaTokenAddress
-
-  const tokenBalance = getTokenBalance(walletAddress, tokenData.mint)
+  const mint = tokenData?.mint || solanaTokenAddress
+  const tokenBalance = getTokenBalance(walletAddress, mint)
 
   return (
     <div

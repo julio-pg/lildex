@@ -171,7 +171,6 @@ export function useOpenPositionMutation({
         mint: tokenMintB,
         useTokenExtensions: true,
       })
-
       return signAndSend(
         getOpenPositionInstruction({
           funder: signer,

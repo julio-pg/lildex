@@ -54,10 +54,12 @@ describe('lildex', () => {
     //     keyTwo: 'valueTwo',
     //   },
     // })
-    // tokenMintA = address('G2uaA9VLQD9sJXnYMYT2Pjk6kaSv3CdnAA4rcWvBREVw')
-    // tokenMintB = address('BPacU77oBuEGZ9Kkmyi9Y5iiUKkB1tCVjEcbi7TarbeS')
-    tokenMintA = address('GzqqMo5rnSYqfwX3gvkMUyogdSgQsbvgjXQi6VnHvEhU')
-    tokenMintB = address('DtmYC5ms4v2mP61FcwceA1Sf7PttWefqzvhbcNv8smqs')
+    // devnet
+    tokenMintA = address('G2uaA9VLQD9sJXnYMYT2Pjk6kaSv3CdnAA4rcWvBREVw')
+    tokenMintB = address('BPacU77oBuEGZ9Kkmyi9Y5iiUKkB1tCVjEcbi7TarbeS')
+    // localnet
+    // tokenMintA = address('GzqqMo5rnSYqfwX3gvkMUyogdSgQsbvgjXQi6VnHvEhU')
+    // tokenMintB = address('DtmYC5ms4v2mP61FcwceA1Sf7PttWefqzvhbcNv8smqs')
     // Mint tokens to the user
     // const appWallet = address('Cp3hG8RqRV7ifQaNoXQSxQVc63wSNyj9Junjs14LEQqQ')
     // await connection.mintTokens(tokenMintA, payer, userInitialTokenAmount, payer.address)
@@ -242,7 +244,7 @@ describe('lildex', () => {
     }
   })
   it.only('Close position', async () => {
-    connection = await connect()
+    connection = await connect('devnet')
 
     const getOffers = connection.getAccountsFactory(
       programClient.LILDEX_PROGRAM_ADDRESS,

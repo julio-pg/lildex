@@ -1,10 +1,9 @@
 import { bigintPriceToNumber, cn, ellipsify } from '@/lib/utils'
 import { useOpenPositionMutation, usePoolAccountsQuery } from './pools-data-access'
-import { buttonVariants } from '../ui/button'
-import { AppModal } from '../app-modal'
+import { Button, buttonVariants } from '../ui/button'
 import SwapInput from '../ui/swap-input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
-import { DialogClose } from '../ui/dialog'
+import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog'
 import { useWalletUi } from '@wallet-ui/react'
 import { WalletButton } from '../solana/solana-provider'
 import { useAtom } from 'jotai'
@@ -56,31 +55,45 @@ export default function Pools() {
               <TableCell>${BigInt(bigintPriceToNumber(data?.price!, 9n) || 0)}</TableCell>
               <TableCell>{data.liquidity}</TableCell>
               <TableCell>{data.protocolFeeRate / 100}%</TableCell>
-              <TableCell onClick={() => SetSelectedPool(data)}>
-                <AppModal title="Open">
-                  <SwapInput
-                    tokenData={selectedPool?.metadataTokenA!}
-                    tokenAmount={tokenAAmount}
-                    setAmount={setTokenAAmount}
-                  />
-                  <SwapInput
-                    tokenData={selectedPool?.metadataTokenB!}
-                    tokenAmount={tokenBAmount}
-                    setAmount={setTokenBAmount as Dispatch<SetStateAction<string>>}
-                  />
-                  <DialogClose
-                    onClick={() => {
-                      mutation.mutateAsync().catch((err: any) => console.log(err))
-                      setTokenAAmount('')
-                      setTokenBAmount('')
-                      SetSelectedPool(undefined)
-                    }}
-                    className={cn(buttonVariants())}
-                    disabled={!amountIsValid}
-                  >
-                    Deposit
-                  </DialogClose>
-                </AppModal>
+              <TableCell>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button disabled={mutation.isPending} variant="outline" onClick={() => SetSelectedPool(data)}>
+                      Open
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[525px]">
+                    <DialogHeader>
+                      <DialogTitle>Open Position</DialogTitle>
+                    </DialogHeader>
+                    <SwapInput
+                      tokenData={selectedPool?.metadataTokenA!}
+                      tokenAmount={tokenAAmount}
+                      setAmount={setTokenAAmount}
+                    />
+                    <SwapInput
+                      tokenData={selectedPool?.metadataTokenB!}
+                      tokenAmount={tokenBAmount}
+                      setAmount={setTokenBAmount as Dispatch<SetStateAction<string>>}
+                    />
+                    <DialogClose
+                      onClick={() => {
+                        mutation
+                          .mutateAsync()
+                          .catch((err: any) => console.log(err))
+                          .finally(() => {
+                            setTokenAAmount('')
+                            setTokenBAmount('')
+                            SetSelectedPool(undefined)
+                          })
+                      }}
+                      className={cn(buttonVariants())}
+                      disabled={!amountIsValid}
+                    >
+                      Deposit
+                    </DialogClose>
+                  </DialogContent>
+                </Dialog>
               </TableCell>
             </TableRow>
           ))}
