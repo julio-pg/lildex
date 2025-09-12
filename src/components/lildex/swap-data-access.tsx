@@ -1,9 +1,9 @@
-import { fetchLilpool, getSwapInstruction } from '@project/anchor'
+import { fetchLilpool, getSwapInstruction, Lilpool } from '@project/anchor'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useWalletTransactionSignAndSend } from '../solana/use-wallet-transaction-sign-and-send'
 import { useWalletUiSigner } from '../solana/use-wallet-ui-signer'
 import { getUserListedTokens, numberToBigintPrice, TokenMetadata, useGetTokenAccountAddress } from '@/lib/utils'
-import { address, Address, getAddressEncoder, getProgramDerivedAddress, getUtf8Encoder } from 'gill'
+import { Account, address, Address, getAddressEncoder, getProgramDerivedAddress, getUtf8Encoder } from 'gill'
 import { TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
 import { useWalletUi } from '@wallet-ui/react'
 import { useLildexProgramId } from './lildex-data-access'
@@ -13,7 +13,7 @@ export function useGetListedTokensQuery({ wallet, listedTokens }: { wallet: Addr
 
   return useQuery({
     queryKey: ['listed-tokens'],
-    queryFn: async () => await getUserListedTokens(client, wallet, listedTokens),
+    queryFn: async () => await getUserListedTokens(client.rpc, wallet, listedTokens),
   })
 }
 
@@ -41,11 +41,7 @@ export function useGetLilpoolAddressQuery({ tokenMintA, tokenMintB }: { tokenMin
         ],
       })
       const lilpoolData = await fetchLilpool(client.rpc, lilpollPda)
-      if (lilpoolData) {
-        return { address: lilpollPda, exists: true }
-      } else {
-        return { address: lilpollPda, exists: false }
-      }
+      return lilpoolData
     },
   })
 }
@@ -54,18 +50,19 @@ export function useCreateSwapMutation({
   aToB,
   amountIn,
   amountOut,
-  lilpoolAddress,
+  lilpoolData,
 }: {
   aToB: boolean
   amountIn: string
   amountOut: string
-  lilpoolAddress: Address
+  lilpoolData: Account<Lilpool, string>
 }) {
   const signAndSend = useWalletTransactionSignAndSend()
   const signer = useWalletUiSigner()
   const { client } = useWalletUi()
   const tokenABigIntAmount = numberToBigintPrice(Number(amountIn), 9n)
   const tokenBBigIntAmount = numberToBigintPrice(Number(amountOut), 9n)
+  const lilpoolAddress = lilpoolData?.address
   return useMutation({
     mutationKey: ['create-swap'],
     mutationFn: async () => {

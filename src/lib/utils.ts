@@ -1,12 +1,14 @@
-import {
-  useGetBalanceQuery,
-  useGetTokenBalanceQuery,
-  useGetTokenAccountAddressQuery,
-} from '@/components/account/account-data-access'
+import { useGetBalanceQuery } from '@/components/account/account-data-access'
 import { type ClassValue, clsx } from 'clsx'
-import { address, Address, Lamports, lamportsToSol, SolanaClient } from 'gill'
+import { address, Address, isSome, Lamports, lamportsToSol, SolanaClient } from 'gill'
 import { twMerge } from 'tailwind-merge'
-import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS, TOKEN_PROGRAM_ADDRESS } from 'gill/programs/token'
+import {
+  fetchMint,
+  findAssociatedTokenPda,
+  isExtension,
+  TOKEN_2022_PROGRAM_ADDRESS,
+  TOKEN_PROGRAM_ADDRESS,
+} from 'gill/programs/token'
 
 export const solanaTokenAddress = address('So11111111111111111111111111111111111111112')
 export const initialPriceDecimals = 9n
@@ -21,7 +23,7 @@ export function ellipsify(str = '', len = 4, delimiter = '..') {
 
   return strLen >= limit ? str.substring(0, len) + delimiter + str.substring(strLen - len, strLen) : str
 }
-export function getTokenBalance(wallet: Address, mint: Address): string {
+export async function getTokenBalance(rpc: SolanaClient['rpc'], wallet: Address, mint: Address, tokenProgram: Address) {
   let tokenBalance: string = '0'
   if (mint.toString() === solanaTokenAddress.toString()) {
     const balanceLamp = useGetBalanceQuery({
@@ -29,12 +31,13 @@ export function getTokenBalance(wallet: Address, mint: Address): string {
     })
     tokenBalance = lamportsToSol(balanceLamp.data?.value as Lamports)
   } else {
-    const tokenAccount = useGetTokenAccountAddressQuery({
-      wallet: wallet,
+    const [tokenAccount] = await findAssociatedTokenPda({
       mint: mint,
+      owner: wallet,
+      tokenProgram,
     })
-    const { data } = useGetTokenBalanceQuery({ address: tokenAccount.data! })
-    tokenBalance = data?.value.uiAmountString!
+    const { value: balanceData } = await rpc.getTokenAccountBalance(tokenAccount).send()
+    tokenBalance = balanceData.uiAmountString
   }
   return tokenBalance
 }
@@ -76,7 +79,7 @@ export type TokenMetadata = {
   tokenProgram?: string
 }
 
-export async function getUserListedTokens(client: SolanaClient, wallet: Address, listedTokens: TokenMetadata[]) {
+export async function getUserListedTokens(rpc: SolanaClient['rpc'], wallet: Address, listedTokens: TokenMetadata[]) {
   const results = []
   for (const token of listedTokens) {
     let balance = 0
@@ -84,19 +87,14 @@ export async function getUserListedTokens(client: SolanaClient, wallet: Address,
     const mint = address(token.address)
     try {
       if (mint == solanaTokenAddress) {
-        const { value: balanceLamp } = await client.rpc.getBalance(wallet).send()
-        balance = Number(lamportsToSol(balanceLamp))
+        const balanceString = await getTokenBalance(rpc, wallet, mint, TOKEN_PROGRAM_ADDRESS)
+        balance = Number(balanceString)
         tokenProgram = TOKEN_PROGRAM_ADDRESS
       } else {
-        const { value: tokenInfo } = await client.rpc.getAccountInfo(mint, { encoding: 'base64' }).send()
+        const { value: tokenInfo } = await rpc.getAccountInfo(mint, { encoding: 'base64' }).send()
 
-        const [ata] = await findAssociatedTokenPda({
-          mint: mint,
-          owner: wallet,
-          tokenProgram: tokenInfo?.owner!,
-        })
-        const { value: account } = await client.rpc.getTokenAccountBalance(ata).send()
-        balance = Number(account.amount) / Math.pow(10, token.decimals)
+        const balanceString = await getTokenBalance(rpc, wallet, mint, tokenInfo?.owner!)
+        balance = Number(balanceString)
         tokenProgram = tokenInfo?.owner!
       }
     } catch (err) {
@@ -112,4 +110,48 @@ export async function getUserListedTokens(client: SolanaClient, wallet: Address,
     })
   }
   return results
+}
+
+export async function getTokenMetadata(
+  rpc: SolanaClient['rpc'],
+  wallet: Address,
+  mint: Address,
+): Promise<TokenMetadata> {
+  let metadata: TokenMetadata = {
+    address: '',
+    symbol: '',
+    name: '',
+    decimals: 1,
+    logoURI: '/img/fallback-coin.png',
+    balance: 0,
+    tokenProgram: '',
+  }
+  metadata.address = mint
+  try {
+    const mintAccount = await fetchMint(rpc, mint)
+
+    const maybeTokenExtensions = mintAccount.data.extensions
+    if (isSome(maybeTokenExtensions)) {
+      const tokenExtensions = maybeTokenExtensions.value
+      const TokenMetadata = tokenExtensions.find((extension) => isExtension('TokenMetadata', extension))
+      try {
+        const uriData = await (await fetch(TokenMetadata?.uri!)).json()
+
+        metadata.logoURI = uriData.image
+      } catch (error) {
+        console.warn('Metadata fetch failed:', error)
+      }
+      metadata.symbol = TokenMetadata?.symbol!
+      metadata.name = TokenMetadata?.name!
+    }
+    const balanceQuery = await getTokenBalance(rpc, wallet, mint, mintAccount.programAddress!)
+    // assign values
+    metadata.decimals = mintAccount?.data.decimals!
+
+    metadata.balance = Number(balanceQuery)
+    metadata.tokenProgram = mintAccount.programAddress!
+  } catch (error) {
+    console.log(error)
+  }
+  return metadata
 }

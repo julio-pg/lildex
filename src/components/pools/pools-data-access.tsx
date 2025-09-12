@@ -22,7 +22,13 @@ import {
 import { Extension, fetchMint, TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
 import { toastTx } from '../toast-tx'
 import { toast } from 'sonner'
-import { numberToBigintPrice, solanaTokenAddress, useGetTokenAccountAddress } from '@/lib/utils'
+import {
+  getTokenMetadata,
+  numberToBigintPrice,
+  solanaTokenAddress,
+  TokenMetadata,
+  useGetTokenAccountAddress,
+} from '@/lib/utils'
 import { useWalletUiSigner } from '@/components/solana/use-wallet-ui-signer'
 import { useWalletTransactionSignAndSend } from '../solana/use-wallet-transaction-sign-and-send'
 import { useLildexProgramId } from '../lildex/lildex-data-access'
@@ -44,6 +50,7 @@ export type PoolAccount = Account<Lilpool, string>
 export function usePoolAccountsQuery() {
   const { client } = useWalletUi()
   const programId = useLildexProgramId()
+  const signer = useWalletUiSigner()
 
   return useQuery({
     retry: false,
@@ -57,39 +64,15 @@ export function usePoolAccountsQuery() {
 
       const results = []
       for (const { data: pool, address } of pools) {
-        let metadataTokenA!: ExtensionMetadata
-        let metadataTokenB!: ExtensionMetadata
+        let metadataTokenA!: TokenMetadata
+        let metadataTokenB!: TokenMetadata
         try {
-          const { data: tokenAInfo } = await fetchMint(client.rpc, pool.tokenMintA)
-          if (tokenAInfo.extensions.__option === 'Some') {
-            const extensionTokenA = tokenAInfo.extensions.value.find((ext) => ext.__kind === 'TokenMetadata')
-            metadataTokenA = {
-              ...extensionTokenA!,
-              decimals: tokenAInfo.decimals,
-            }
-          }
-
-          const { data: tokenBInfo } = await fetchMint(client.rpc, pool.tokenMintB)
-          if (tokenBInfo.extensions.__option === 'Some') {
-            const extensionTokenB = tokenBInfo.extensions.value.find((ext) => ext.__kind === 'TokenMetadata')
-            metadataTokenB = {
-              ...extensionTokenB!,
-              decimals: tokenBInfo.decimals,
-            }
-          }
+          const tokenAInfo = await getTokenMetadata(client.rpc, signer?.address, pool.tokenMintA)
+          metadataTokenA = tokenAInfo
+          const tokenBInfo = await getTokenMetadata(client.rpc, signer?.address, pool.tokenMintB)
+          metadataTokenB = tokenBInfo
         } catch (error) {
-          const fallBackData: ExtensionMetadata = {
-            __kind: 'TokenMetadata',
-            updateAuthority: none(),
-            mint: solanaTokenAddress,
-            name: '',
-            symbol: '',
-            uri: '',
-            additionalMetadata: new Map(),
-            decimals: 1,
-          }
-          metadataTokenA = fallBackData
-          metadataTokenB = fallBackData
+          console.log(error)
         }
         results.push({
           ...pool,
@@ -109,8 +92,8 @@ export function useOpenPositionMutation({
   tokenAAmount,
   tokenBAmount,
 }: {
-  metadataTokenA: ExtensionMetadata
-  metadataTokenB: ExtensionMetadata
+  metadataTokenA: TokenMetadata
+  metadataTokenB: TokenMetadata
   tokenAAmount: string
   tokenBAmount: string
 }) {
@@ -120,8 +103,8 @@ export function useOpenPositionMutation({
   const addressEncoder = getAddressEncoder()
   const textEncoder = getUtf8Encoder()
   const testWallet = address(import.meta.env.VITE_TEST_WALLET!)
-  const tokenMintA = metadataTokenA?.mint
-  const tokenMintB = metadataTokenB?.mint
+  const tokenMintA = address(metadataTokenA?.address || solanaTokenAddress)
+  const tokenMintB = address(metadataTokenB?.address || solanaTokenAddress)
   const tokenABigIntAmount = numberToBigintPrice(Number(tokenAAmount), BigInt(metadataTokenA?.decimals || 1))
   const tokenBBigIntAmount = numberToBigintPrice(Number(tokenBAmount), BigInt(metadataTokenB?.decimals || 1))
 
@@ -130,8 +113,8 @@ export function useOpenPositionMutation({
     mutationFn: async () => {
       const postionTokenMint = await generateKeyPairSigner()
       const postionTokenAccount = await useGetTokenAccountAddress({
-        wallet: signer.address,
-        mint: postionTokenMint.address,
+        wallet: address(signer.address || solanaTokenAddress),
+        mint: address(postionTokenMint.address || solanaTokenAddress),
         useTokenExtensions: true,
       })
       const [positionAddress] = await getProgramDerivedAddress({

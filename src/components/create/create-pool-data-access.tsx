@@ -1,20 +1,11 @@
 import { getInitializePoolInstruction } from '@project/anchor'
 import { useMutation } from '@tanstack/react-query'
-import { useWalletUi, useWalletUiSigner } from '@wallet-ui/react'
-import {
-  address,
-  Address,
-  generateKeyPairSigner,
-  getAddressEncoder,
-  getProgramDerivedAddress,
-  getSolanaErrorFromInstructionError,
-  getUtf8Encoder,
-} from 'gill'
+import { useWalletUiSigner } from '@wallet-ui/react'
+import { address, generateKeyPairSigner, getAddressEncoder, getProgramDerivedAddress, getUtf8Encoder } from 'gill'
 import { useWalletTransactionSignAndSend } from '../solana/use-wallet-transaction-sign-and-send'
 import { toastTx } from '../toast-tx'
 import { toast } from 'sonner'
 import { useLildexProgramId } from '../lildex/lildex-data-access'
-import { useGetTokenAccountAddressQuery } from '../account/account-data-access'
 import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
 import {
   initialPriceDecimals,
@@ -49,15 +40,6 @@ export function useInitializePoolMutation({
   const decimalsA = BigInt(tokenAData?.decimals || 1n)
   const decimalsB = BigInt(tokenBData?.decimals || 1n)
 
-  const funderTokenAccountA = useGetTokenAccountAddressQuery({
-    wallet: signer.address,
-    mint: tokenMintA,
-  })
-  const funderTokenAccountB = useGetTokenAccountAddressQuery({
-    wallet: signer.address,
-    mint: tokenMintB,
-  })
-
   const tokenABigIntAmount = numberToBigintPrice(Number(tokenAAmount), decimalsA)
   const tokenBBigIntAmount = numberToBigintPrice(Number(tokenBAmount), decimalsB)
   const initialPriceBigIntAmount = numberToBigintPrice(Number(initialPrice), initialPriceDecimals)
@@ -88,6 +70,17 @@ export function useInitializePoolMutation({
         seeds: [textEncoder.encode('position'), addressEncoder.encode(postionTokenMint.address)],
       })
 
+      const [funderTokenAccountA] = await findAssociatedTokenPda({
+        owner: signer.address,
+        mint: tokenMintA,
+        tokenProgram: address(tokenAData?.tokenProgram!),
+      })
+      const [funderTokenAccountB] = await findAssociatedTokenPda({
+        owner: signer.address,
+        mint: tokenMintB,
+        tokenProgram: address(tokenAData?.tokenProgram!),
+      })
+
       const [tokenVaultA] = await findAssociatedTokenPda({
         owner: lilpollPda,
         mint: tokenMintA,
@@ -112,8 +105,8 @@ export function useInitializePoolMutation({
           lilpool: lilpollPda,
           tokenVaultA: tokenVaultA,
           tokenVaultB: tokenVaultB,
-          funderTokenAccountA: funderTokenAccountA.data!,
-          funderTokenAccountB: funderTokenAccountB.data!,
+          funderTokenAccountA: funderTokenAccountA,
+          funderTokenAccountB: funderTokenAccountB,
           initialPrice: initialPriceBigIntAmount,
           tokenAAmount: tokenABigIntAmount,
           tokenBAmount: tokenBBigIntAmount,

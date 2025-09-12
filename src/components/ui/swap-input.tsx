@@ -1,23 +1,16 @@
-import { cn, getTokenBalance, solanaTokenAddress } from '@/lib/utils'
-import { useWalletUi } from '@wallet-ui/react'
-import { address } from 'gill'
+import { cn, ellipsify, TokenMetadata } from '@/lib/utils'
+
 import { Wallet } from 'lucide-react'
 import { Dispatch, SetStateAction } from 'react'
 import { NumericFormat } from 'react-number-format'
-import { Extension } from 'gill/programs'
 
 type Props = {
-  tokenData: Extract<Extension, { __kind: 'TokenMetadata' }> & { decimals: number }
+  tokenData: TokenMetadata
   tokenAmount: string
   setAmount: Dispatch<SetStateAction<string>>
   title?: string
 }
 export default function SwapInput({ tokenData, tokenAmount, setAmount, title }: Props) {
-  const { account } = useWalletUi()
-  const walletAddress = address(account?.address!) || solanaTokenAddress
-  const mint = tokenData?.mint || solanaTokenAddress
-  const tokenBalance = getTokenBalance(walletAddress, mint)
-
   return (
     <div
       className={cn(
@@ -40,13 +33,13 @@ export default function SwapInput({ tokenData, tokenAmount, setAmount, title }: 
       <div className="space-y-2 flex flex-col items-end">
         {title && <span>Max</span>}
         <div className="flex px-2 py-1 gap-x-1.5 text-xl font-regular text-primary items-center">
-          {tokenData && <img src={'/img/fallback-coin.png'} className="w-5 h-auto aspect-square rounded-full" />}
-          <span className="text-xl">{tokenData?.symbol || 'Select Token'}</span>
+          {tokenData && <img src={tokenData.logoURI} className="w-5 h-auto aspect-square rounded-full" />}
+          <span className="text-xl">{tokenData?.symbol || ellipsify(tokenData.address, 3)}</span>
         </div>
         <div className="flex items-center gap-x-1.5">
           <span className="flex text-sm gap-x-1 items-center">
             <Wallet size={15} />
-            <NumericFormat displayType="text" value={tokenBalance} decimalScale={3} />
+            <NumericFormat displayType="text" value={tokenData?.balance} decimalScale={3} />
           </span>
         </div>
       </div>

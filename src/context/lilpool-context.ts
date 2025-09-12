@@ -1,11 +1,10 @@
-import { ExtensionMetadata } from '@/components/pools/pool-types'
-import { bigintPriceToNumber, initialPriceDecimals, numberToBigintPrice } from '@/lib/utils'
+import { bigintPriceToNumber, initialPriceDecimals, numberToBigintPrice, TokenMetadata } from '@/lib/utils'
 import { Lilpool } from '@project/anchor'
 import { atom } from 'jotai'
 
 type parsedLilpool = Lilpool & {
-  metadataTokenA: ExtensionMetadata
-} & { metadataTokenB: ExtensionMetadata }
+  metadataTokenA: TokenMetadata
+} & { metadataTokenB: TokenMetadata }
 export const selectedPoolAtom = atom<parsedLilpool>()
 export const poolAAmountAtom = atom('')
 
@@ -44,13 +43,15 @@ export const poolBAmountAtom = atom(
 export const amountIsValidAtom = atom((get) => {
   const tokenA = get(poolAAmountAtom)
   const tokenB = get(poolBAmountAtom)
-  // const pool = get(selectedPoolAtom)
+  const pool = get(selectedPoolAtom)
+  const tokenABalance = pool?.metadataTokenA.balance!
+  const tokenBBalance = pool?.metadataTokenB.balance!
 
   if (Number(tokenB) <= 0 || Number(tokenA) <= 0) {
     return false
   }
-  // if (tokenABalance < Number(tokenA) || tokenBBalance < Number(tokenB)) {
-  //   return false
-  // }
+  if (tokenABalance < Number(tokenA) || tokenBBalance < Number(tokenB)) {
+    return false
+  }
   return true
 })

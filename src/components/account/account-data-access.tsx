@@ -37,32 +37,7 @@ export function useGetBalanceQuery({ address }: { address: Address }) {
     queryFn: () => client.rpc.getBalance(address).send(),
   })
 }
-export function useGetTokenBalanceQuery({ address }: { address: Address }) {
-  const { client } = useWalletUi()
 
-  return useQuery({
-    retry: false,
-    queryKey: useGetBalanceQueryKey({ address }),
-    queryFn: () => client.rpc.getTokenAccountBalance(address).send(),
-  })
-}
-export function useGetTokenAccountAddressQuery({ wallet, mint }: { wallet: Address; mint: Address }) {
-  const { cluster, client } = useWalletUi()
-  return useQuery({
-    retry: false,
-    queryKey: ['get-token-account-address', { cluster, mint }],
-    queryFn: async () => {
-      const accountInfo = await client.rpc.getAccountInfo(mint, { encoding: 'base64' }).send()
-      return await findAssociatedTokenPda({
-        mint: mint,
-        owner: wallet,
-        tokenProgram: accountInfo.value?.owner!,
-      })
-        .then(([address]) => address)
-        .catch((e) => console.log(e))
-    },
-  })
-}
 export function useGetTokenInfoQuery({ tokenAddress }: { tokenAddress: Address }) {
   const { cluster, client } = useWalletUi()
   return useQuery({

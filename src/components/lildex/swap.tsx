@@ -40,11 +40,12 @@ function Swap() {
     tokenMintA: selectedAtoken?.address!,
     tokenMintB: selectedBtoken?.address!,
   })
+  console.log(lilpool)
   const mutation = useCreateSwapMutation({
     amountIn: tokenAAmount,
     amountOut: tokenBAmount,
     aToB: true,
-    lilpoolAddress: address(lilpool?.address! || solanaTokenAddress),
+    lilpoolData: lilpool!,
   })
 
   return (
@@ -63,7 +64,13 @@ function Swap() {
           />
 
           {/* Swap Arrow */}
-          <button className="items-center justify-center whitespace-nowrap rounded-full text-base font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-border-focus disabled:cursor-not-allowed active:brightness-100 active:scale-[0.99] border border-glass shadow-down text-slate-50 duration-100 disabled:opacity-50 h-8 w-8 shrink-0 flex bg-dark-700/50 backdrop-blur-lg hover:brightness-125 disabled:text-tertiary">
+          <button
+            className="items-center justify-center whitespace-nowrap rounded-full text-base font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-border-focus disabled:cursor-not-allowed active:brightness-100 active:scale-[0.99] border border-glass shadow-down text-slate-50 duration-100 disabled:opacity-50 h-8 w-8 shrink-0 flex bg-dark-700/50 backdrop-blur-lg hover:brightness-125 disabled:text-tertiary"
+            onClick={() => {
+              setSelectedAtoken(selectedBtoken)
+              setSelectedBtoken(selectedAtoken)
+            }}
+          >
             <ArrowUpDown className="w-4 h-4 text-slate-300" />
           </button>
 
@@ -83,7 +90,7 @@ function Swap() {
           {account ? (
             <Button
               onClick={() => mutation.mutateAsync().catch((e) => console.log(e))}
-              disabled={!lilpool?.exists}
+              disabled={!lilpool}
               className="w-full bg-red-800 hover:bg-red-800/75 dark:text-neutral-400 font-bold text-xl"
               size="lg"
             >
@@ -94,7 +101,7 @@ function Swap() {
               <WalletButton />
             </div>
           )}
-          {account && !lilpool?.exists && (
+          {account && !lilpool && (
             <div
               role="alert"
               className="items-start gap-x-2 flex relative w-full rounded-md py-2.5 px-3 border border-orange-400 text-sm text-orange-400"
@@ -134,7 +141,7 @@ function Swap() {
           <div className="flex items-center space-x-3">
             <img
               className="w-8 h-8 rounded-full mr-2 flex items-center justify-center"
-              src={selectedBtoken?.logoURI!}
+              src={selectedBtoken?.logoURI! || '/img/fallback-coin.png'}
             />
             <div>
               <div className="flex items-center space-x-2">
