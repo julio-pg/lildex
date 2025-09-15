@@ -3,7 +3,7 @@ import { ArrowUpDown, Check, CircleX, Copy, ExternalLink, X } from 'lucide-react
 import { WalletButton } from '../solana/solana-provider'
 import { Button } from '../ui/button'
 import { ellipsify, solanaTokenAddress } from '@/lib/utils'
-import { useState } from 'react'
+import { Dispatch, SetStateAction, useState } from 'react'
 import SwapInputWithModal from '../ui/swap-input-with-modal'
 import { useCreateSwapMutation, useGetLilpoolAddressQuery, useGetListedTokensQuery } from './swap-data-access'
 import { address } from 'gill'
@@ -12,6 +12,7 @@ import { useAtom } from 'jotai'
 import {
   selectedAtokenAtom,
   selectedBtokenAtom,
+  swapSelectedPoolAtom,
   swapTokenAAmountAtom,
   swapTokenBAmountAtom,
 } from '@/context/swap-context'
@@ -26,6 +27,7 @@ function Swap() {
       </div>
     )
   }
+  const [selectedPool, SetSelectedPool] = useAtom(swapSelectedPoolAtom)
   const [tokenAAmount, setTokenAAmount] = useAtom(swapTokenAAmountAtom)
   const [tokenBAmount, setTokenBAmount] = useAtom(swapTokenBAmountAtom)
   const [selectedAtoken, setSelectedAtoken] = useAtom(selectedAtokenAtom)
@@ -40,14 +42,15 @@ function Swap() {
     tokenMintA: selectedAtoken?.address!,
     tokenMintB: selectedBtoken?.address!,
   })
-  console.log(lilpool)
+  SetSelectedPool(lilpool?.data)
+
   const mutation = useCreateSwapMutation({
     amountIn: tokenAAmount,
     amountOut: tokenBAmount,
-    aToB: true,
+    selectedAtoken: selectedAtoken!,
+    selectedBtoken: selectedBtoken!,
     lilpoolData: lilpool!,
   })
-
   return (
     <div className="min-h-screen flex flex-col gap-y-4 items-center justify-center">
       <div className="w-full max-w-md rounded-2xl p-6 shadow-2xl bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400">
@@ -77,7 +80,7 @@ function Swap() {
           {/* Receive Section */}
           <SwapInputWithModal
             tokenAmount={tokenBAmount}
-            setAmount={setTokenBAmount}
+            setAmount={setTokenBAmount as Dispatch<SetStateAction<string>>}
             selectedToken={selectedBtoken!}
             setSelectedToken={setSelectedBtoken}
             listedTokens={tokensWithBalances!}
@@ -115,47 +118,49 @@ function Swap() {
         </div>
       </div>
       {/* Token List */}
-      <div className="space-y-4 w-full max-w-md">
-        {/* SOL Token */}
-        <div className="flex items-center justify-between p-4 ">
-          <div className="flex items-center space-x-3">
-            <img
-              className="w-8 h-8 rounded-full mr-2 flex items-center justify-center"
-              src={selectedAtoken?.logoURI!}
-            />
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="text-white font-medium">{selectedAtoken?.symbol}</span>
-                <span className="text-slate-400 text-sm">{selectedAtoken?.name}</span>
+      {selectedAtoken && selectedBtoken && (
+        <div className="space-y-4 w-full max-w-md">
+          {/* SOL Token */}
+          <div className="flex items-center justify-between p-4 ">
+            <div className="flex items-center space-x-3">
+              <img
+                className="w-8 h-8 rounded-full mr-2 flex items-center justify-center"
+                src={selectedAtoken?.logoURI!}
+              />
+              <div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-white font-medium">{selectedAtoken?.symbol}</span>
+                  <span className="text-slate-400 text-sm">{selectedAtoken?.name}</span>
+                </div>
+                <AddressLink address={selectedAtoken?.address!} />
               </div>
-              <AddressLink address={selectedAtoken?.address!} />
+            </div>
+            <div className="text-right">
+              <div className="text-white font-semibold">$1</div>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-white font-semibold">$1</div>
-          </div>
-        </div>
 
-        {/* ORCA Token */}
-        <div className="flex items-center justify-between p-4 ">
-          <div className="flex items-center space-x-3">
-            <img
-              className="w-8 h-8 rounded-full mr-2 flex items-center justify-center"
-              src={selectedBtoken?.logoURI! || '/img/fallback-coin.png'}
-            />
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="text-white font-medium">{selectedBtoken?.symbol}</span>
-                <span className="text-slate-400 text-sm">{selectedBtoken?.name}</span>
+          {/* ORCA Token */}
+          <div className="flex items-center justify-between p-4 ">
+            <div className="flex items-center space-x-3">
+              <img
+                className="w-8 h-8 rounded-full mr-2 flex items-center justify-center"
+                src={selectedBtoken?.logoURI!}
+              />
+              <div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-white font-medium">{selectedBtoken?.symbol}</span>
+                  <span className="text-slate-400 text-sm">{selectedBtoken?.name}</span>
+                </div>
+                <AddressLink address={selectedBtoken?.address!} />
               </div>
-              <AddressLink address={selectedBtoken?.address!} />
+            </div>
+            <div className="text-right">
+              <div className="text-white font-semibold">$1</div>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-white font-semibold">$1</div>
-          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

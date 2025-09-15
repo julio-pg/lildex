@@ -32,6 +32,6 @@
     "symbol": "WOW",
     "name": "Wowcoin",
     "decimals": 9,
-    "logoURI": ""
+    "logoURI": "/img/fallback-coin.png"
   }
 ]

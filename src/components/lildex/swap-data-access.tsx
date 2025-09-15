@@ -24,45 +24,68 @@ export function useGetLilpoolAddressQuery({ tokenMintA, tokenMintB }: { tokenMin
   const programId = useLildexProgramId()
   const { client } = useWalletUi()
 
+  async function deriveAndFetch(a: string, b: string) {
+    const [configPda] = await getProgramDerivedAddress({
+      programAddress: programId,
+      seeds: [textEncoder.encode('config'), addressEncoder.encode(testWallet)],
+    })
+    const [lilpollPda] = await getProgramDerivedAddress({
+      programAddress: programId,
+      seeds: [
+        textEncoder.encode('lilpool'),
+        addressEncoder.encode(configPda),
+        addressEncoder.encode(address(a)),
+        addressEncoder.encode(address(b)),
+      ],
+    })
+    try {
+      return await fetchLilpool(client.rpc, lilpollPda) // return data or throw/not found
+    } catch (err) {
+      return null
+    }
+  }
+
   return useQuery({
     queryKey: ['lilpool-Address', tokenMintA, tokenMintB],
     queryFn: async () => {
-      const [configPda] = await getProgramDerivedAddress({
-        programAddress: programId,
-        seeds: [textEncoder.encode('config'), addressEncoder.encode(testWallet)],
-      })
-      const [lilpollPda] = await getProgramDerivedAddress({
-        programAddress: programId,
-        seeds: [
-          textEncoder.encode('lilpool'),
-          addressEncoder.encode(configPda),
-          addressEncoder.encode(address(tokenMintA)),
-          addressEncoder.encode(address(tokenMintB)),
-        ],
-      })
-      const lilpoolData = await fetchLilpool(client.rpc, lilpollPda)
-      return lilpoolData
+      // try given order first (fast if it matches)
+      let data = await deriveAndFetch(tokenMintA, tokenMintB)
+      if (data) return data
+      // try swapped order
+      data = await deriveAndFetch(tokenMintB, tokenMintA)
+      return data
     },
   })
 }
 
 export function useCreateSwapMutation({
-  aToB,
   amountIn,
   amountOut,
+  selectedAtoken,
+  selectedBtoken,
   lilpoolData,
 }: {
-  aToB: boolean
   amountIn: string
   amountOut: string
+  selectedAtoken: TokenMetadata
+  selectedBtoken: TokenMetadata
   lilpoolData: Account<Lilpool, string>
 }) {
   const signAndSend = useWalletTransactionSignAndSend()
   const signer = useWalletUiSigner()
   const { client } = useWalletUi()
-  const tokenABigIntAmount = numberToBigintPrice(Number(amountIn), 9n)
-  const tokenBBigIntAmount = numberToBigintPrice(Number(amountOut), 9n)
+  const ADecimals = BigInt(selectedAtoken?.decimals || 1)
+  const BDecimals = BigInt(selectedBtoken?.decimals || 1)
+  const tokenABigIntAmount = numberToBigintPrice(Number(amountIn), ADecimals)
+  const tokenBBigIntAmount = numberToBigintPrice(Number(amountOut), BDecimals)
   const lilpoolAddress = lilpoolData?.address
+  // isAtoB validation
+  const poolMintA = lilpoolData?.data.tokenMintA
+  const poolMintB = lilpoolData?.data.tokenMintB
+  const selectedTokenAMint = selectedAtoken?.address
+  const selectedTokenBMint = selectedBtoken?.address
+
+  const isAtoB = poolMintA == selectedTokenAMint && poolMintB == selectedTokenBMint
   return useMutation({
     mutationKey: ['create-swap'],
     mutationFn: async () => {
@@ -94,7 +117,7 @@ export function useCreateSwapMutation({
           lilpool: lilpoolAddress,
           amountIn: tokenABigIntAmount,
           amountOut: tokenBBigIntAmount,
-          aToB: aToB,
+          aToB: isAtoB,
           tokenMintA: lilpoolData.tokenMintA,
           tokenMintB: lilpoolData.tokenMintB,
           tokenReceiverAccountA: funderTokenAccountA,

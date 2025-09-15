@@ -1,4 +1,3 @@
-import { useGetBalanceQuery } from '@/components/account/account-data-access'
 import { type ClassValue, clsx } from 'clsx'
 import { address, Address, isSome, Lamports, lamportsToSol, SolanaClient } from 'gill'
 import { twMerge } from 'tailwind-merge'
@@ -25,19 +24,21 @@ export function ellipsify(str = '', len = 4, delimiter = '..') {
 }
 export async function getTokenBalance(rpc: SolanaClient['rpc'], wallet: Address, mint: Address, tokenProgram: Address) {
   let tokenBalance: string = '0'
-  if (mint.toString() === solanaTokenAddress.toString()) {
-    const balanceLamp = useGetBalanceQuery({
-      address: wallet,
-    })
-    tokenBalance = lamportsToSol(balanceLamp.data?.value as Lamports)
-  } else {
-    const [tokenAccount] = await findAssociatedTokenPda({
-      mint: mint,
-      owner: wallet,
-      tokenProgram,
-    })
-    const { value: balanceData } = await rpc.getTokenAccountBalance(tokenAccount).send()
-    tokenBalance = balanceData.uiAmountString
+  try {
+    if (mint.toString() === solanaTokenAddress.toString()) {
+      const balanceLamp = await rpc.getBalance(wallet).send()
+      tokenBalance = lamportsToSol(balanceLamp?.value as Lamports)
+    } else {
+      const [tokenAccount] = await findAssociatedTokenPda({
+        mint: mint,
+        owner: wallet,
+        tokenProgram,
+      })
+      const { value: balanceData } = await rpc.getTokenAccountBalance(tokenAccount).send()
+      tokenBalance = balanceData.uiAmountString
+    }
+  } catch (error) {
+    console.warn(error)
   }
   return tokenBalance
 }

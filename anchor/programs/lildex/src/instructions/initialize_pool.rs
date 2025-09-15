@@ -94,6 +94,11 @@ pub struct InitializePool<'info> {
     pub funder_token_account_b: InterfaceAccount<'info, TokenAccount>,
 
     pub token_program: Interface<'info, TokenInterface>,
+    // TODO: add the logic to support clasic tokens and token_2022
+    // #[account(address = *token_mint_a.to_account_info().owner)]
+    // pub token_program_a: Interface<'info, TokenInterface>,
+    // #[account(address = *token_mint_b.to_account_info().owner)]
+    // pub token_program_b: Interface<'info, TokenInterface>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
 }
