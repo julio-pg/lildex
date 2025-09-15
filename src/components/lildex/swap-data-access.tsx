@@ -7,6 +7,8 @@ import { Account, address, Address, getAddressEncoder, getProgramDerivedAddress,
 import { TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
 import { useWalletUi } from '@wallet-ui/react'
 import { useLildexProgramId } from './lildex-data-access'
+import { toastTx } from '../toast-tx'
+import { toast } from 'sonner'
 
 export function useGetListedTokensQuery({ wallet, listedTokens }: { wallet: Address; listedTokens: TokenMetadata[] }) {
   const { client } = useWalletUi()
@@ -111,7 +113,7 @@ export function useCreateSwapMutation({
         mint: lilpoolData.tokenMintB,
         useTokenExtensions: true,
       })
-      signAndSend(
+      return signAndSend(
         getSwapInstruction({
           receiver: signer,
           lilpool: lilpoolAddress,
@@ -128,6 +130,12 @@ export function useCreateSwapMutation({
         }),
         signer,
       )
+    },
+    onSuccess: async (tx) => {
+      toastTx(tx, 'Swap finished with success')
+    },
+    onError: (e) => {
+      toast.error(e.message)
     },
   })
 }
