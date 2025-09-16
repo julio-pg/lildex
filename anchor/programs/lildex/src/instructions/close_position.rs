@@ -78,27 +78,27 @@ pub fn handler(ctx: Context<ClosePosition>) -> Result<()> {
     )?;
 
     // Move the tokens from the maker's vault to the ATA
-    transfer_tokens(
-        &ctx.accounts.token_vault_a,
-        &ctx.accounts.funder_token_account_a,
-        &ctx.accounts.position.token_a_amount,
-        &ctx.accounts.token_mint_a,
-        &&ctx.accounts.lilpool.to_account_info(),
-        &ctx.accounts.token_program,
-        Some(&ctx.accounts.lilpool.seeds()),
-    )
-    .map_err(|_| ErrorCode::InsufficientMakerBalance)?;
+    // transfer_tokens(
+    //     &ctx.accounts.token_vault_a,
+    //     &ctx.accounts.funder_token_account_a,
+    //     &ctx.accounts.position.token_a_amount,
+    //     &ctx.accounts.token_mint_a,
+    //     &&ctx.accounts.lilpool.to_account_info(),
+    //     &ctx.accounts.token_program,
+    //     Some(&ctx.accounts.lilpool.seeds()),
+    // )
+    // .map_err(|_| ErrorCode::InsufficientMakerBalance)?;
 
-    transfer_tokens(
-        &ctx.accounts.token_vault_b,
-        &ctx.accounts.funder_token_account_b,
-        &ctx.accounts.position.token_b_amount,
-        &ctx.accounts.token_mint_b,
-        &ctx.accounts.lilpool.to_account_info(),
-        &ctx.accounts.token_program,
-        Some(&ctx.accounts.lilpool.seeds()),
-    )
-    .map_err(|_| ErrorCode::InsufficientMakerBalance)?;
+    // transfer_tokens(
+    //     &ctx.accounts.token_vault_b,
+    //     &ctx.accounts.funder_token_account_b,
+    //     &ctx.accounts.position.token_b_amount,
+    //     &ctx.accounts.token_mint_b,
+    //     &ctx.accounts.lilpool.to_account_info(),
+    //     &ctx.accounts.token_program,
+    //     Some(&ctx.accounts.lilpool.seeds()),
+    // )
+    // .map_err(|_| ErrorCode::InsufficientMakerBalance)?;
 
     burn_and_close_user_position_token(
         &ctx.accounts.position_authority,

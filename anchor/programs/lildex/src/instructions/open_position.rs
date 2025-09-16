@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
+    token_2022::spl_token_2022::{self, extension::ExtensionType},
     token_interface::{Mint, TokenAccount, TokenInterface},
 };
 // use spl_token::ID as TOKEN_PROGRAM_ID;
@@ -28,8 +29,10 @@ pub struct OpenPosition<'info> {
     #[account(
       init,
       payer=funder,
-      mint::decimals = 0,
-      mint::authority= lilpool,
+      space = ExtensionType::try_calculate_account_len::<spl_token_2022::state::Mint>(
+            &[ExtensionType::MetadataPointer, ExtensionType::TokenMetadata]
+        )?,
+      owner = token_program.key(), // works with Interface
     )]
     pub position_mint: InterfaceAccount<'info, Mint>,
 
@@ -42,42 +45,6 @@ pub struct OpenPosition<'info> {
     pub position_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
 
     pub lilpool: Box<Account<'info, Lilpool>>,
-    #[account(mint::token_program = token_program)]
-    pub token_mint_a: Box<InterfaceAccount<'info, Mint>>,
-
-    #[account(mint::token_program = token_program)]
-    pub token_mint_b: Box<InterfaceAccount<'info, Mint>>,
-
-    #[account(
-      mut,
-      associated_token::mint = token_mint_a,
-      associated_token::authority = lilpool,
-      associated_token::token_program = token_program
-    )]
-    pub token_vault_a: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    #[account(
-      mut,
-      associated_token::mint = token_mint_b,
-      associated_token::authority = lilpool,
-      associated_token::token_program = token_program
-    )]
-    pub token_vault_b: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    #[account(
-        mut,
-        associated_token::mint = token_mint_a,
-        associated_token::authority = funder,
-        associated_token::token_program = token_program
-    )]
-    pub funder_token_account_a: Box<InterfaceAccount<'info, TokenAccount>>,
-    #[account(
-        mut,
-        associated_token::mint = token_mint_b,
-        associated_token::authority = funder,
-        associated_token::token_program = token_program
-    )]
-    pub funder_token_account_b: Box<InterfaceAccount<'info, TokenAccount>>,
 
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
@@ -88,41 +55,21 @@ pub struct OpenPosition<'info> {
   Opens a new lilpool Position.
 */
 pub fn handler(ctx: Context<OpenPosition>, token_a_amount: u64, token_b_amount: u64) -> Result<()> {
-    require!(token_a_amount > 0, ErrorCode::InvalidAmount);
-    require!(token_b_amount > 0, ErrorCode::InvalidAmount);
-    // Move the tokens from the maker's ATA to the vault
-    transfer_tokens(
-        &ctx.accounts.funder_token_account_a,
-        &ctx.accounts.token_vault_a,
-        &token_a_amount,
-        &ctx.accounts.token_mint_a,
-        &ctx.accounts.funder.to_account_info(),
-        &ctx.accounts.token_program,
-        None,
-    )
-    .map_err(|_| ErrorCode::InsufficientMakerBalance)?;
+    let lilpool = &ctx.accounts.lilpool;
+    let position_mint = &ctx.accounts.position_mint;
+    let position = &mut ctx.accounts.position;
 
-    transfer_tokens(
-        &ctx.accounts.funder_token_account_b,
-        &ctx.accounts.token_vault_b,
-        &token_b_amount,
-        &ctx.accounts.token_mint_b,
-        &ctx.accounts.funder.to_account_info(),
-        &ctx.accounts.token_program,
-        None,
-    )
-    .map_err(|_| ErrorCode::InsufficientMakerBalance)?;
-
-    ctx.accounts.position.set_inner(Position {
-        lilpool: ctx.accounts.lilpool.key(),
+    position.set_inner(Position {
+        lilpool: lilpool.key(),
         funder: ctx.accounts.funder.key(),
-        position_mint: ctx.accounts.position_mint.key(),
-        token_a_amount: token_a_amount,
-        token_b_amount: token_b_amount,
+        position_mint: position_mint.key(),
+        token_a_amount,
+        token_b_amount,
     });
 
     mint_position_token_and_remove_authority(
         &ctx.accounts.lilpool,
+        &ctx.accounts.position,
         &ctx.accounts.position_mint,
         &ctx.accounts.position_token_account,
         &ctx.accounts.token_program,
