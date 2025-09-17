@@ -46,7 +46,7 @@ pub struct OpenPosition<'info> {
 /*
   Opens a new lilpool Position.
 */
-pub fn handler(ctx: Context<OpenPosition>, token_a_amount: u64, token_b_amount: u64) -> Result<()> {
+pub fn handler(ctx: Context<OpenPosition>) -> Result<()> {
     let lilpool = &ctx.accounts.lilpool;
     let position_mint = &ctx.accounts.position_mint;
     let position = &mut ctx.accounts.position;
@@ -61,8 +61,8 @@ pub fn handler(ctx: Context<OpenPosition>, token_a_amount: u64, token_b_amount: 
         lilpool: lilpool.key(),
         funder: ctx.accounts.funder.key(),
         position_mint: position_mint.key(),
-        token_a_amount,
-        token_b_amount,
+        token_a_amount: 0,
+        token_b_amount: 0,
     });
 
     initialize_position_mint_2022(
