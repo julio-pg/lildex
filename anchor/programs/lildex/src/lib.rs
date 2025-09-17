@@ -39,12 +39,8 @@ pub mod lildex {
         instructions::initialize_pool::handler(ctx, initial_price)
     }
 
-    pub fn open_position(
-        ctx: Context<OpenPosition>,
-        token_a_amount: u64,
-        token_b_amount: u64,
-    ) -> Result<()> {
-        instructions::open_position::handler(ctx, token_a_amount, token_b_amount)
+    pub fn open_position(ctx: Context<OpenPosition>) -> Result<()> {
+        instructions::open_position::handler(ctx)
     }
 
     pub fn close_position(ctx: Context<ClosePosition>) -> Result<()> {
