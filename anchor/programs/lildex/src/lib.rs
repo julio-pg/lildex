@@ -20,8 +20,9 @@ pub mod math;
 pub mod state;
 #[doc(hidden)]
 pub mod util;
-
+#[doc(hidden)]
 use instructions::*;
+
 #[program]
 pub mod lildex {
     use super::*;

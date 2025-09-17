@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
+use crate::errors::ErrorCode;
 use crate::events::*;
 
 use crate::state::*;
@@ -50,10 +51,15 @@ pub fn handler<'info>(
     token_max_b: u64,
     // remaining_accounts_info: Option<RemainingAccountsInfo>,
 ) -> Result<()> {
-    // verify_position_authority_interface(
-    //     &ctx.accounts.position_token_account,
-    //     &ctx.accounts.position_authority,
-    // )?;
+    // Validate amounts
+    require!(token_max_a > 0, ErrorCode::InvalidAmount);
+    require!(token_max_b > 0, ErrorCode::InvalidAmount);
+
+    // Validate token mints are different
+    require!(
+        ctx.accounts.token_mint_a.key() != ctx.accounts.token_mint_b.key(),
+        ErrorCode::InvalidTokenMint
+    );
 
     transfer_from_owner_to_vault_v2(
         &ctx.accounts.position_authority,
@@ -72,6 +78,10 @@ pub fn handler<'info>(
         &ctx.accounts.token_program_b,
         token_max_b,
     )?;
+
+    let position = &mut ctx.accounts.position;
+    position.token_a_amount = position.token_a_amount.checked_add(token_max_a).unwrap();
+    position.token_b_amount = position.token_b_amount.checked_add(token_max_b).unwrap();
 
     emit!(LiquidityIncreased {
         lilpool: ctx.accounts.lilpool.key(),

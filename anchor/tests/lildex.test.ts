@@ -176,10 +176,27 @@ describe('lildex', () => {
       token2022Program: TOKEN_EXTENSIONS_PROGRAM,
     })
 
+    const increaseLiquidityIx = programClient.getIncreaseLiquidityInstruction({
+      lilpool: lilpoolAddress,
+      position: positionAddress,
+      positionAuthority: payer,
+      positionTokenAccount: postionTokenAccount,
+      tokenMintA: tokenMintA,
+      tokenMintB: tokenMintB,
+      tokenOwnerAccountA: funderTokenAccountA,
+      tokenOwnerAccountB: funderTokenAccountB,
+      tokenVaultA: tokenVaultA.address,
+      tokenVaultB: tokenVaultB.address,
+      tokenMaxA: tokenAOfferedAmount,
+      tokenMaxB: tokenBWantedAmount,
+      tokenProgramA: tokenProgramA.programAddress,
+      tokenProgramB: tokenProgramB.programAddress,
+    })
+
     try {
       await connection.sendTransactionFromInstructions({
         feePayer: payer,
-        instructions: [initPoolIx, openPositionIx],
+        instructions: [initPoolIx, openPositionIx, increaseLiquidityIx],
       })
 
       // ✅ success path: no error
