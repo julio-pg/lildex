@@ -125,7 +125,7 @@ export function useOpenPositionMutation({
         programAddress: programId,
         seeds: [textEncoder.encode('config'), addressEncoder.encode(testWallet)],
       })
-      const [lilpoolAddress] = await getProgramDerivedAddress({
+      const [lilpoolPda] = await getProgramDerivedAddress({
         programAddress: programId,
         seeds: [
           textEncoder.encode('lilpool'),
@@ -154,26 +154,36 @@ export function useOpenPositionMutation({
         mint: tokenMintB,
         useTokenExtensions: true,
       })
-      return signAndSend(
-        getOpenPositionInstruction({
-          funder: signer,
-          owner: signer.address,
-          tokenMintA: tokenMintA,
-          tokenMintB: tokenMintB,
-          positionMint: postionTokenMint,
-          positionTokenAccount: postionTokenAccount,
-          position: positionAddress,
-          lilpool: lilpoolAddress,
-          tokenVaultA: tokenVaultA,
-          tokenVaultB: tokenVaultB,
-          funderTokenAccountA: funderTokenAccountA,
-          funderTokenAccountB: funderTokenAccountB,
-          tokenAAmount: tokenABigIntAmount,
-          tokenBAmount: tokenBBigIntAmount,
-          tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
-        }),
-        signer,
-      )
+      const openPositionIx = getOpenPositionInstruction({
+        funder: signer,
+        owner: signer.address,
+        positionMint: postionTokenMint,
+        positionTokenAccount: postionTokenAccount,
+        position: positionAddress,
+        lilpool: lilpoolPda,
+        tokenAAmount: tokenABigIntAmount,
+        tokenBAmount: tokenBBigIntAmount,
+        metadataUpdateAuth: signer.address,
+        token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
+      })
+
+      const increaseLiquidityIx = getIncreaseLiquidityInstruction({
+        lilpool: lilpoolPda,
+        position: positionAddress,
+        positionAuthority: signer,
+        positionTokenAccount: postionTokenAccount,
+        tokenMintA: tokenMintA,
+        tokenMintB: tokenMintB,
+        tokenOwnerAccountA: funderTokenAccountA,
+        tokenOwnerAccountB: funderTokenAccountB,
+        tokenVaultA: tokenVaultA.address,
+        tokenVaultB: tokenVaultB.address,
+        tokenMaxA: tokenABigIntAmount,
+        tokenMaxB: tokenBBigIntAmount,
+        tokenProgramA: tokenProgramA,
+        tokenProgramB: tokenProgramB,
+      })
+      return signAndSend([openPositionIx, increaseLiquidityIx], signer)
     },
     onSuccess: async (tx) => {
       toastTx(tx, 'Postion Open with success')

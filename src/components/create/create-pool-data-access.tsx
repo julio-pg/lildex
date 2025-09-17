@@ -1,4 +1,8 @@
-import { getInitializePoolInstruction } from '@project/anchor'
+import {
+  getIncreaseLiquidityInstruction,
+  getInitializePoolInstruction,
+  getOpenPositionInstruction,
+} from '@project/anchor'
 import { useMutation } from '@tanstack/react-query'
 import { useWalletUiSigner } from '@wallet-ui/react'
 import { address, generateKeyPairSigner, getAddressEncoder, getProgramDerivedAddress, getUtf8Encoder } from 'gill'
@@ -39,6 +43,8 @@ export function useInitializePoolMutation({
   const tokenMintB = address(tokenBData?.address || solanaTokenAddress)
   const decimalsA = BigInt(tokenAData?.decimals || 1n)
   const decimalsB = BigInt(tokenBData?.decimals || 1n)
+  const tokenProgramA = address(tokenAData?.tokenProgram!)
+  const tokenProgramB = address(tokenBData?.tokenProgram!)
 
   const tokenABigIntAmount = numberToBigintPrice(Number(tokenAAmount), decimalsA)
   const tokenBBigIntAmount = numberToBigintPrice(Number(tokenBAmount), decimalsB)
@@ -56,7 +62,7 @@ export function useInitializePoolMutation({
         programAddress: programId,
         seeds: [textEncoder.encode('config'), addressEncoder.encode(testWallet)],
       })
-      const [lilpollPda] = await getProgramDerivedAddress({
+      const [lilpoolPda] = await getProgramDerivedAddress({
         programAddress: programId,
         seeds: [
           textEncoder.encode('lilpool'),
@@ -73,47 +79,62 @@ export function useInitializePoolMutation({
       const [funderTokenAccountA] = await findAssociatedTokenPda({
         owner: signer.address,
         mint: tokenMintA,
-        tokenProgram: address(tokenAData?.tokenProgram!),
+        tokenProgram: tokenProgramA,
       })
       const [funderTokenAccountB] = await findAssociatedTokenPda({
         owner: signer.address,
         mint: tokenMintB,
-        tokenProgram: address(tokenAData?.tokenProgram!),
+        tokenProgram: tokenProgramB,
       })
 
-      const [tokenVaultA] = await findAssociatedTokenPda({
-        owner: lilpollPda,
-        mint: tokenMintA,
-        tokenProgram: address(tokenAData?.tokenProgram!),
-      })
-      const [tokenVaultB] = await findAssociatedTokenPda({
-        owner: lilpollPda,
-        mint: tokenMintB,
-        tokenProgram: address(tokenAData?.tokenProgram!),
+      const tokenVaultA = await generateKeyPairSigner()
+
+      const tokenVaultB = await generateKeyPairSigner()
+
+      const initPoolIx = getInitializePoolInstruction({
+        lilpoolsConfig: configPda,
+        tokenMintA: tokenMintA,
+        tokenMintB: tokenMintB,
+        funder: signer,
+        lilpool: lilpoolPda,
+        tokenVaultA: tokenVaultA,
+        tokenVaultB: tokenVaultB,
+        initialPrice: initialPriceBigIntAmount,
+        tokenProgramA: tokenProgramA,
+        tokenProgramB: tokenProgramB,
       })
 
-      return await signAndSend(
-        getInitializePoolInstruction({
-          lilpoolsConfig: configPda,
-          tokenMintA: tokenMintA,
-          tokenMintB: tokenMintB,
-          positionMint: postionTokenMint,
-          positionTokenAccount: postionTokenAccount,
-          position: positionAddress,
-          funder: signer,
-          owner: signer.address,
-          lilpool: lilpollPda,
-          tokenVaultA: tokenVaultA,
-          tokenVaultB: tokenVaultB,
-          funderTokenAccountA: funderTokenAccountA,
-          funderTokenAccountB: funderTokenAccountB,
-          initialPrice: initialPriceBigIntAmount,
-          tokenAAmount: tokenABigIntAmount,
-          tokenBAmount: tokenBBigIntAmount,
-          tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
-        }),
-        signer,
-      )
+      const openPositionIx = getOpenPositionInstruction({
+        funder: signer,
+        owner: signer.address,
+        positionMint: postionTokenMint,
+        positionTokenAccount: postionTokenAccount,
+        position: positionAddress,
+        lilpool: lilpoolPda,
+        tokenAAmount: tokenABigIntAmount,
+        tokenBAmount: tokenBBigIntAmount,
+        metadataUpdateAuth: testWallet,
+        token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
+      })
+
+      const increaseLiquidityIx = getIncreaseLiquidityInstruction({
+        lilpool: lilpoolPda,
+        position: positionAddress,
+        positionAuthority: signer,
+        positionTokenAccount: postionTokenAccount,
+        tokenMintA: tokenMintA,
+        tokenMintB: tokenMintB,
+        tokenOwnerAccountA: funderTokenAccountA,
+        tokenOwnerAccountB: funderTokenAccountB,
+        tokenVaultA: tokenVaultA.address,
+        tokenVaultB: tokenVaultB.address,
+        tokenMaxA: tokenABigIntAmount,
+        tokenMaxB: tokenBBigIntAmount,
+        tokenProgramA: tokenProgramA,
+        tokenProgramB: tokenProgramB,
+      })
+
+      return await signAndSend([initPoolIx, openPositionIx, increaseLiquidityIx], signer)
     },
     onSuccess: async (tx) => {
       toastTx(tx)

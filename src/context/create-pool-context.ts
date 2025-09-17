@@ -17,7 +17,7 @@ export const createBAmountAtom = atom(
     const priceBigInt = numberToBigintPrice(Number(poolPrice), initialPriceDecimals)
 
     const tokenBRaw = (tokenARaw * priceBigInt) / BigInt(10 ** 9)
-    const newTokenBValue = bigintPriceToNumber(tokenBRaw, initialPriceDecimals)
+    const newTokenBValue = bigintPriceToNumber(tokenBRaw, tokenAdecimals)
     return newTokenBValue.toString()
   },
   (get, set, newTokenB: string) => {

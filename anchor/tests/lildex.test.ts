@@ -1,8 +1,9 @@
-import { Address, address, generateKeyPairSigner, KeyPairSigner } from 'gill'
+import { Account, Address, address, generateKeyPairSigner, KeyPairSigner } from 'gill'
 
 import * as programClient from '../src/client/js/generated'
 import { loadKeypairSignerFromFile } from 'gill/node'
 import { Connection, TOKEN_EXTENSIONS_PROGRAM, connect } from 'solana-kite'
+import { Mint } from 'gill/programs'
 
 describe('lildex', () => {
   let connection: Connection
@@ -13,22 +14,25 @@ describe('lildex', () => {
   let tokenMintB: Address
   let tokenVaultA: KeyPairSigner
   let tokenVaultB: KeyPairSigner
-  const tokenDecimals = 9
+  const tokenADecimals = 6
+  const tokenBDecimals = 9
   let funderTokenAccountA: Address
   let funderTokenAccountB: Address
   let lilpoolAddress: Address
   let configAddress: Address
+  let tokenProgramA: Account<Mint, string>
+  let tokenProgramB: Account<Mint, string>
   // Both tokens have 9 decimals, so we can use this to convert between major and minor units
-  const TOKEN = 10n ** BigInt(tokenDecimals)
+  const TOKENA = 10n ** BigInt(tokenADecimals)
+  const TOKENB = 10n ** BigInt(tokenBDecimals)
   // const userInitialTokenAmount = 10n * TOKEN
-  const tokenAOfferedAmount = 1n * TOKEN
-  const initialPrice = 3n * TOKEN
+  const tokenAOfferedAmount = 1n * TOKENA
+  const initialPrice = 3n * TOKENB
   const tokenBRaw = (tokenAOfferedAmount * initialPrice) / BigInt(10 ** 9)
-  const tokenBWantedAmount = tokenBRaw
+  const tokenBWantedAmount = 3000000000n
 
   beforeAll(async () => {
-    connection = await connect()
-    // lildex = await generateKeyPairSigner()
+    connection = await connect('devnet')
     payer = await loadKeypairSignerFromFile()
 
     // Create two token mints - the factories that create token A, and token B
@@ -56,11 +60,11 @@ describe('lildex', () => {
     //   },
     // })
     // devnet
-    // tokenMintA = address('G2uaA9VLQD9sJXnYMYT2Pjk6kaSv3CdnAA4rcWvBREVw')
-    // tokenMintB = address('BPacU77oBuEGZ9Kkmyi9Y5iiUKkB1tCVjEcbi7TarbeS')
+    tokenMintA = address('H8UekPGwePSmQ3ttuYGPU1szyFfjZR4N53rymSFwpLPm')
+    tokenMintB = address('BPacU77oBuEGZ9Kkmyi9Y5iiUKkB1tCVjEcbi7TarbeS')
     // localnet
-    tokenMintA = address('s26VZDn3BkY5jHUKCQ8C7tDGG2v5XzWiWiDPu9EK4WT') //no-ex
-    tokenMintB = address('6Ddpn9kLXdGZVK8G1bbidxcfvfUxAba1T1tnKuhdBHq3') //yes-ex
+    // tokenMintA = address('s26VZDn3BkY5jHUKCQ8C7tDGG2v5XzWiWiDPu9EK4WT') //no-ex
+    // tokenMintB = address('6Ddpn9kLXdGZVK8G1bbidxcfvfUxAba1T1tnKuhdBHq3') //yes-ex
     // Mint tokens to the user
     // const appWallet = address('Cp3hG8RqRV7ifQaNoXQSxQVc63wSNyj9Junjs14LEQqQ')
     // await connection.mintTokens(tokenMintA, payer, userInitialTokenAmount, payer.address)
@@ -85,6 +89,8 @@ describe('lildex', () => {
       tokenMintB,
     ])
     lilpoolAddress = lilpoolPDAAndBump.pda
+    tokenProgramA = await connection.getMint(tokenMintA)
+    tokenProgramB = await connection.getMint(tokenMintB)
     // get vault PDAs
     tokenVaultA = await generateKeyPairSigner()
     tokenVaultB = await generateKeyPairSigner()
@@ -136,15 +142,14 @@ describe('lildex', () => {
   })
 
   it.only('Initialize pool', async () => {
-    connection = await connect()
+    connection = await connect('devnet')
 
     const postionTokenAccount = await connection.getTokenAccountAddress(payer.address, postionTokenMint.address, true)
     const { pda: positionAddress } = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
       'position',
       postionTokenMint.address,
     ])
-    const tokenProgramA = await connection.getMint(tokenMintA)
-    const tokenProgramB = await connection.getMint(tokenMintB)
+
     console.log('initialPrice:', initialPrice)
     console.log('tokenAAmount:', tokenAOfferedAmount)
     console.log('tokenBAmount:', tokenBWantedAmount)
@@ -235,28 +240,40 @@ describe('lildex', () => {
       tokenMintB,
     ])
 
-    const ix = programClient.getOpenPositionInstruction({
+    const openPositionIx = programClient.getOpenPositionInstruction({
       funder: payer,
       owner: payer.address,
-      tokenMintA: tokenMintA,
-      tokenMintB: tokenMintB,
       positionMint: postionTokenMint,
       positionTokenAccount: postionTokenAccount,
       position: positionAddress,
       lilpool: lilpoolAddress,
-      tokenVaultA: tokenVaultA,
-      tokenVaultB: tokenVaultB,
-      funderTokenAccountA: funderTokenAccountA,
-      funderTokenAccountB: funderTokenAccountB,
       tokenAAmount: tokenAOfferedAmount,
       tokenBAmount: tokenBWantedAmount,
-      tokenProgram: TOKEN_EXTENSIONS_PROGRAM,
+      metadataUpdateAuth: payer.address,
+      token2022Program: TOKEN_EXTENSIONS_PROGRAM,
+    })
+
+    const increaseLiquidityIx = programClient.getIncreaseLiquidityInstruction({
+      lilpool: lilpoolAddress,
+      position: positionAddress,
+      positionAuthority: payer,
+      positionTokenAccount: postionTokenAccount,
+      tokenMintA: tokenMintA,
+      tokenMintB: tokenMintB,
+      tokenOwnerAccountA: funderTokenAccountA,
+      tokenOwnerAccountB: funderTokenAccountB,
+      tokenVaultA: tokenVaultA.address,
+      tokenVaultB: tokenVaultB.address,
+      tokenMaxA: tokenAOfferedAmount,
+      tokenMaxB: tokenBWantedAmount,
+      tokenProgramA: tokenProgramA.programAddress,
+      tokenProgramB: tokenProgramB.programAddress,
     })
 
     try {
       await connection.sendTransactionFromInstructions({
         feePayer: payer,
-        instructions: [ix],
+        instructions: [openPositionIx, increaseLiquidityIx],
       })
     } catch (err: any) {
       const msg = err.message || String(err)
@@ -300,8 +317,8 @@ describe('lildex', () => {
       positionTokenAccount: postionTokenAccount!,
       tokenMintA: tokenMintA,
       tokenMintB: tokenMintB,
-      tokenVaultA: tokenVaultA,
-      tokenVaultB: tokenVaultB,
+      tokenVaultA: tokenVaultA.address,
+      tokenVaultB: tokenVaultB.address,
       funderTokenAccountA: funderTokenAccountA,
       funderTokenAccountB: funderTokenAccountB,
       tokenProgram: TOKEN_EXTENSIONS_PROGRAM,
@@ -329,7 +346,7 @@ describe('lildex', () => {
       tokenMintB,
     ])
     const { data: lilpoolData } = await programClient.fetchLilpool(connection.rpc, lilpoolAddress)
-    const tokenAAmount = 1n * TOKEN
+    const tokenAAmount = 1n * TOKENA
     const tokenBAmount = tokenAAmount * lilpoolData.price
 
     const ix = programClient.getSwapInstruction({
@@ -342,8 +359,8 @@ describe('lildex', () => {
       tokenMintB: tokenMintB,
       tokenReceiverAccountA: funderTokenAccountA,
       tokenReceiverAccountB: funderTokenAccountB,
-      tokenVaultA: tokenVaultA,
-      tokenVaultB: tokenVaultB,
+      tokenVaultA: tokenVaultA.address,
+      tokenVaultB: tokenVaultB.address,
       tokenProgram: TOKEN_EXTENSIONS_PROGRAM,
     })
     try {
