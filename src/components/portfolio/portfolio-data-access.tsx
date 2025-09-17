@@ -1,101 +1,127 @@
 import { getProgramAccountsDecoded } from '@/lib/accounts'
 import {
   fetchLilpool,
-  fetchPosition,
   getClosePositionInstruction,
+  getDecreaseLiquidityInstruction,
   getPositionDecoder,
   Position,
   POSITION_DISCRIMINATOR,
 } from '@project/anchor'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useWalletUi } from '@wallet-ui/react'
-import { Account, Address, getAddressEncoder, getBase58Decoder, getUtf8Encoder } from 'gill'
+import { Account, address, getBase58Decoder, getUtf8Encoder } from 'gill'
 import { useLildexProgramId } from '../lildex/lildex-data-access'
 import { useWalletUiSigner } from '../solana/use-wallet-ui-signer'
 import { useWalletTransactionSignAndSend } from '../solana/use-wallet-transaction-sign-and-send'
-import { numberToBigintPrice, useGetTokenAccountAddress } from '@/lib/utils'
-import { TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
+import { getTokenMetadata, solanaTokenAddress, TokenMetadata, useGetTokenAccountAddress } from '@/lib/utils'
+import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
 import { toastTx } from '../toast-tx'
 import { toast } from 'sonner'
+import { parsedPostion } from '@/context/portfolio-context'
 
 export type PositonAccount = Account<Position, string>
 export function usePositionAccountsQuery({ walletAddress }: { walletAddress?: string }) {
   const { client } = useWalletUi()
   const programId = useLildexProgramId()
+  const signer = useWalletUiSigner()
+
   return useQuery({
     retry: false,
     queryKey: ['get-pool accounts'],
-    queryFn: () =>
-      getProgramAccountsDecoded(client.rpc, {
+    queryFn: async () => {
+      const positions = (await getProgramAccountsDecoded(client.rpc, {
         decoder: getPositionDecoder(),
         filter: getBase58Decoder().decode(POSITION_DISCRIMINATOR),
         programAddress: programId,
         walletAddress: getUtf8Encoder().encode(walletAddress!),
-      }) as Promise<PositonAccount[]>,
+      })) as PositonAccount[]
+      const results = []
+      for (const { data: postion, address } of positions) {
+        let metadataTokenA!: TokenMetadata
+        let metadataTokenB!: TokenMetadata
+        try {
+          const { data: lilpoolData } = await fetchLilpool(client.rpc, postion?.lilpool)
+
+          const tokenAInfo = await getTokenMetadata(client.rpc, signer?.address, lilpoolData.tokenMintA)
+          metadataTokenA = tokenAInfo
+          const tokenBInfo = await getTokenMetadata(client.rpc, signer?.address, lilpoolData.tokenMintB)
+          metadataTokenB = tokenBInfo
+        } catch (error) {
+          console.log(error)
+        }
+        results.push({
+          ...postion,
+          address,
+          metadataTokenA,
+          metadataTokenB,
+        })
+      }
+      return results
+    },
   })
 }
 
-export function useClosePositionMutation({
-  lilpoolAddress,
-  positionAddress,
-  positionMint,
-}: {
-  lilpoolAddress: Address
-  positionAddress: Address
-  positionMint: Address
-}) {
+export function useClosePositionMutation({ selectedPosition }: { selectedPosition: parsedPostion }) {
   const signer = useWalletUiSigner()
   const { client } = useWalletUi()
   const signAndSend = useWalletTransactionSignAndSend()
 
+  const lilpoolPda = selectedPosition?.lilpool
+  const positionAddress = selectedPosition?.address
+  const positionMint = selectedPosition?.positionMint
+  const tokenABigIntAmount = selectedPosition?.tokenAAmount
+  const tokenBBigIntAmount = selectedPosition?.tokenBAmount
+  const tokenProgramA = address(selectedPosition?.metadataTokenA.tokenProgram! || solanaTokenAddress)
+  const tokenProgramB = address(selectedPosition?.metadataTokenB.tokenProgram! || solanaTokenAddress)
   return useMutation({
     retry: false,
     mutationFn: async () => {
-      const { data: lilpoolData } = await fetchLilpool(client.rpc, lilpoolAddress)
+      const { data: lilpoolData } = await fetchLilpool(client.rpc, lilpoolPda)
       const postionTokenAccount = await useGetTokenAccountAddress({
         wallet: signer.address,
         mint: positionMint,
         useTokenExtensions: true,
       })
+      const tokenMintA = lilpoolData?.tokenMintA
+      const tokenMintB = lilpoolData?.tokenMintB
+      const tokenVaultA = lilpoolData?.tokenVaultA
+      const tokenVaultB = lilpoolData?.tokenVaultB
 
-      const tokenVaultA = await useGetTokenAccountAddress({
-        wallet: lilpoolAddress,
-        mint: lilpoolData.tokenMintA,
-        useTokenExtensions: true,
+      const [funderTokenAccountA] = await findAssociatedTokenPda({
+        owner: signer.address,
+        mint: tokenMintA,
+        tokenProgram: tokenProgramA,
       })
-      const tokenVaultB = await useGetTokenAccountAddress({
-        wallet: lilpoolAddress,
-        mint: lilpoolData.tokenMintB,
-        useTokenExtensions: true,
+      const [funderTokenAccountB] = await findAssociatedTokenPda({
+        owner: signer.address,
+        mint: tokenMintB,
+        tokenProgram: tokenProgramB,
       })
-      const funderTokenAccountA = await useGetTokenAccountAddress({
-        wallet: signer.address,
-        mint: lilpoolData.tokenMintA,
-        useTokenExtensions: true,
+      const closePositionIx = getClosePositionInstruction({
+        positionAuthority: signer,
+        receiver: signer.address,
+        position: positionAddress,
+        positionMint: positionMint,
+        positionTokenAccount: postionTokenAccount,
+        token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
       })
-      const funderTokenAccountB = await useGetTokenAccountAddress({
-        wallet: signer.address,
-        mint: lilpoolData.tokenMintB,
-        useTokenExtensions: true,
+      const decreaseLiquidityIx = getDecreaseLiquidityInstruction({
+        lilpool: lilpoolPda,
+        position: positionAddress,
+        positionAuthority: signer,
+        positionTokenAccount: postionTokenAccount,
+        tokenMintA: tokenMintA,
+        tokenMintB: tokenMintB,
+        tokenOwnerAccountA: funderTokenAccountA,
+        tokenOwnerAccountB: funderTokenAccountB,
+        tokenVaultA: tokenVaultA,
+        tokenVaultB: tokenVaultB,
+        tokenMaxA: tokenABigIntAmount,
+        tokenMaxB: tokenBBigIntAmount,
+        tokenProgramA: tokenProgramA,
+        tokenProgramB: tokenProgramB,
       })
-      return signAndSend(
-        getClosePositionInstruction({
-          positionAuthority: signer,
-          receiver: signer.address,
-          position: positionAddress,
-          lilpool: lilpoolAddress,
-          positionMint: positionMint,
-          positionTokenAccount: postionTokenAccount,
-          tokenMintA: lilpoolData.tokenMintA,
-          tokenMintB: lilpoolData.tokenMintB,
-          tokenVaultA: tokenVaultA,
-          tokenVaultB: tokenVaultB,
-          funderTokenAccountA: funderTokenAccountA,
-          funderTokenAccountB: funderTokenAccountB,
-          tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
-        }),
-        signer,
-      )
+      return signAndSend([closePositionIx, decreaseLiquidityIx], signer)
     },
     onSuccess: async (tx) => {
       toastTx(tx, 'Postion Closed with success')

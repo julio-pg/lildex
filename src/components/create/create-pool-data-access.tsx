@@ -43,8 +43,8 @@ export function useInitializePoolMutation({
   const tokenMintB = address(tokenBData?.address || solanaTokenAddress)
   const decimalsA = BigInt(tokenAData?.decimals || 1n)
   const decimalsB = BigInt(tokenBData?.decimals || 1n)
-  const tokenProgramA = address(tokenAData?.tokenProgram!)
-  const tokenProgramB = address(tokenBData?.tokenProgram!)
+  const tokenProgramA = address(tokenAData?.tokenProgram! || solanaTokenAddress)
+  const tokenProgramB = address(tokenBData?.tokenProgram! || solanaTokenAddress)
 
   const tokenABigIntAmount = numberToBigintPrice(Number(tokenAAmount), decimalsA)
   const tokenBBigIntAmount = numberToBigintPrice(Number(tokenBAmount), decimalsB)
@@ -111,8 +111,6 @@ export function useInitializePoolMutation({
         positionTokenAccount: postionTokenAccount,
         position: positionAddress,
         lilpool: lilpoolPda,
-        tokenAAmount: tokenABigIntAmount,
-        tokenBAmount: tokenBBigIntAmount,
         metadataUpdateAuth: testWallet,
         token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
       })

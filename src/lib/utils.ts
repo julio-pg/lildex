@@ -129,6 +129,7 @@ export async function getTokenMetadata(
   }
   metadata.address = mint
   try {
+    // TODO: add support for tokens without extensions with fethMetadata method
     const mintAccount = await fetchMint(rpc, mint)
 
     const maybeTokenExtensions = mintAccount.data.extensions

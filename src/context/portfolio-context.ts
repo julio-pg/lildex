@@ -1,4 +1,8 @@
-import { PositonAccount } from '@/components/portfolio/portfolio-data-access'
+import { TokenMetadata } from '@/lib/utils'
+import { Position } from '@project/anchor'
+import { Address } from 'gill'
 import { atom } from 'jotai'
-
-export const portSelectedPositionAtom = atom<PositonAccount>()
+export type parsedPostion = Position & { address: Address } & {
+  metadataTokenA: TokenMetadata
+} & { metadataTokenB: TokenMetadata }
+export const portSelectedPositionAtom = atom<parsedPostion>()

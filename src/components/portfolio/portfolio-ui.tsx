@@ -1,11 +1,9 @@
-import { data } from 'react-router'
 import { Button } from '../ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { useClosePositionMutation, usePositionAccountsQuery } from './portfolio-data-access'
 import { useWalletUi } from '@wallet-ui/react'
 import { WalletButton } from '../solana/solana-provider'
-import { Address } from 'gill'
-import { ellipsify } from '@/lib/utils'
+import { bigintPriceToNumber, ellipsify } from '@/lib/utils'
 import { useAtom } from 'jotai'
 import { portSelectedPositionAtom } from '@/context/portfolio-context'
 
@@ -21,11 +19,10 @@ export default function Portfolio() {
     )
   }
   const { data: postions } = usePositionAccountsQuery({ walletAddress: account.address })
+
   const [selectedPostion, SetSelectedPosition] = useAtom(portSelectedPositionAtom)
   const mutation = useClosePositionMutation({
-    lilpoolAddress: selectedPostion?.data.lilpool!,
-    positionAddress: selectedPostion?.address!,
-    positionMint: selectedPostion?.data.positionMint!,
+    selectedPosition: selectedPostion!,
   })
   return (
     <div className="relative overflow-x-auto rounded-md">
@@ -35,22 +32,27 @@ export default function Portfolio() {
             <TableHead>Pool</TableHead>
             <TableHead>Balance token A</TableHead>
             <TableHead>Balance token B</TableHead>
-            <TableHead>Current Price</TableHead>
+            {/* <TableHead>Current Price</TableHead> */}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {postions?.map((position) => (
-            <TableRow key={position.address} className="bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400 ">
+          {postions?.map((data) => (
+            <TableRow key={data.address} className="bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400 ">
               <TableHead className=" font-medium text-gray-900 whitespace-nowrap dark:text-white text-xl">
-                {ellipsify(position.address)}
+                {`${data.metadataTokenA.symbol || ellipsify(data.metadataTokenA.address)} / ${ellipsify(data.metadataTokenB.symbol || data.metadataTokenB.address)}`}
               </TableHead>
-              <TableCell>{BigInt(position.data?.tokenAAmount || 0) / 10n ** BigInt(9)}</TableCell>
-              <TableCell>{BigInt(position.data?.tokenBAmount || 0) / 10n ** BigInt(9)}</TableCell>
+              <TableCell>
+                {bigintPriceToNumber(data?.tokenAAmount, BigInt(data.metadataTokenA.decimals || 1)) || 0}
+              </TableCell>
+              <TableCell>
+                {bigintPriceToNumber(data?.tokenBAmount, BigInt(data?.metadataTokenB.decimals || 1)) || 0}
+              </TableCell>
               {/* <TableCell >${data.positionMint / BigInt(10) ** BigInt(9)}</TableCell> */}
               <TableCell>
                 <Button
+                  // disabled={mutation.isPending}
                   onClick={() => {
-                    SetSelectedPosition(position)
+                    SetSelectedPosition(data)
                     mutation.mutateAsync().catch((err: any) => console.log(err))
                   }}
                 >

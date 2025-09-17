@@ -119,7 +119,7 @@ export function useOpenPositionMutation({
     mutationFn: async () => {
       const postionTokenMint = await generateKeyPairSigner()
       const postionTokenAccount = await useGetTokenAccountAddress({
-        wallet: address(signer.address || solanaTokenAddress),
+        wallet: signer.address,
         mint: address(postionTokenMint.address || solanaTokenAddress),
         useTokenExtensions: true,
       })
@@ -158,8 +158,6 @@ export function useOpenPositionMutation({
         positionTokenAccount: postionTokenAccount,
         position: positionAddress,
         lilpool: lilpoolPda,
-        tokenAAmount: tokenABigIntAmount,
-        tokenBAmount: tokenBBigIntAmount,
         metadataUpdateAuth: testWallet,
         token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
       })

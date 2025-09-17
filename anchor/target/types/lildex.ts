@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/lildex.json`.
  */
 export type Lildex = {
-  "address": "6TnPz5JHzrJdj9oBFcs87zW2ewg4C5gWDPDkBzMXTfLD",
+  "address": "3wDmGCdec3eXwGYXiHAUBMuXSTskMgc2imk5vRzU5iHC",
   "metadata": {
     "name": "lildex",
     "version": "0.1.0",
@@ -439,16 +439,7 @@ export type Lildex = {
           "address": "3wDmGCdec3eXwGYXiHAUBMuXSTskMgc2imk5vRzU5iHC"
         }
       ],
-      "args": [
-        {
-          "name": "tokenAAmount",
-          "type": "u64"
-        },
-        {
-          "name": "tokenBAmount",
-          "type": "u64"
-        }
-      ]
+      "args": []
     },
     {
       "name": "swap",
