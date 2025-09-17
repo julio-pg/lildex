@@ -1,10 +1,9 @@
 use anchor_lang::prelude::*;
-use anchor_spl::associated_token::AssociatedToken;
-use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
+use anchor_spl::token_interface::{Mint, TokenAccount};
 
-use crate::errors::ErrorCode;
 use crate::state::*;
 use crate::util::*;
+use anchor_spl::token_2022::{self, Token2022};
 
 #[derive(Accounts)]
 pub struct ClosePosition<'info> {
@@ -19,56 +18,19 @@ pub struct ClosePosition<'info> {
         seeds = [b"position", position_mint.key().as_ref()],
         bump,
     )]
-    pub position: Box<Account<'info, Position>>,
-    pub lilpool: Box<Account<'info, Lilpool>>,
+    pub position: Account<'info, Position>,
 
-    #[account(mut, address = position.position_mint)]
+    #[account(mut, address = position.position_mint, owner = token_2022_program.key())]
     pub position_mint: InterfaceAccount<'info, Mint>,
 
     #[account(mut,
         constraint = position_token_account.amount == 1,
-        constraint = position_token_account.mint == position.position_mint)]
-    pub position_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    #[account(mint::token_program = token_program)]
-    pub token_mint_a: Box<InterfaceAccount<'info, Mint>>,
-
-    #[account(mint::token_program = token_program)]
-    pub token_mint_b: Box<InterfaceAccount<'info, Mint>>,
-
-    #[account(
-      mut,
-      associated_token::mint = token_mint_a,
-      associated_token::authority = position.lilpool,
-      associated_token::token_program = token_program
+        constraint = position_token_account.mint == position.position_mint
     )]
-    pub token_vault_a: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub position_token_account: InterfaceAccount<'info, TokenAccount>,
 
-    #[account(
-      mut,
-      associated_token::mint = token_mint_b,
-      associated_token::authority = position.lilpool,
-      associated_token::token_program = token_program
-    )]
-    pub token_vault_b: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    #[account(
-        mut,
-        associated_token::mint = token_mint_a,
-        associated_token::authority = position_authority,
-        associated_token::token_program = token_program
-    )]
-    pub funder_token_account_a: Box<InterfaceAccount<'info, TokenAccount>>,
-    #[account(
-        mut,
-        associated_token::mint = token_mint_b,
-        associated_token::authority = position_authority,
-        associated_token::token_program = token_program
-    )]
-    pub funder_token_account_b: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    pub token_program: Interface<'info, TokenInterface>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
+    #[account(address = token_2022::ID)]
+    pub token_2022_program: Program<'info, Token2022>,
 }
 
 pub fn handler(ctx: Context<ClosePosition>) -> Result<()> {
@@ -77,34 +39,18 @@ pub fn handler(ctx: Context<ClosePosition>) -> Result<()> {
         &ctx.accounts.position_authority,
     )?;
 
-    // Move the tokens from the maker's vault to the ATA
-    // transfer_tokens(
-    //     &ctx.accounts.token_vault_a,
-    //     &ctx.accounts.funder_token_account_a,
-    //     &ctx.accounts.position.token_a_amount,
-    //     &ctx.accounts.token_mint_a,
-    //     &&ctx.accounts.lilpool.to_account_info(),
-    //     &ctx.accounts.token_program,
-    //     Some(&ctx.accounts.lilpool.seeds()),
-    // )
-    // .map_err(|_| ErrorCode::InsufficientMakerBalance)?;
-
-    // transfer_tokens(
-    //     &ctx.accounts.token_vault_b,
-    //     &ctx.accounts.funder_token_account_b,
-    //     &ctx.accounts.position.token_b_amount,
-    //     &ctx.accounts.token_mint_b,
-    //     &ctx.accounts.lilpool.to_account_info(),
-    //     &ctx.accounts.token_program,
-    //     Some(&ctx.accounts.lilpool.seeds()),
-    // )
-    // .map_err(|_| ErrorCode::InsufficientMakerBalance)?;
-
-    burn_and_close_user_position_token(
+    burn_and_close_user_position_token_2022(
         &ctx.accounts.position_authority,
         &ctx.accounts.receiver,
         &ctx.accounts.position_mint,
         &ctx.accounts.position_token_account,
-        &ctx.accounts.token_program,
-    )
+        &ctx.accounts.token_2022_program,
+        &ctx.accounts.position,
+        &[
+            b"position",
+            ctx.accounts.position_mint.key().as_ref(),
+            &[ctx.bumps.position],
+        ],
+    )?;
+    Ok(())
 }

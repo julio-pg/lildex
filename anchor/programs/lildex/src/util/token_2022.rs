@@ -1,10 +1,12 @@
 use crate::constants::{
     LP_2022_METADATA_NAME_PREFIX, LP_2022_METADATA_SYMBOL, LP_2022_METADATA_URI_BASE,
 };
+use crate::errors::ErrorCode;
 use crate::state::{Lilpool, Position};
-use crate::util::safe_create_account;
+use crate::util::{safe_create_account, validate_owner};
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::program::{invoke, invoke_signed};
+use anchor_lang::solana_program::program_option::COption;
 use anchor_lang::solana_program::system_instruction::transfer;
 use anchor_spl::associated_token::{self, AssociatedToken};
 use anchor_spl::token_2022::spl_token_2022::extension::BaseStateWithExtensions;
@@ -15,6 +17,8 @@ use anchor_spl::token_2022::spl_token_2022::{
 };
 use anchor_spl::token_2022::Token2022;
 use anchor_spl::token_interface::spl_token_metadata_interface;
+use anchor_spl::token_interface::TokenAccount as TokenAccountInterface;
+use anchor_spl::token_interface::{Mint, TokenAccount};
 
 pub fn initialize_position_token_account_2022<'info>(
     position_token_account: &UncheckedAccount<'info>,
@@ -263,5 +267,92 @@ pub fn initialize_token_metadata_extension<'info>(
         &[position_seeds],
     )?;
 
+    Ok(())
+}
+
+pub fn burn_and_close_user_position_token_2022<'info>(
+    token_authority: &Signer<'info>,
+    receiver: &UncheckedAccount<'info>,
+    position_mint: &InterfaceAccount<'info, Mint>,
+    position_token_account: &InterfaceAccount<'info, TokenAccount>,
+    token_2022_program: &Program<'info, Token2022>,
+    position: &Account<'info, Position>,
+    position_seeds: &[&[u8]],
+) -> Result<()> {
+    // Burn a single token in user account
+    invoke(
+        &spl_token_2022::instruction::burn_checked(
+            token_2022_program.key,
+            position_token_account.to_account_info().key,
+            position_mint.to_account_info().key,
+            token_authority.key,
+            &[],
+            1,
+            position_mint.decimals,
+        )?,
+        &[
+            token_2022_program.to_account_info(),
+            position_token_account.to_account_info(),
+            position_mint.to_account_info(),
+            token_authority.to_account_info(),
+        ],
+    )?;
+
+    // Close user account
+    invoke(
+        &spl_token_2022::instruction::close_account(
+            token_2022_program.key,
+            position_token_account.to_account_info().key,
+            receiver.key,
+            token_authority.key,
+            &[],
+        )?,
+        &[
+            token_2022_program.to_account_info(),
+            position_token_account.to_account_info(),
+            receiver.to_account_info(),
+            token_authority.to_account_info(),
+        ],
+    )?;
+
+    // Close mint
+    invoke_signed(
+        &spl_token_2022::instruction::close_account(
+            token_2022_program.key,
+            position_mint.to_account_info().key,
+            receiver.key,
+            &position.key(),
+            &[],
+        )?,
+        &[
+            token_2022_program.to_account_info(),
+            position_mint.to_account_info(),
+            receiver.to_account_info(),
+            position.to_account_info(),
+        ],
+        &[position_seeds],
+    )?;
+
+    Ok(())
+}
+
+pub fn verify_position_authority_interface(
+    // position_token_account is owned by either TokenProgram or Token2022Program
+    position_token_account: &InterfaceAccount<'_, TokenAccountInterface>,
+    position_authority: &Signer<'_>,
+) -> Result<()> {
+    // Check token authority using validate_owner method...
+    match position_token_account.delegate {
+        COption::Some(ref delegate) if position_authority.key == delegate => {
+            validate_owner(delegate, &position_authority.to_account_info())?;
+            if position_token_account.delegated_amount != 1 {
+                return Err(ErrorCode::InvalidPositionTokenAmount.into());
+            }
+        }
+        _ => validate_owner(
+            &position_token_account.owner,
+            &position_authority.to_account_info(),
+        )?,
+    };
     Ok(())
 }
