@@ -1,5 +1,6 @@
 import { getProgramAccountsDecoded } from '@/lib/accounts'
 import {
+  getIncreaseLiquidityInstruction,
   getLilpoolDecoder,
   getOpenPositionInstruction,
   LILDEX_PROGRAM_ADDRESS,
@@ -19,7 +20,7 @@ import {
   getUtf8Encoder,
   none,
 } from 'gill'
-import { Extension, fetchMint, TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
+import { Extension, fetchMint, findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
 import { toastTx } from '../toast-tx'
 import { toast } from 'sonner'
 import {
@@ -105,6 +106,8 @@ export function useOpenPositionMutation({
   const testWallet = address(import.meta.env.VITE_TEST_WALLET!)
   const tokenMintA = address(metadataTokenA?.address || solanaTokenAddress)
   const tokenMintB = address(metadataTokenB?.address || solanaTokenAddress)
+  const tokenProgramA = address(metadataTokenA?.tokenProgram!)
+  const tokenProgramB = address(metadataTokenB?.tokenProgram!)
   const tokenABigIntAmount = numberToBigintPrice(Number(tokenAAmount), BigInt(metadataTokenA?.decimals || 1))
   const tokenBBigIntAmount = numberToBigintPrice(Number(tokenBAmount), BigInt(metadataTokenB?.decimals || 1))
 
@@ -134,25 +137,18 @@ export function useOpenPositionMutation({
           addressEncoder.encode(tokenMintB),
         ],
       })
-      const tokenVaultA = await useGetTokenAccountAddress({
-        wallet: lilpoolAddress,
+      const tokenVaultA = await generateKeyPairSigner()
+
+      const tokenVaultB = await generateKeyPairSigner()
+      const [funderTokenAccountA] = await findAssociatedTokenPda({
+        owner: signer.address,
         mint: tokenMintA,
-        useTokenExtensions: true,
+        tokenProgram: tokenProgramA,
       })
-      const tokenVaultB = await useGetTokenAccountAddress({
-        wallet: lilpoolAddress,
+      const [funderTokenAccountB] = await findAssociatedTokenPda({
+        owner: signer.address,
         mint: tokenMintB,
-        useTokenExtensions: true,
-      })
-      const funderTokenAccountA = await useGetTokenAccountAddress({
-        wallet: signer.address,
-        mint: tokenMintA,
-        useTokenExtensions: true,
-      })
-      const funderTokenAccountB = await useGetTokenAccountAddress({
-        wallet: signer.address,
-        mint: tokenMintB,
-        useTokenExtensions: true,
+        tokenProgram: tokenProgramB,
       })
       const openPositionIx = getOpenPositionInstruction({
         funder: signer,
