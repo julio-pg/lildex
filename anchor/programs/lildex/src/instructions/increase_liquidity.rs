@@ -1,7 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
-use crate::errors::ErrorCode;
 use crate::events::*;
 
 use crate::state::*;
@@ -45,7 +44,7 @@ pub struct ModifyLiquidityV2<'info> {
 }
 
 pub fn handler<'info>(
-    ctx: Context<'_, '_, '_, 'info, ModifyLiquidityV2<'info>>,
+    ctx: Context<ModifyLiquidityV2>,
     // liquidity_amount: u128,
     token_max_a: u64,
     token_max_b: u64,
@@ -63,7 +62,7 @@ pub fn handler<'info>(
         &ctx.accounts.token_vault_a,
         &ctx.accounts.token_program_a,
         token_max_a,
-    );
+    )?;
 
     transfer_from_owner_to_vault_v2(
         &ctx.accounts.position_authority,

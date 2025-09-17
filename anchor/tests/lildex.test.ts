@@ -11,8 +11,8 @@ describe('lildex', () => {
   let postionTokenMint: KeyPairSigner
   let tokenMintA: Address
   let tokenMintB: Address
-  let tokenVaultA: Address
-  let tokenVaultB: Address
+  let tokenVaultA: KeyPairSigner
+  let tokenVaultB: KeyPairSigner
   const tokenDecimals = 9
   let funderTokenAccountA: Address
   let funderTokenAccountB: Address
@@ -32,6 +32,7 @@ describe('lildex', () => {
     payer = await loadKeypairSignerFromFile()
 
     // Create two token mints - the factories that create token A, and token B
+    // spl-token create-token --program-id TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb
     // tokenMintA = await connection.createTokenMint({
     //   mintAuthority: payer,
     //   decimals: tokenDecimals,
@@ -55,17 +56,17 @@ describe('lildex', () => {
     //   },
     // })
     // devnet
-    tokenMintA = address('G2uaA9VLQD9sJXnYMYT2Pjk6kaSv3CdnAA4rcWvBREVw')
-    tokenMintB = address('BPacU77oBuEGZ9Kkmyi9Y5iiUKkB1tCVjEcbi7TarbeS')
+    // tokenMintA = address('G2uaA9VLQD9sJXnYMYT2Pjk6kaSv3CdnAA4rcWvBREVw')
+    // tokenMintB = address('BPacU77oBuEGZ9Kkmyi9Y5iiUKkB1tCVjEcbi7TarbeS')
     // localnet
-    // tokenMintA = address('GzqqMo5rnSYqfwX3gvkMUyogdSgQsbvgjXQi6VnHvEhU')
-    // tokenMintB = address('DtmYC5ms4v2mP61FcwceA1Sf7PttWefqzvhbcNv8smqs')
+    tokenMintA = address('s26VZDn3BkY5jHUKCQ8C7tDGG2v5XzWiWiDPu9EK4WT') //no-ex
+    tokenMintB = address('6Ddpn9kLXdGZVK8G1bbidxcfvfUxAba1T1tnKuhdBHq3') //yes-ex
     // Mint tokens to the user
     // const appWallet = address('Cp3hG8RqRV7ifQaNoXQSxQVc63wSNyj9Junjs14LEQqQ')
     // await connection.mintTokens(tokenMintA, payer, userInitialTokenAmount, payer.address)
     // await connection.mintTokens(tokenMintB, payer, userInitialTokenAmount, payer.address)
     // get funder token accounts
-    funderTokenAccountA = await connection.getTokenAccountAddress(payer.address, tokenMintA, true)
+    funderTokenAccountA = await connection.getTokenAccountAddress(payer.address, tokenMintA, false)
     funderTokenAccountB = await connection.getTokenAccountAddress(payer.address, tokenMintB, true)
     console.log('funderA:', funderTokenAccountA)
     console.log('funderB:', funderTokenAccountB)
@@ -85,8 +86,8 @@ describe('lildex', () => {
     ])
     lilpoolAddress = lilpoolPDAAndBump.pda
     // get vault PDAs
-    tokenVaultA = await connection.getTokenAccountAddress(lilpoolAddress, tokenMintA, true)
-    tokenVaultB = await connection.getTokenAccountAddress(lilpoolAddress, tokenMintB, true)
+    tokenVaultA = await generateKeyPairSigner()
+    tokenVaultB = await generateKeyPairSigner()
     postionTokenMint = await generateKeyPairSigner()
   })
   // add it.only and connect('devnet) when wat to create this config in devnet
@@ -134,7 +135,7 @@ describe('lildex', () => {
     }
   })
 
-  it('Initialize pool', async () => {
+  it.only('Initialize pool', async () => {
     connection = await connect()
 
     const postionTokenAccount = await connection.getTokenAccountAddress(payer.address, postionTokenMint.address, true)
@@ -142,33 +143,43 @@ describe('lildex', () => {
       'position',
       postionTokenMint.address,
     ])
+    const tokenProgramA = await connection.getMint(tokenMintA)
+    const tokenProgramB = await connection.getMint(tokenMintB)
     console.log('initialPrice:', initialPrice)
     console.log('tokenAAmount:', tokenAOfferedAmount)
     console.log('tokenBAmount:', tokenBWantedAmount)
-    const ix = programClient.getInitializePoolInstruction({
+    console.log('tokenProgramA:', tokenProgramA.programAddress)
+    console.log('tokenProgramB:', tokenProgramB.programAddress)
+
+    const initPoolIx = programClient.getInitializePoolInstruction({
       lilpoolsConfig: configAddress,
       tokenMintA: tokenMintA,
       tokenMintB: tokenMintB,
-      positionMint: postionTokenMint,
-      positionTokenAccount: postionTokenAccount,
-      position: positionAddress,
       funder: payer,
-      owner: payer.address,
       lilpool: lilpoolAddress,
       tokenVaultA: tokenVaultA,
       tokenVaultB: tokenVaultB,
-      funderTokenAccountA: funderTokenAccountA,
-      funderTokenAccountB: funderTokenAccountB,
       initialPrice: initialPrice,
+      tokenProgramA: tokenProgramA.programAddress,
+      tokenProgramB: tokenProgramB.programAddress,
+    })
+    const openPositionIx = programClient.getOpenPositionInstruction({
+      funder: payer,
+      owner: payer.address,
+      positionMint: postionTokenMint,
+      positionTokenAccount: postionTokenAccount,
+      position: positionAddress,
+      lilpool: lilpoolAddress,
       tokenAAmount: tokenAOfferedAmount,
       tokenBAmount: tokenBWantedAmount,
-      tokenProgram: TOKEN_EXTENSIONS_PROGRAM,
+      metadataUpdateAuth: payer.address,
+      token2022Program: TOKEN_EXTENSIONS_PROGRAM,
     })
 
     try {
       await connection.sendTransactionFromInstructions({
         feePayer: payer,
-        instructions: [ix],
+        instructions: [initPoolIx, openPositionIx],
       })
 
       // ✅ success path: no error
@@ -243,7 +254,7 @@ describe('lildex', () => {
       }
     }
   })
-  it.only('Close position', async () => {
+  it('Close position', async () => {
     connection = await connect('devnet')
 
     const getOffers = connection.getAccountsFactory(

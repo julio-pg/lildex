@@ -1,20 +1,14 @@
-use crate::constants::{
-    LP_2022_METADATA_NAME_PREFIX, LP_2022_METADATA_SYMBOL, LP_2022_METADATA_URI_BASE,
-};
 use crate::state::*;
 use crate::util::safe_create_account;
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::program::{invoke, invoke_signed};
 
 use anchor_spl::token_2022::spl_token_2022::instruction::{
-    burn_checked, close_account, initialize_mint2, mint_to, set_authority, transfer_checked,
-    AuthorityType,
+    burn_checked, close_account, mint_to, set_authority, transfer_checked, AuthorityType,
 };
 use anchor_spl::token_2022::spl_token_2022::{self, extension::ExtensionType};
 use anchor_spl::token_2022::{get_account_data_size, GetAccountDataSize};
-use anchor_spl::token_interface::{
-    spl_token_metadata_interface::instruction::initialize, Mint, TokenAccount, TokenInterface,
-};
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
 pub fn burn_and_close_user_position_token<'info>(
     token_authority: &Signer<'info>,
@@ -65,13 +59,10 @@ pub fn burn_and_close_user_position_token<'info>(
 
 pub fn mint_position_token_and_remove_authority<'info>(
     lilpool: &Account<'info, Lilpool>,
-    position: &Account<'info, Position>,
     position_mint: &InterfaceAccount<'info, Mint>,
     position_token_account: &InterfaceAccount<'info, TokenAccount>,
     token_program: &Interface<'info, TokenInterface>,
 ) -> Result<()> {
-    // TODO: update this to the token 2022-program and turn into a nft
-    create_mint_with_metadata(position_mint, position, lilpool, token_program)?;
     mint_position_token(
         lilpool,
         position_mint,
@@ -104,81 +95,6 @@ fn mint_position_token<'info>(
         ],
         &[&lilpool.seeds()],
     )?;
-    Ok(())
-}
-
-pub fn build_position_token_metadata<'info>(
-    position_mint: &InterfaceAccount<'info, Mint>,
-    position: &Account<'info, Position>,
-    lilpool: &Account<'info, Lilpool>,
-) -> (String, String, String) {
-    // WP_2022_METADATA_NAME_PREFIX + " xxxx...yyyy"
-    // xxxx and yyyy are the first and last 4 chars of mint address
-    let mint_address = position_mint.key().to_string();
-    let name = format!(
-        "{} {}...{}",
-        LP_2022_METADATA_NAME_PREFIX,
-        &mint_address[0..4],
-        &mint_address[mint_address.len() - 4..],
-    );
-
-    // LP_2022_METADATA_URI_BASE + "/" + pool address + "/" + position address
-    // Must be less than 128 bytes
-    let uri = format!(
-        "{}/{}/{}",
-        LP_2022_METADATA_URI_BASE,
-        lilpool.key(),
-        position.key(),
-    );
-
-    (name, LP_2022_METADATA_SYMBOL.to_string(), uri)
-}
-
-pub fn create_mint_with_metadata<'info>(
-    position_mint: &InterfaceAccount<'info, Mint>,
-    position: &Account<'info, Position>,
-    lilpool: &Account<'info, Lilpool>,
-    token_program: &Interface<'info, TokenInterface>,
-) -> Result<()> {
-    let (name, symbol, uri) = build_position_token_metadata(position_mint, position, lilpool);
-
-    // 1. Initialize mint (this also reserves extension slots)
-
-    invoke_signed(
-        &initialize_mint2(
-            &token_program.key(),
-            &position_mint.key(),
-            &lilpool.key(),
-            Some(&lilpool.key()),
-            0,
-        )?,
-        &[
-            position_mint.to_account_info(),
-            lilpool.to_account_info(),
-            token_program.to_account_info(),
-        ],
-        &[&lilpool.seeds()],
-    )?;
-
-    invoke_signed(
-        &initialize(
-            &token_program.key(),
-            &position_mint.key(),
-            &lilpool.key(),
-            &position_mint.key(),
-            &lilpool.key(),
-            name,
-            symbol,
-            uri,
-        ),
-        &[
-            position_mint.to_account_info(),
-            lilpool.to_account_info(),
-            token_program.to_account_info(),
-        ],
-        &[&lilpool.seeds()],
-    )?;
-
     Ok(())
 }
 
@@ -329,7 +245,7 @@ pub fn transfer_from_vault_to_owner_v2<'info>(
     token_program: &Interface<'info, TokenInterface>,
     amount: u64,
 ) -> Result<()> {
-    let mut instruction = transfer_checked(
+    let instruction = transfer_checked(
         token_program.key,
         // vault to owner
         &token_vault.key(),         // from (vault account)
@@ -341,7 +257,7 @@ pub fn transfer_from_vault_to_owner_v2<'info>(
         token_mint.decimals,
     )?;
 
-    let mut account_infos = vec![
+    let account_infos = vec![
         // vault to owner
         token_vault.to_account_info(),         // from (vault account)
         token_mint.to_account_info(),          // mint

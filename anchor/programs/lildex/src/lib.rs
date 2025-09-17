@@ -49,6 +49,20 @@ pub mod lildex {
     pub fn close_position(ctx: Context<ClosePosition>) -> Result<()> {
         instructions::close_position::handler(ctx)
     }
+    pub fn increase_liquidity(
+        ctx: Context<ModifyLiquidityV2>,
+        token_max_a: u64,
+        token_max_b: u64,
+    ) -> Result<()> {
+        instructions::increase_liquidity::handler(ctx, token_max_a, token_max_b)
+    }
+    pub fn decrease_liquidity(
+        ctx: Context<ModifyLiquidityV2>,
+        token_max_a: u64,
+        token_max_b: u64,
+    ) -> Result<()> {
+        instructions::decrease_liquidity::handler(ctx, token_max_a, token_max_b)
+    }
 
     pub fn swap(ctx: Context<Swap>, amount_in: u64, amount_out: u64, a_to_b: bool) -> Result<()> {
         instructions::swap::handler(ctx, amount_in, amount_out, a_to_b)

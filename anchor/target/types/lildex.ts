@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/lildex.json`.
  */
 export type Lildex = {
-  "address": "3axbTs2z5GBy6usVbNVoqEgZMng3vZvMnAoX29BFfwhr",
+  "address": "6TnPz5JHzrJdj9oBFcs87zW2ewg4C5gWDPDkBzMXTfLD",
   "metadata": {
     "name": "lildex",
     "version": "0.1.0",
@@ -317,6 +317,148 @@ export type Lildex = {
       "args": []
     },
     {
+      "name": "decreaseLiquidity",
+      "discriminator": [
+        160,
+        38,
+        208,
+        111,
+        104,
+        91,
+        44,
+        1
+      ],
+      "accounts": [
+        {
+          "name": "lilpool",
+          "writable": true,
+          "relations": [
+            "position"
+          ]
+        },
+        {
+          "name": "tokenProgramA"
+        },
+        {
+          "name": "tokenProgramB"
+        },
+        {
+          "name": "positionAuthority",
+          "signer": true
+        },
+        {
+          "name": "position",
+          "writable": true
+        },
+        {
+          "name": "positionTokenAccount"
+        },
+        {
+          "name": "tokenMintA"
+        },
+        {
+          "name": "tokenMintB"
+        },
+        {
+          "name": "tokenOwnerAccountA",
+          "writable": true
+        },
+        {
+          "name": "tokenOwnerAccountB",
+          "writable": true
+        },
+        {
+          "name": "tokenVaultA",
+          "writable": true
+        },
+        {
+          "name": "tokenVaultB",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "tokenMaxA",
+          "type": "u64"
+        },
+        {
+          "name": "tokenMaxB",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "increaseLiquidity",
+      "discriminator": [
+        46,
+        156,
+        243,
+        118,
+        13,
+        205,
+        251,
+        178
+      ],
+      "accounts": [
+        {
+          "name": "lilpool",
+          "writable": true,
+          "relations": [
+            "position"
+          ]
+        },
+        {
+          "name": "tokenProgramA"
+        },
+        {
+          "name": "tokenProgramB"
+        },
+        {
+          "name": "positionAuthority",
+          "signer": true
+        },
+        {
+          "name": "position",
+          "writable": true
+        },
+        {
+          "name": "positionTokenAccount"
+        },
+        {
+          "name": "tokenMintA"
+        },
+        {
+          "name": "tokenMintB"
+        },
+        {
+          "name": "tokenOwnerAccountA",
+          "writable": true
+        },
+        {
+          "name": "tokenOwnerAccountB",
+          "writable": true
+        },
+        {
+          "name": "tokenVaultA",
+          "writable": true
+        },
+        {
+          "name": "tokenVaultB",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "tokenMaxA",
+          "type": "u64"
+        },
+        {
+          "name": "tokenMaxB",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "initializeConfig",
       "discriminator": [
         208,
@@ -401,129 +543,6 @@ export type Lildex = {
           "signer": true
         },
         {
-          "name": "owner"
-        },
-        {
-          "name": "position",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  115,
-                  105,
-                  116,
-                  105,
-                  111,
-                  110
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "positionMint"
-              }
-            ]
-          }
-        },
-        {
-          "name": "positionMint",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "positionTokenAccount",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "owner"
-              },
-              {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "positionMint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
           "name": "lilpool",
           "writable": true,
           "pda": {
@@ -558,233 +577,18 @@ export type Lildex = {
         {
           "name": "tokenVaultA",
           "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "lilpool"
-              },
-              {
-                "kind": "account",
-                "path": "tokenProgram"
-              },
-              {
-                "kind": "account",
-                "path": "tokenMintA"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
+          "signer": true
         },
         {
           "name": "tokenVaultB",
           "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "lilpool"
-              },
-              {
-                "kind": "account",
-                "path": "tokenProgram"
-              },
-              {
-                "kind": "account",
-                "path": "tokenMintB"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
+          "signer": true
         },
         {
-          "name": "funderTokenAccountA",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "funder"
-              },
-              {
-                "kind": "account",
-                "path": "tokenProgram"
-              },
-              {
-                "kind": "account",
-                "path": "tokenMintA"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
+          "name": "tokenProgramA"
         },
         {
-          "name": "funderTokenAccountB",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "funder"
-              },
-              {
-                "kind": "account",
-                "path": "tokenProgram"
-              },
-              {
-                "kind": "account",
-                "path": "tokenMintB"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
-          "name": "tokenProgram"
+          "name": "tokenProgramB"
         },
         {
           "name": "associatedTokenProgram",
@@ -798,14 +602,6 @@ export type Lildex = {
       "args": [
         {
           "name": "initialPrice",
-          "type": "u64"
-        },
-        {
-          "name": "tokenAAmount",
-          "type": "u64"
-        },
-        {
-          "name": "tokenBAmount",
           "type": "u64"
         }
       ]
@@ -863,333 +659,14 @@ export type Lildex = {
         },
         {
           "name": "positionTokenAccount",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "owner"
-              },
-              {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "positionMint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
+          "writable": true
         },
         {
           "name": "lilpool"
         },
         {
-          "name": "tokenMintA"
-        },
-        {
-          "name": "tokenMintB"
-        },
-        {
-          "name": "tokenVaultA",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "lilpool"
-              },
-              {
-                "kind": "account",
-                "path": "tokenProgram"
-              },
-              {
-                "kind": "account",
-                "path": "tokenMintA"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
-          "name": "tokenVaultB",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "lilpool"
-              },
-              {
-                "kind": "account",
-                "path": "tokenProgram"
-              },
-              {
-                "kind": "account",
-                "path": "tokenMintB"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
-          "name": "funderTokenAccountA",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "funder"
-              },
-              {
-                "kind": "account",
-                "path": "tokenProgram"
-              },
-              {
-                "kind": "account",
-                "path": "tokenMintA"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
-          "name": "funderTokenAccountB",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "funder"
-              },
-              {
-                "kind": "account",
-                "path": "tokenProgram"
-              },
-              {
-                "kind": "account",
-                "path": "tokenMintB"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
-          "name": "tokenProgram"
+          "name": "token2022Program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
         },
         {
           "name": "systemProgram",
@@ -1198,6 +675,10 @@ export type Lildex = {
         {
           "name": "associatedTokenProgram",
           "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "metadataUpdateAuth",
+          "address": "3wDmGCdec3eXwGYXiHAUBMuXSTskMgc2imk5vRzU5iHC"
         }
       ],
       "args": [
@@ -1432,6 +913,45 @@ export type Lildex = {
   ],
   "events": [
     {
+      "name": "liquidityDecreased",
+      "discriminator": [
+        166,
+        1,
+        36,
+        71,
+        112,
+        202,
+        181,
+        171
+      ]
+    },
+    {
+      "name": "liquidityIncreased",
+      "discriminator": [
+        30,
+        7,
+        144,
+        181,
+        102,
+        254,
+        155,
+        161
+      ]
+    },
+    {
+      "name": "poolInitialized",
+      "discriminator": [
+        100,
+        118,
+        173,
+        87,
+        12,
+        198,
+        254,
+        229
+      ]
+    },
+    {
       "name": "traded",
       "discriminator": [
         225,
@@ -1638,6 +1158,98 @@ export type Lildex = {
           {
             "name": "defaultProtocolFeeRate",
             "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "liquidityDecreased",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lilpool",
+            "type": "pubkey"
+          },
+          {
+            "name": "position",
+            "type": "pubkey"
+          },
+          {
+            "name": "tokenAAmount",
+            "type": "u64"
+          },
+          {
+            "name": "tokenBAmount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "liquidityIncreased",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lilpool",
+            "type": "pubkey"
+          },
+          {
+            "name": "position",
+            "type": "pubkey"
+          },
+          {
+            "name": "tokenAAmount",
+            "type": "u64"
+          },
+          {
+            "name": "tokenBAmount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "poolInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lilpoolsConfig",
+            "type": "pubkey"
+          },
+          {
+            "name": "lilpool",
+            "type": "pubkey"
+          },
+          {
+            "name": "tokenMintA",
+            "type": "pubkey"
+          },
+          {
+            "name": "tokenMintB",
+            "type": "pubkey"
+          },
+          {
+            "name": "tokenProgramA",
+            "type": "pubkey"
+          },
+          {
+            "name": "tokenProgramB",
+            "type": "pubkey"
+          },
+          {
+            "name": "decimalsA",
+            "type": "u8"
+          },
+          {
+            "name": "decimalsB",
+            "type": "u8"
+          },
+          {
+            "name": "initialPrice",
+            "type": "u64"
           }
         ]
       }

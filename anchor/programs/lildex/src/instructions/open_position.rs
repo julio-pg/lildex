@@ -1,14 +1,11 @@
-use anchor_lang::prelude::*;
-use anchor_spl::{
-    associated_token::AssociatedToken,
-    token_2022::spl_token_2022::{self, extension::ExtensionType},
-    token_interface::{Mint, TokenAccount, TokenInterface},
-};
-// use spl_token::ID as TOKEN_PROGRAM_ID;
-// use spl_token_2022::ID as TOKEN_2022_PROGRAM_ID;
-use crate::errors::ErrorCode;
+use crate::constants::nft::whirlpool_nft_update_auth::ID as LP_NFT_UPDATE_AUTH;
 use crate::state::*;
 use crate::util::*;
+use anchor_lang::prelude::*;
+use anchor_spl::associated_token::AssociatedToken;
+use anchor_spl::token_2022::spl_token_2022;
+use anchor_spl::token_2022::Token2022;
+
 #[derive(Accounts)]
 pub struct OpenPosition<'info> {
     #[account(mut)]
@@ -26,29 +23,24 @@ pub struct OpenPosition<'info> {
     )]
     pub position: Box<Account<'info, Position>>,
 
-    #[account(
-      init,
-      payer=funder,
-      space = ExtensionType::try_calculate_account_len::<spl_token_2022::state::Mint>(
-            &[ExtensionType::MetadataPointer, ExtensionType::TokenMetadata]
-        )?,
-      owner = token_program.key(), // works with Interface
-    )]
-    pub position_mint: InterfaceAccount<'info, Mint>,
+    /// CHECK: initialized in the handler
+    #[account(mut)]
+    pub position_mint: Signer<'info>,
 
-    #[account(
-      init,
-      payer = funder,
-      associated_token::mint = position_mint,
-      associated_token::authority = owner,
-    )]
-    pub position_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+    /// CHECK: initialized in the handler
+    #[account(mut)]
+    pub position_token_account: UncheckedAccount<'info>,
 
     pub lilpool: Box<Account<'info, Lilpool>>,
 
-    pub token_program: Interface<'info, TokenInterface>,
+    #[account(address = spl_token_2022::ID)]
+    pub token_2022_program: Program<'info, Token2022>,
     pub system_program: Program<'info, System>,
     pub associated_token_program: Program<'info, AssociatedToken>,
+
+    /// CHECK: checked via account constraints
+    #[account(address = LP_NFT_UPDATE_AUTH)]
+    pub metadata_update_auth: UncheckedAccount<'info>,
 }
 
 /*
@@ -59,6 +51,12 @@ pub fn handler(ctx: Context<OpenPosition>, token_a_amount: u64, token_b_amount: 
     let position_mint = &ctx.accounts.position_mint;
     let position = &mut ctx.accounts.position;
 
+    let position_seeds = [
+        b"position",
+        position_mint.key.as_ref(),
+        &[ctx.bumps.position],
+    ];
+
     position.set_inner(Position {
         lilpool: lilpool.key(),
         funder: ctx.accounts.funder.key(),
@@ -67,11 +65,46 @@ pub fn handler(ctx: Context<OpenPosition>, token_a_amount: u64, token_b_amount: 
         token_b_amount,
     });
 
-    mint_position_token_and_remove_authority(
-        &ctx.accounts.lilpool,
-        &ctx.accounts.position,
-        &ctx.accounts.position_mint,
+    initialize_position_mint_2022(
+        position_mint,
+        &ctx.accounts.funder,
+        position,
+        &ctx.accounts.system_program,
+        &ctx.accounts.token_2022_program,
+        true,
+    )?;
+
+    let (name, symbol, uri) = build_position_token_metadata(position_mint, position, lilpool);
+
+    initialize_token_metadata_extension(
+        name,
+        symbol,
+        uri,
+        position_mint,
+        position,
+        &ctx.accounts.metadata_update_auth,
+        &ctx.accounts.funder,
+        &ctx.accounts.system_program,
+        &ctx.accounts.token_2022_program,
+        &position_seeds,
+    )?;
+
+    initialize_position_token_account_2022(
         &ctx.accounts.position_token_account,
-        &ctx.accounts.token_program,
-    )
+        position_mint,
+        &ctx.accounts.funder,
+        &ctx.accounts.owner,
+        &ctx.accounts.token_2022_program,
+        &ctx.accounts.system_program,
+        &ctx.accounts.associated_token_program,
+    )?;
+
+    mint_position_token_2022_and_remove_authority(
+        position,
+        position_mint,
+        &ctx.accounts.position_token_account,
+        &ctx.accounts.token_2022_program,
+        &position_seeds,
+    )?;
+    Ok(())
 }
