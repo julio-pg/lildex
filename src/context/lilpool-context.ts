@@ -2,7 +2,7 @@ import { bigintPriceToNumber, initialPriceDecimals, numberToBigintPrice, TokenMe
 import { Lilpool } from '@project/anchor'
 import { atom } from 'jotai'
 
-type parsedLilpool = Lilpool & {
+export type parsedLilpool = Lilpool & {
   metadataTokenA: TokenMetadata
 } & { metadataTokenB: TokenMetadata }
 export const selectedPoolAtom = atom<parsedLilpool>()
@@ -20,7 +20,7 @@ export const poolBAmountAtom = atom(
     const poolPrice = pool?.price || 1n
 
     const tokenBRaw = (tokenARaw * poolPrice) / BigInt(10 ** 9)
-    const newTokenBValue = bigintPriceToNumber(tokenBRaw, initialPriceDecimals)
+    const newTokenBValue = bigintPriceToNumber(tokenBRaw, tokenAdecimals)
     return newTokenBValue.toString()
   },
   (get, set, newTokenB: string) => {

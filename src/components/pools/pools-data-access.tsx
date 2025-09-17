@@ -3,7 +3,6 @@ import {
   getIncreaseLiquidityInstruction,
   getLilpoolDecoder,
   getOpenPositionInstruction,
-  LILDEX_PROGRAM_ADDRESS,
   Lilpool,
   LILPOOL_DISCRIMINATOR,
 } from '@project/anchor'
@@ -20,7 +19,7 @@ import {
   getUtf8Encoder,
   none,
 } from 'gill'
-import { Extension, fetchMint, findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
+import { fetchMint, findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
 import { toastTx } from '../toast-tx'
 import { toast } from 'sonner'
 import {
@@ -33,7 +32,7 @@ import {
 import { useWalletUiSigner } from '@/components/solana/use-wallet-ui-signer'
 import { useWalletTransactionSignAndSend } from '../solana/use-wallet-transaction-sign-and-send'
 import { useLildexProgramId } from '../lildex/lildex-data-access'
-import { ExtensionMetadata } from './pool-types'
+import { parsedLilpool } from '@/context/lilpool-context'
 
 export function useGetMintQuery({ mint }: { mint: Address }) {
   const { client } = useWalletUi()
@@ -88,11 +87,13 @@ export function usePoolAccountsQuery() {
 }
 
 export function useOpenPositionMutation({
+  selectedPool,
   metadataTokenA,
   metadataTokenB,
   tokenAAmount,
   tokenBAmount,
 }: {
+  selectedPool: parsedLilpool
   metadataTokenA: TokenMetadata
   metadataTokenB: TokenMetadata
   tokenAAmount: string
@@ -106,8 +107,10 @@ export function useOpenPositionMutation({
   const testWallet = address(import.meta.env.VITE_TEST_WALLET!)
   const tokenMintA = address(metadataTokenA?.address || solanaTokenAddress)
   const tokenMintB = address(metadataTokenB?.address || solanaTokenAddress)
-  const tokenProgramA = address(metadataTokenA?.tokenProgram!)
-  const tokenProgramB = address(metadataTokenB?.tokenProgram!)
+  const tokenVaultA = selectedPool?.tokenVaultA
+  const tokenVaultB = selectedPool?.tokenVaultB
+  const tokenProgramA = address(metadataTokenA?.tokenProgram! || solanaTokenAddress)
+  const tokenProgramB = address(metadataTokenB?.tokenProgram! || solanaTokenAddress)
   const tokenABigIntAmount = numberToBigintPrice(Number(tokenAAmount), BigInt(metadataTokenA?.decimals || 1))
   const tokenBBigIntAmount = numberToBigintPrice(Number(tokenBAmount), BigInt(metadataTokenB?.decimals || 1))
 
@@ -137,9 +140,7 @@ export function useOpenPositionMutation({
           addressEncoder.encode(tokenMintB),
         ],
       })
-      const tokenVaultA = await generateKeyPairSigner()
 
-      const tokenVaultB = await generateKeyPairSigner()
       const [funderTokenAccountA] = await findAssociatedTokenPda({
         owner: signer.address,
         mint: tokenMintA,
@@ -159,7 +160,7 @@ export function useOpenPositionMutation({
         lilpool: lilpoolPda,
         tokenAAmount: tokenABigIntAmount,
         tokenBAmount: tokenBBigIntAmount,
-        metadataUpdateAuth: signer.address,
+        metadataUpdateAuth: testWallet,
         token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
       })
 
@@ -172,8 +173,8 @@ export function useOpenPositionMutation({
         tokenMintB: tokenMintB,
         tokenOwnerAccountA: funderTokenAccountA,
         tokenOwnerAccountB: funderTokenAccountB,
-        tokenVaultA: tokenVaultA.address,
-        tokenVaultB: tokenVaultB.address,
+        tokenVaultA: tokenVaultA,
+        tokenVaultB: tokenVaultB,
         tokenMaxA: tokenABigIntAmount,
         tokenMaxB: tokenBBigIntAmount,
         tokenProgramA: tokenProgramA,

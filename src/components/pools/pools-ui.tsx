@@ -28,6 +28,7 @@ export default function Pools() {
   const [selectedPool, SetSelectedPool] = useAtom(selectedPoolAtom)
 
   const mutation = useOpenPositionMutation({
+    selectedPool: selectedPool!,
     metadataTokenA: selectedPool?.metadataTokenA!,
     metadataTokenB: selectedPool?.metadataTokenB!,
     tokenAAmount,
