@@ -175,8 +175,6 @@ describe('lildex', () => {
       positionTokenAccount: postionTokenAccount,
       position: positionAddress,
       lilpool: lilpoolAddress,
-      tokenAAmount: tokenAOfferedAmount,
-      tokenBAmount: tokenBWantedAmount,
       metadataUpdateAuth: payer.address,
       token2022Program: TOKEN_EXTENSIONS_PROGRAM,
     })
@@ -247,8 +245,6 @@ describe('lildex', () => {
       positionTokenAccount: postionTokenAccount,
       position: positionAddress,
       lilpool: lilpoolAddress,
-      tokenAAmount: tokenAOfferedAmount,
-      tokenBAmount: tokenBWantedAmount,
       metadataUpdateAuth: payer.address,
       token2022Program: TOKEN_EXTENSIONS_PROGRAM,
     })

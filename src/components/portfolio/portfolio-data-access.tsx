@@ -121,7 +121,7 @@ export function useClosePositionMutation({ selectedPosition }: { selectedPositio
         tokenProgramA: tokenProgramA,
         tokenProgramB: tokenProgramB,
       })
-      return signAndSend([closePositionIx, decreaseLiquidityIx], signer)
+      return signAndSend([decreaseLiquidityIx, closePositionIx], signer)
     },
     onSuccess: async (tx) => {
       toastTx(tx, 'Postion Closed with success')
