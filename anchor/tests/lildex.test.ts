@@ -141,7 +141,7 @@ describe('lildex', () => {
     }
   })
 
-  it.only('Initialize pool', async () => {
+  it('Initialize pool', async () => {
     connection = await connect('devnet')
 
     const postionTokenAccount = await connection.getTokenAccountAddress(payer.address, postionTokenMint.address, true)
@@ -305,19 +305,12 @@ describe('lildex', () => {
     }
     postionTokenAccount = await connection.getTokenAccountAddress(payer.address, positionMint!, true)
     const ix = programClient.getClosePositionInstruction({
-      lilpool: lilpool!,
       positionAuthority: payer,
       receiver: payer.address,
       position: position1.address,
       positionMint: positionMint!,
       positionTokenAccount: postionTokenAccount!,
-      tokenMintA: tokenMintA,
-      tokenMintB: tokenMintB,
-      tokenVaultA: tokenVaultA.address,
-      tokenVaultB: tokenVaultB.address,
-      funderTokenAccountA: funderTokenAccountA,
-      funderTokenAccountB: funderTokenAccountB,
-      tokenProgram: TOKEN_EXTENSIONS_PROGRAM,
+      token2022Program: TOKEN_EXTENSIONS_PROGRAM,
     })
 
     try {
@@ -332,8 +325,8 @@ describe('lildex', () => {
       throw err
     }
   })
-  it('Execute swap', async () => {
-    connection = await connect()
+  it.only('Execute swap', async () => {
+    connection = await connect('devnet')
 
     const { pda: lilpoolAddress } = await connection.getPDAAndBump(programClient.LILDEX_PROGRAM_ADDRESS, [
       'lilpool',
@@ -342,22 +335,28 @@ describe('lildex', () => {
       tokenMintB,
     ])
     const { data: lilpoolData } = await programClient.fetchLilpool(connection.rpc, lilpoolAddress)
-    const tokenAAmount = 1n * TOKENA
-    const tokenBAmount = tokenAAmount * lilpoolData.price
+    const { programAddress: ProgramA } = await connection.getMint(lilpoolData.tokenMintA)
+    const { programAddress: ProgramB } = await connection.getMint(lilpoolData.tokenMintB)
+    const tokenAAmount = 500000n
+    const tokenBAmount = 1500000000n
+    // console.log(lilpoolData)
+    console.log(ProgramA)
+    console.log(ProgramB)
 
     const ix = programClient.getSwapInstruction({
-      receiver: payer,
+      tokenAuthority: payer,
       lilpool: lilpoolAddress,
       amountIn: tokenAAmount,
       amountOut: tokenBAmount,
       aToB: true,
-      tokenMintA: tokenMintA,
-      tokenMintB: tokenMintB,
-      tokenReceiverAccountA: funderTokenAccountA,
-      tokenReceiverAccountB: funderTokenAccountB,
-      tokenVaultA: tokenVaultA.address,
-      tokenVaultB: tokenVaultB.address,
-      tokenProgram: TOKEN_EXTENSIONS_PROGRAM,
+      tokenMintA: lilpoolData?.tokenMintA,
+      tokenMintB: lilpoolData?.tokenMintB,
+      tokenOwnerAccountA: funderTokenAccountA,
+      tokenOwnerAccountB: funderTokenAccountB,
+      tokenVaultA: lilpoolData?.tokenVaultA,
+      tokenVaultB: lilpoolData?.tokenVaultB,
+      tokenProgramA: ProgramA,
+      tokenProgramB: ProgramB,
     })
     try {
       await connection.sendTransactionFromInstructions({
@@ -366,6 +365,8 @@ describe('lildex', () => {
       })
     } catch (err: any) {
       console.log(err)
+      console.log(err.cause)
+      throw err
     }
   })
 })

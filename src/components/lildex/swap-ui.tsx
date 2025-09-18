@@ -12,6 +12,7 @@ import { useAtom } from 'jotai'
 import {
   selectedAtokenAtom,
   selectedBtokenAtom,
+  swapAmountIsValidAtom,
   swapSelectedPoolAtom,
   swapTokenAAmountAtom,
   swapTokenBAmountAtom,
@@ -32,10 +33,9 @@ function Swap() {
   const [tokenBAmount, setTokenBAmount] = useAtom(swapTokenBAmountAtom)
   const [selectedAtoken, setSelectedAtoken] = useAtom(selectedAtokenAtom)
   const [selectedBtoken, setSelectedBtoken] = useAtom(selectedBtokenAtom)
-  const walletAddress = address(account?.address!) || solanaTokenAddress
+  const [amountIsValid] = useAtom(swapAmountIsValidAtom)
 
   const { data: tokensWithBalances } = useGetListedTokensQuery({
-    wallet: walletAddress,
     listedTokens: listedTokens,
   })
   const { data: lilpool } = useGetLilpoolAddressQuery({
@@ -93,7 +93,7 @@ function Swap() {
           {account ? (
             <Button
               onClick={() => mutation.mutateAsync().catch((e) => console.log(e))}
-              disabled={!lilpool}
+              disabled={!(lilpool && amountIsValid)}
               className="w-full bg-red-800 hover:bg-red-800/75 dark:text-neutral-400 font-bold text-xl"
               size="lg"
             >
@@ -129,7 +129,9 @@ function Swap() {
               />
               <div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-white font-medium">{selectedAtoken?.symbol}</span>
+                  <span className="text-white font-medium">
+                    {selectedAtoken?.symbol || ellipsify(selectedAtoken?.address, 3, '...')}
+                  </span>
                   <span className="text-slate-400 text-sm">{selectedAtoken?.name}</span>
                 </div>
                 <AddressLink address={selectedAtoken?.address!} />
@@ -149,7 +151,9 @@ function Swap() {
               />
               <div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-white font-medium">{selectedBtoken?.symbol}</span>
+                  <span className="text-white font-medium">
+                    {selectedBtoken?.symbol || ellipsify(selectedBtoken?.address, 3, '...')}
+                  </span>
                   <span className="text-slate-400 text-sm">{selectedBtoken?.name}</span>
                 </div>
                 <AddressLink address={selectedBtoken?.address!} />

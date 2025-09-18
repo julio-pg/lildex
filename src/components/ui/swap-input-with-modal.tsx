@@ -56,7 +56,9 @@ export default function SwapInputWithModal({
                   className="w-5 h-auto aspect-square rounded-full"
                 />
               )}
-              <span className="text-xl">{selectedToken?.symbol || 'Select Token'}</span>
+              <span className="text-xl">
+                {selectedToken?.symbol || ellipsify(selectedToken?.address, 2, '...') || 'Select Token'}
+              </span>
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[525px]">
@@ -116,7 +118,7 @@ function TokenRowData({
         </span>
         <div className="flex flex-col mr-auto gap-y-0.5 min-w-0">
           <div className="flex gap-x-1.5 items-center min-w-0">
-            <span className="font-medium text-base">{tokenData?.symbol}</span>
+            <span className="font-medium text-base">{tokenData?.symbol || ellipsify(tokenData.address, 3, '...')}</span>
             <span className="text-sm text-primary/50 text-left overflow-hidden text-ellipsis whitespace-nowrap min-w-0">
               {tokenData?.name}
             </span>

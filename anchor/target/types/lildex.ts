@@ -455,134 +455,17 @@ export type Lildex = {
       ],
       "accounts": [
         {
-          "name": "receiver",
-          "writable": true,
+          "name": "tokenProgramA"
+        },
+        {
+          "name": "tokenProgramB"
+        },
+        {
+          "name": "tokenAuthority",
           "signer": true
         },
         {
           "name": "lilpool",
-          "writable": true
-        },
-        {
-          "name": "tokenReceiverAccountA",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "receiver"
-              },
-              {
-                "kind": "account",
-                "path": "tokenProgram"
-              },
-              {
-                "kind": "account",
-                "path": "tokenMintA"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
-          "name": "tokenReceiverAccountB",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "receiver"
-              },
-              {
-                "kind": "account",
-                "path": "tokenProgram"
-              },
-              {
-                "kind": "account",
-                "path": "tokenMintB"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
-          "name": "tokenVaultA",
-          "writable": true
-        },
-        {
-          "name": "tokenVaultB",
           "writable": true
         },
         {
@@ -592,7 +475,20 @@ export type Lildex = {
           "name": "tokenMintB"
         },
         {
-          "name": "tokenProgram"
+          "name": "tokenOwnerAccountA",
+          "writable": true
+        },
+        {
+          "name": "tokenVaultA",
+          "writable": true
+        },
+        {
+          "name": "tokenOwnerAccountB",
+          "writable": true
+        },
+        {
+          "name": "tokenVaultB",
+          "writable": true
         },
         {
           "name": "systemProgram",
@@ -1041,7 +937,7 @@ export type Lildex = {
             "type": "pubkey"
           },
           {
-            "name": "receiver",
+            "name": "tokenAuthority",
             "type": "pubkey"
           },
           {

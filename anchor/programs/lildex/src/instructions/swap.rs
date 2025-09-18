@@ -39,6 +39,9 @@ pub struct Swap<'info> {
 }
 
 pub fn handler(ctx: Context<Swap>, amount_in: u64, amount_out: u64, a_to_b: bool) -> Result<()> {
+    require!(amount_in > 0, ErrorCode::InvalidAmount);
+    require!(amount_out > 0, ErrorCode::InvalidAmount);
+
     perform_swap_v2(
         &ctx.accounts.lilpool,
         &ctx.accounts.token_authority,

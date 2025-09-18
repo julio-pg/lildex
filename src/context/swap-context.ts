@@ -1,4 +1,4 @@
-import { bigintPriceToNumber, initialPriceDecimals, numberToBigintPrice, TokenMetadata } from '@/lib/utils'
+import { bigintPriceToNumber, numberToBigintPrice, TokenMetadata } from '@/lib/utils'
 import { Lilpool } from '@project/anchor'
 import { atom } from 'jotai'
 
@@ -17,7 +17,7 @@ export const swapTokenBAmountAtom = atom(
     const poolPrice = pool?.price || 1n
 
     const tokenBRaw = (tokenARaw * poolPrice) / BigInt(10 ** 9)
-    const newTokenBValue = bigintPriceToNumber(tokenBRaw, initialPriceDecimals)
+    const newTokenBValue = bigintPriceToNumber(tokenBRaw, tokenAdecimals)
     return newTokenBValue.toString()
   },
   (get, set, newTokenB: string) => {
@@ -37,18 +37,19 @@ export const swapTokenBAmountAtom = atom(
   },
 )
 
-// export const amountIsValidAtom = atom((get) => {
-//   const tokenA = get(poolAAmountAtom)
-//   const tokenB = get(poolBAmountAtom)
-//   const pool = get(selectedPoolAtom)
-//   const tokenABalance = pool?.metadataTokenA.balance!
-//   const tokenBBalance = pool?.metadataTokenB.balance!
+export const swapAmountIsValidAtom = atom((get) => {
+  const tokenA = get(swapTokenAAmountAtom)
+  const tokenB = get(swapTokenBAmountAtom)
+  const selectedA = get(selectedAtokenAtom)
+  const selectedB = get(selectedBtokenAtom)
+  const tokenABalance = selectedA?.balance!
+  // const tokenBBalance = selectedB?.balance!
 
-//   if (Number(tokenB) <= 0 || Number(tokenA) <= 0) {
-//     return false
-//   }
-//   if (tokenABalance < Number(tokenA) || tokenBBalance < Number(tokenB)) {
-//     return false
-//   }
-//   return true
-// })
+  if (Number(tokenB) <= 0 || Number(tokenA) <= 0) {
+    return false
+  }
+  if (tokenABalance < Number(tokenA)) {
+    return false
+  }
+  return true
+})

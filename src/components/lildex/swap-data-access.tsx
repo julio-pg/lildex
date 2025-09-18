@@ -2,20 +2,34 @@ import { fetchLilpool, getSwapInstruction, Lilpool } from '@project/anchor'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useWalletTransactionSignAndSend } from '../solana/use-wallet-transaction-sign-and-send'
 import { useWalletUiSigner } from '../solana/use-wallet-ui-signer'
-import { getUserListedTokens, numberToBigintPrice, TokenMetadata, useGetTokenAccountAddress } from '@/lib/utils'
-import { Account, address, Address, getAddressEncoder, getProgramDerivedAddress, getUtf8Encoder } from 'gill'
-import { TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
+import { getTokenMetadata, numberToBigintPrice, solanaTokenAddress, TokenMetadata } from '@/lib/utils'
+import { Account, address, getAddressEncoder, getProgramDerivedAddress, getUtf8Encoder } from 'gill'
+import { findAssociatedTokenPda } from 'gill/programs'
 import { useWalletUi } from '@wallet-ui/react'
 import { useLildexProgramId } from './lildex-data-access'
 import { toastTx } from '../toast-tx'
 import { toast } from 'sonner'
 
-export function useGetListedTokensQuery({ wallet, listedTokens }: { wallet: Address; listedTokens: TokenMetadata[] }) {
+export function useGetListedTokensQuery({ listedTokens }: { listedTokens: TokenMetadata[] }) {
   const { client } = useWalletUi()
+  const signer = useWalletUiSigner()
 
   return useQuery({
     queryKey: ['listed-tokens'],
-    queryFn: async () => await getUserListedTokens(client.rpc, wallet, listedTokens),
+    queryFn: async () => {
+      const results = []
+      for (const data of listedTokens) {
+        let tokenMetadata!: TokenMetadata
+        try {
+          const tokenAddress = address(data.address)
+          tokenMetadata = await getTokenMetadata(client.rpc, signer?.address, tokenAddress)
+        } catch (error) {
+          console.log(error)
+        }
+        results.push(tokenMetadata)
+      }
+      return results
+    },
   })
 }
 
@@ -75,12 +89,19 @@ export function useCreateSwapMutation({
 }) {
   const signAndSend = useWalletTransactionSignAndSend()
   const signer = useWalletUiSigner()
-  const { client } = useWalletUi()
   const ADecimals = BigInt(selectedAtoken?.decimals || 1)
   const BDecimals = BigInt(selectedBtoken?.decimals || 1)
   const tokenABigIntAmount = numberToBigintPrice(Number(amountIn), ADecimals)
   const tokenBBigIntAmount = numberToBigintPrice(Number(amountOut), BDecimals)
+
   const lilpoolAddress = lilpoolData?.address
+  const tokenProgramA = address(selectedAtoken?.tokenProgram! || solanaTokenAddress)
+  const tokenProgramB = address(selectedBtoken?.tokenProgram! || solanaTokenAddress)
+
+  const tokenVaultA = lilpoolData?.data.tokenVaultA
+  const tokenVaultB = lilpoolData?.data.tokenVaultB
+  const tokenMintA = lilpoolData?.data.tokenMintA
+  const tokenMintB = lilpoolData?.data.tokenMintB
   // isAtoB validation
   const poolMintA = lilpoolData?.data.tokenMintA
   const poolMintB = lilpoolData?.data.tokenMintB
@@ -91,42 +112,32 @@ export function useCreateSwapMutation({
   return useMutation({
     mutationKey: ['create-swap'],
     mutationFn: async () => {
-      const { data: lilpoolData } = await fetchLilpool(client.rpc, lilpoolAddress)
-      // getTokenMetadata
-      const funderTokenAccountA = await useGetTokenAccountAddress({
-        wallet: signer.address,
-        mint: lilpoolData.tokenMintA,
-        useTokenExtensions: true,
+      const [funderTokenAccountA] = await findAssociatedTokenPda({
+        owner: signer.address,
+        mint: poolMintA,
+        tokenProgram: tokenProgramA,
       })
-      const funderTokenAccountB = await useGetTokenAccountAddress({
-        wallet: signer.address,
-        mint: lilpoolData.tokenMintB,
-        useTokenExtensions: true,
+      const [funderTokenAccountB] = await findAssociatedTokenPda({
+        owner: signer.address,
+        mint: poolMintB,
+        tokenProgram: tokenProgramB,
       })
-      const tokenVaultA = await useGetTokenAccountAddress({
-        wallet: lilpoolAddress,
-        mint: lilpoolData.tokenMintA,
-        useTokenExtensions: true,
-      })
-      const tokenVaultB = await useGetTokenAccountAddress({
-        wallet: lilpoolAddress,
-        mint: lilpoolData.tokenMintB,
-        useTokenExtensions: true,
-      })
+
       return signAndSend(
         getSwapInstruction({
-          receiver: signer,
+          tokenAuthority: signer,
           lilpool: lilpoolAddress,
           amountIn: tokenABigIntAmount,
           amountOut: tokenBBigIntAmount,
           aToB: isAtoB,
-          tokenMintA: lilpoolData.tokenMintA,
-          tokenMintB: lilpoolData.tokenMintB,
-          tokenReceiverAccountA: funderTokenAccountA,
-          tokenReceiverAccountB: funderTokenAccountB,
+          tokenMintA: tokenMintA,
+          tokenMintB: tokenMintB,
+          tokenOwnerAccountA: funderTokenAccountA,
+          tokenOwnerAccountB: funderTokenAccountB,
           tokenVaultA: tokenVaultA,
           tokenVaultB: tokenVaultB,
-          tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
+          tokenProgramA: tokenProgramA,
+          tokenProgramB: tokenProgramB,
         }),
         signer,
       )
