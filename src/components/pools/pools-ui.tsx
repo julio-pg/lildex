@@ -50,8 +50,17 @@ export default function Pools() {
         <TableBody>
           {pools?.map((data) => (
             <TableRow key={data.address} className="bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400 ">
-              <TableHead scope="row" className=" font-medium text-gray-900 whitespace-nowrap dark:text-white text-xl">
-                {`${data.metadataTokenA.symbol || ellipsify(data.tokenMintA)} / ${ellipsify(data.metadataTokenB.symbol || data.tokenMintB)}`}
+              <TableHead scope="row" className=" font-medium text-xl flex items-center">
+                <div className="items-center -space-x-2 flex lg:group-hover:opacity-0">
+                  <span className="relative flex min-h-4 min-w-4 shrink-0 rounded-full shadow-box h-5 w-5 z-10">
+                    <img className="aspect-square h-full w-full rounded-full" src={data.metadataTokenA.logoURI} />
+                  </span>
+                  <span className="relative flex min-h-4 min-w-4 shrink-0 rounded-full shadow-box h-5 w-5 z-10">
+                    <img className="aspect-square h-full w-full rounded-full" src={data.metadataTokenB.logoURI} />
+                  </span>
+                  <span className="relative flex min-h-4 min-w-4 shrink-0 rounded-full shadow-box h-5 w-5"></span>
+                </div>
+                <span>{`${data.metadataTokenA.symbol || ellipsify(data.tokenMintA)} / ${ellipsify(data.metadataTokenB.symbol || data.tokenMintB)}`}</span>
               </TableHead>
               <TableCell>${BigInt(bigintPriceToNumber(data?.price!, 9n) || 0)}</TableCell>
               <TableCell>{data.liquidity}</TableCell>
