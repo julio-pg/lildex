@@ -14,6 +14,7 @@ pub struct Swap<'info> {
     #[account(address = *token_mint_b.to_account_info().owner)]
     pub token_program_b: Interface<'info, TokenInterface>,
 
+    #[account(mut)]
     pub token_authority: Signer<'info>,
 
     #[account(mut)]
@@ -29,7 +30,12 @@ pub struct Swap<'info> {
     #[account(mut, address = lilpool.token_vault_a)]
     pub token_vault_a: Box<InterfaceAccount<'info, TokenAccount>>,
 
-    #[account(mut, constraint = token_owner_account_b.mint == lilpool.token_mint_b)]
+    #[account(
+        init_if_needed,
+        payer = token_authority,
+        associated_token::mint = token_mint_b,
+        associated_token::authority = token_authority,
+        associated_token::token_program = token_program_b,)]
     pub token_owner_account_b: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(mut, address = lilpool.token_vault_b)]
     pub token_vault_b: Box<InterfaceAccount<'info, TokenAccount>>,

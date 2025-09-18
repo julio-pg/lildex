@@ -41,7 +41,7 @@ export const swapAmountIsValidAtom = atom((get) => {
   const tokenA = get(swapTokenAAmountAtom)
   const tokenB = get(swapTokenBAmountAtom)
   const selectedA = get(selectedAtokenAtom)
-  const selectedB = get(selectedBtokenAtom)
+  // const selectedB = get(selectedBtokenAtom)
   const tokenABalance = selectedA?.balance!
   // const tokenBBalance = selectedB?.balance!
 
