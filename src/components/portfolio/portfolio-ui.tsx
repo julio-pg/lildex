@@ -18,7 +18,7 @@ export default function Portfolio() {
       </div>
     )
   }
-  const { data: postions } = usePositionAccountsQuery({ walletAddress: account.address })
+  const { data: postions } = usePositionAccountsQuery()
 
   const [selectedPostion, SetSelectedPosition] = useAtom(portSelectedPositionAtom)
   const mutation = useClosePositionMutation({

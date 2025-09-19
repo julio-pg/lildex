@@ -8,30 +8,34 @@ import {
   Decoder,
   MaybeEncodedAccount,
   parseBase64RpcAccount,
-  ReadonlyUint8Array,
   SolanaClient,
+  getBase58Encoder,
+  getUtf8Encoder,
 } from 'gill'
 
 export interface GetProgramAccountsConfig {
   filter: string
   programAddress: Address
-  walletAddress?: ReadonlyUint8Array
+  walletAddress?: string
 }
 
 export async function getProgramAccounts(rpc: SolanaClient['rpc'], config: GetProgramAccountsConfig) {
   const filters: any[] = [
     {
-      memcmp: { offset: 0n, bytes: config.filter as Base58EncodedBytes, encoding: 'base58' },
+      memcmp: { offset: 0, bytes: config.filter as Base58EncodedBytes, encoding: 'base58' },
     },
   ]
+
   if (config.walletAddress) {
     filters.push({
       memcmp: {
-        offset: 32n,
+        offset: 40,
         bytes: config.walletAddress,
+        encoding: 'base58',
       },
     })
   }
+  console.log(filters)
   return await rpc
     .getProgramAccounts(config.programAddress, {
       encoding: 'jsonParsed',
@@ -53,6 +57,7 @@ export async function getProgramAccountsDecoded<T extends object>(
   const programAccounts = await getProgramAccounts(rpc, {
     filter: config.filter,
     programAddress: config.programAddress,
+    walletAddress: config.walletAddress,
   })
 
   const encodedAccounts: Array<MaybeEncodedAccount> = programAccounts.map((item) => {

@@ -9,7 +9,7 @@ import {
 } from '@project/anchor'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useWalletUi } from '@wallet-ui/react'
-import { Account, address, getBase58Decoder, getUtf8Encoder } from 'gill'
+import { Account, address, getBase58Decoder } from 'gill'
 import { useLildexProgramId } from '../lildex/lildex-data-access'
 import { useWalletUiSigner } from '../solana/use-wallet-ui-signer'
 import { useWalletTransactionSignAndSend } from '../solana/use-wallet-transaction-sign-and-send'
@@ -20,21 +20,22 @@ import { toast } from 'sonner'
 import { parsedPostion } from '@/context/portfolio-context'
 
 export type PositonAccount = Account<Position, string>
-export function usePositionAccountsQuery({ walletAddress }: { walletAddress?: string }) {
-  const { client } = useWalletUi()
+export function usePositionAccountsQuery() {
+  const { account, client } = useWalletUi()
   const programId = useLildexProgramId()
   const signer = useWalletUiSigner()
 
   return useQuery({
     retry: false,
-    queryKey: ['get-pool accounts'],
+    queryKey: ['get-postion-accounts', account?.address],
     queryFn: async () => {
       const positions = (await getProgramAccountsDecoded(client.rpc, {
         decoder: getPositionDecoder(),
         filter: getBase58Decoder().decode(POSITION_DISCRIMINATOR),
         programAddress: programId,
-        walletAddress: getUtf8Encoder().encode(walletAddress!),
+        walletAddress: account?.address,
       })) as PositonAccount[]
+
       const results = []
       for (const { data: postion, address } of positions) {
         let metadataTokenA!: TokenMetadata
