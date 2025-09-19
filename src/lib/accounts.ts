@@ -33,7 +33,6 @@ export async function getProgramAccounts(rpc: SolanaClient['rpc'], config: GetPr
       },
     })
   }
-  console.log(filters)
   return await rpc
     .getProgramAccounts(config.programAddress, {
       encoding: 'jsonParsed',

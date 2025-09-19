@@ -5,7 +5,6 @@ import { NumericFormat } from 'react-number-format'
 import { Check, Copy, ExternalLink, Wallet } from 'lucide-react'
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from './dialog'
 import { Button } from './button'
-import { _ } from 'vitest/dist/chunks/reporters.d.BFLkQcL6.js'
 
 type Props = {
   tokenAmount: string

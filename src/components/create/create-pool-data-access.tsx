@@ -11,13 +11,7 @@ import { toastTx } from '../toast-tx'
 import { toast } from 'sonner'
 import { useLildexProgramId } from '../lildex/lildex-data-access'
 import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
-import {
-  initialPriceDecimals,
-  numberToBigintPrice,
-  solanaTokenAddress,
-  TokenMetadata,
-  useGetTokenAccountAddress,
-} from '@/lib/utils'
+import { initialPriceDecimals, numberToBigintPrice, solanaTokenAddress, TokenMetadata } from '@/lib/utils'
 
 export function useInitializePoolMutation({
   tokenAData,
@@ -43,8 +37,8 @@ export function useInitializePoolMutation({
   const tokenMintB = address(tokenBData?.address || solanaTokenAddress)
   const decimalsA = BigInt(tokenAData?.decimals || 1n)
   const decimalsB = BigInt(tokenBData?.decimals || 1n)
-  const tokenProgramA = address(tokenAData?.tokenProgram! || solanaTokenAddress)
-  const tokenProgramB = address(tokenBData?.tokenProgram! || solanaTokenAddress)
+  const tokenProgramA = address(tokenAData?.tokenProgram || solanaTokenAddress)
+  const tokenProgramB = address(tokenBData?.tokenProgram || solanaTokenAddress)
 
   const tokenABigIntAmount = numberToBigintPrice(Number(tokenAAmount), decimalsA)
   const tokenBBigIntAmount = numberToBigintPrice(Number(tokenBAmount), decimalsB)
@@ -53,10 +47,10 @@ export function useInitializePoolMutation({
     mutationFn: async () => {
       const postionTokenMint = await generateKeyPairSigner()
 
-      const postionTokenAccount = await useGetTokenAccountAddress({
-        wallet: signer.address,
+      const [postionTokenAccount] = await findAssociatedTokenPda({
+        owner: signer.address,
         mint: postionTokenMint.address,
-        useTokenExtensions: true,
+        tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
       })
       const [configPda] = await getProgramDerivedAddress({
         programAddress: programId,

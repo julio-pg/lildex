@@ -14,7 +14,7 @@ export const poolBAmountAtom = atom(
     const pool = get(selectedPoolAtom)
     const tokenAInfo = pool?.metadataTokenA
 
-    const tokenAdecimals = BigInt(tokenAInfo?.decimals! || 1n)
+    const tokenAdecimals = BigInt(tokenAInfo?.decimals || 1n)
 
     const tokenARaw = numberToBigintPrice(Number(tokenA), tokenAdecimals)
     const poolPrice = pool?.price || 1n
@@ -28,7 +28,7 @@ export const poolBAmountAtom = atom(
     const pool = get(selectedPoolAtom)
 
     const tokenBInfo = pool?.metadataTokenB
-    const tokenBdecimals = BigInt(tokenBInfo?.decimals! || 1n)
+    const tokenBdecimals = BigInt(tokenBInfo?.decimals || 1n)
     const tokenBRaw = numberToBigintPrice(Number(newTokenB), tokenBdecimals)
 
     const poolPrice = pool?.price || 1n
@@ -44,13 +44,13 @@ export const amountIsValidAtom = atom((get) => {
   const tokenA = get(poolAAmountAtom)
   const tokenB = get(poolBAmountAtom)
   const pool = get(selectedPoolAtom)
-  const tokenABalance = pool?.metadataTokenA.balance!
-  const tokenBBalance = pool?.metadataTokenB.balance!
+  const tokenABalance = pool?.metadataTokenA.balance
+  const tokenBBalance = pool?.metadataTokenB.balance
 
   if (Number(tokenB) <= 0 || Number(tokenA) <= 0) {
     return false
   }
-  if (tokenABalance < Number(tokenA) || tokenBBalance < Number(tokenB)) {
+  if (tokenABalance! < Number(tokenA) || tokenBBalance! < Number(tokenB)) {
     return false
   }
   return true

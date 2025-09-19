@@ -62,7 +62,7 @@ export default function Portfolio() {
                   // disabled={mutation.isPending}
                   onClick={() => {
                     SetSelectedPosition(data)
-                    mutation.mutateAsync().catch((err: any) => console.log(err))
+                    mutation.mutateAsync().catch((err) => console.log(err))
                   }}
                 >
                   Close

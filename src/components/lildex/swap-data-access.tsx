@@ -33,7 +33,7 @@ export function useGetListedTokensQuery({ listedTokens }: { listedTokens: TokenM
   })
 }
 
-export function useGetLilpoolAddressQuery({ tokenMintA, tokenMintB }: { tokenMintA: string; tokenMintB: string }) {
+export function useGetLilpoolAddressQuery({ tokenMintA, tokenMintB }: { tokenMintA?: string; tokenMintB?: string }) {
   const addressEncoder = getAddressEncoder()
   const textEncoder = getUtf8Encoder()
   const testWallet = address(import.meta.env.VITE_TEST_WALLET!)
@@ -57,6 +57,7 @@ export function useGetLilpoolAddressQuery({ tokenMintA, tokenMintB }: { tokenMin
     try {
       return await fetchLilpool(client.rpc, lilpollPda) // return data or throw/not found
     } catch (err) {
+      console.warn(err)
       return null
     }
   }
@@ -65,10 +66,10 @@ export function useGetLilpoolAddressQuery({ tokenMintA, tokenMintB }: { tokenMin
     queryKey: ['lilpool-Address', tokenMintA, tokenMintB],
     queryFn: async () => {
       // try given order first (fast if it matches)
-      let data = await deriveAndFetch(tokenMintA, tokenMintB)
+      let data = await deriveAndFetch(tokenMintA!, tokenMintB!)
       if (data) return data
       // try swapped order
-      data = await deriveAndFetch(tokenMintB, tokenMintA)
+      data = await deriveAndFetch(tokenMintB!, tokenMintA!)
       return data
     },
   })
@@ -95,8 +96,8 @@ export function useCreateSwapMutation({
   const tokenBBigIntAmount = numberToBigintPrice(Number(amountOut), BDecimals)
 
   const lilpoolAddress = lilpoolData?.address
-  const tokenProgramA = address(selectedAtoken?.tokenProgram! || solanaTokenAddress)
-  const tokenProgramB = address(selectedBtoken?.tokenProgram! || solanaTokenAddress)
+  const tokenProgramA = address(selectedAtoken?.tokenProgram || solanaTokenAddress)
+  const tokenProgramB = address(selectedBtoken?.tokenProgram || solanaTokenAddress)
 
   const tokenVaultA = lilpoolData?.data.tokenVaultA
   const tokenVaultB = lilpoolData?.data.tokenVaultB

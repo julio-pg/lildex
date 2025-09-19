@@ -11,7 +11,7 @@ export const swapTokenBAmountAtom = atom(
     const tokenA = get(swapTokenAAmountAtom)
     const tokenAInfo = get(selectedAtokenAtom)
     const pool = get(swapSelectedPoolAtom)
-    const tokenAdecimals = BigInt(tokenAInfo?.decimals! || 1n)
+    const tokenAdecimals = BigInt(tokenAInfo?.decimals || 1n)
 
     const tokenARaw = numberToBigintPrice(Number(tokenA), tokenAdecimals)
     const poolPrice = pool?.price || 1n
@@ -42,13 +42,13 @@ export const swapAmountIsValidAtom = atom((get) => {
   const tokenB = get(swapTokenBAmountAtom)
   const selectedA = get(selectedAtokenAtom)
   // const selectedB = get(selectedBtokenAtom)
-  const tokenABalance = selectedA?.balance!
+  const tokenABalance = selectedA?.balance
   // const tokenBBalance = selectedB?.balance!
 
   if (Number(tokenB) <= 0 || Number(tokenA) <= 0) {
     return false
   }
-  if (tokenABalance < Number(tokenA)) {
+  if (tokenABalance! < Number(tokenA)) {
     return false
   }
   return true

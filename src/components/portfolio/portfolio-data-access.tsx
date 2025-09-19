@@ -13,7 +13,7 @@ import { Account, address, getBase58Decoder } from 'gill'
 import { useLildexProgramId } from '../lildex/lildex-data-access'
 import { useWalletUiSigner } from '../solana/use-wallet-ui-signer'
 import { useWalletTransactionSignAndSend } from '../solana/use-wallet-transaction-sign-and-send'
-import { getTokenMetadata, solanaTokenAddress, TokenMetadata, useGetTokenAccountAddress } from '@/lib/utils'
+import { getTokenMetadata, solanaTokenAddress, TokenMetadata } from '@/lib/utils'
 import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
 import { toastTx } from '../toast-tx'
 import { toast } from 'sonner'
@@ -72,16 +72,17 @@ export function useClosePositionMutation({ selectedPosition }: { selectedPositio
   const positionMint = selectedPosition?.positionMint
   const tokenABigIntAmount = selectedPosition?.tokenAAmount
   const tokenBBigIntAmount = selectedPosition?.tokenBAmount
-  const tokenProgramA = address(selectedPosition?.metadataTokenA.tokenProgram! || solanaTokenAddress)
-  const tokenProgramB = address(selectedPosition?.metadataTokenB.tokenProgram! || solanaTokenAddress)
+  const tokenProgramA = address(selectedPosition?.metadataTokenA.tokenProgram || solanaTokenAddress)
+  const tokenProgramB = address(selectedPosition?.metadataTokenB.tokenProgram || solanaTokenAddress)
   return useMutation({
     retry: false,
     mutationFn: async () => {
       const { data: lilpoolData } = await fetchLilpool(client.rpc, lilpoolPda)
-      const postionTokenAccount = await useGetTokenAccountAddress({
-        wallet: signer.address,
+
+      const [postionTokenAccount] = await findAssociatedTokenPda({
+        owner: signer.address,
         mint: positionMint,
-        useTokenExtensions: true,
+        tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
       })
       const tokenMintA = lilpoolData?.tokenMintA
       const tokenMintB = lilpoolData?.tokenMintB

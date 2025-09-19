@@ -1,13 +1,7 @@
 import { type ClassValue, clsx } from 'clsx'
 import { address, Address, isSome, Lamports, lamportsToSol, SolanaClient } from 'gill'
 import { twMerge } from 'tailwind-merge'
-import {
-  fetchMint,
-  findAssociatedTokenPda,
-  isExtension,
-  TOKEN_2022_PROGRAM_ADDRESS,
-  TOKEN_PROGRAM_ADDRESS,
-} from 'gill/programs/token'
+import { fetchMint, findAssociatedTokenPda, isExtension, TOKEN_PROGRAM_ADDRESS } from 'gill/programs/token'
 import { fetchMetadata, getTokenMetadataAddress } from 'gill/programs'
 
 export const solanaTokenAddress = address('So11111111111111111111111111111111111111112')
@@ -44,24 +38,6 @@ export async function getTokenBalance(rpc: SolanaClient['rpc'], wallet: Address,
   return tokenBalance
 }
 
-export async function useGetTokenAccountAddress({
-  wallet,
-  mint,
-  useTokenExtensions = false,
-}: {
-  wallet: Address
-  mint: Address
-  useTokenExtensions: boolean
-}) {
-  const tokenProgram = useTokenExtensions ? TOKEN_2022_PROGRAM_ADDRESS : TOKEN_PROGRAM_ADDRESS
-  const address = await findAssociatedTokenPda({
-    mint: mint,
-    owner: wallet,
-    tokenProgram,
-  }).then(([address]) => address ?? '')
-  return address
-}
-
 export function bigintPriceToNumber(price: bigint, decimals: bigint): number {
   const scale = 10n ** decimals
   return Number(price) / Number(scale)
@@ -95,11 +71,12 @@ export async function getUserListedTokens(rpc: SolanaClient['rpc'], wallet: Addr
       } else {
         const { value: tokenInfo } = await rpc.getAccountInfo(mint, { encoding: 'base64' }).send()
 
-        const balanceString = await getTokenBalance(rpc, wallet, mint, tokenInfo?.owner!)
+        const balanceString = await getTokenBalance(rpc, wallet, mint, tokenInfo!.owner)
         balance = Number(balanceString)
-        tokenProgram = tokenInfo?.owner!
+        tokenProgram = tokenInfo!.owner
       }
     } catch (err) {
+      console.warn(err)
       // User may not have an ATA or balance
       balance = 0
       tokenProgram = TOKEN_PROGRAM_ADDRESS
@@ -135,7 +112,7 @@ export async function getTokenMetadata(
       const metadataAddress = await getTokenMetadataAddress(mint)
       const { data: metaplexMetadata } = await fetchMetadata(rpc, metadataAddress)
       try {
-        const uriData = await (await fetch(metaplexMetadata?.data.uri!)).json()
+        const uriData = await (await fetch(metaplexMetadata.data.uri)).json()
         metadata.logoURI = uriData.image
       } catch (error) {
         console.warn('Metadata fetch failed:', error)
@@ -149,14 +126,14 @@ export async function getTokenMetadata(
       const tokenExtensions = maybeTokenExtensions.value
       const TokenMetadata = tokenExtensions.find((extension) => isExtension('TokenMetadata', extension))
       try {
-        const uriData = await (await fetch(TokenMetadata?.uri!)).json()
+        const uriData = await (await fetch(TokenMetadata!.uri)).json()
 
         metadata.logoURI = uriData.image
       } catch (error) {
         console.warn('Metadata fetch failed:', error)
       }
-      metadata.symbol = TokenMetadata?.symbol!
-      metadata.name = TokenMetadata?.name!
+      metadata.symbol = TokenMetadata?.symbol || ''
+      metadata.name = TokenMetadata?.name || ''
     }
     const balanceQuery = await getTokenBalance(rpc, wallet, mint, mintAccount.programAddress!)
     // assign values

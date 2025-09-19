@@ -296,14 +296,13 @@ describe('lildex', () => {
     const positions = await getOffers()
     const position1 = positions[0]
 
-    let postionTokenAccount
     let lilpool
     let positionMint
     if (position1.exists) {
       lilpool = position1.data.lilpool
       positionMint = position1.data.positionMint
     }
-    postionTokenAccount = await connection.getTokenAccountAddress(payer.address, positionMint!, true)
+    const postionTokenAccount = await connection.getTokenAccountAddress(payer.address, positionMint!, true)
     const closePositionIx = programClient.getClosePositionInstruction({
       positionAuthority: payer,
       receiver: payer.address,

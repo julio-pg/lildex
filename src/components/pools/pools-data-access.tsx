@@ -21,13 +21,7 @@ import {
 import { fetchMint, findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
 import { toastTx } from '../toast-tx'
 import { toast } from 'sonner'
-import {
-  getTokenMetadata,
-  numberToBigintPrice,
-  solanaTokenAddress,
-  TokenMetadata,
-  useGetTokenAccountAddress,
-} from '@/lib/utils'
+import { getTokenMetadata, numberToBigintPrice, solanaTokenAddress, TokenMetadata } from '@/lib/utils'
 import { useWalletUiSigner } from '@/components/solana/use-wallet-ui-signer'
 import { useWalletTransactionSignAndSend } from '../solana/use-wallet-transaction-sign-and-send'
 import { useLildexProgramId } from '../lildex/lildex-data-access'
@@ -93,8 +87,8 @@ export function useOpenPositionMutation({
   tokenBAmount,
 }: {
   selectedPool: parsedLilpool
-  metadataTokenA: TokenMetadata
-  metadataTokenB: TokenMetadata
+  metadataTokenA?: TokenMetadata
+  metadataTokenB?: TokenMetadata
   tokenAAmount: string
   tokenBAmount: string
 }) {
@@ -117,10 +111,11 @@ export function useOpenPositionMutation({
     retry: false,
     mutationFn: async () => {
       const postionTokenMint = await generateKeyPairSigner()
-      const postionTokenAccount = await useGetTokenAccountAddress({
-        wallet: signer.address,
-        mint: address(postionTokenMint.address || solanaTokenAddress),
-        useTokenExtensions: true,
+
+      const [postionTokenAccount] = await findAssociatedTokenPda({
+        owner: signer.address,
+        mint: postionTokenMint.address,
+        tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
       })
       const [positionAddress] = await getProgramDerivedAddress({
         programAddress: programId,

@@ -10,7 +10,7 @@ export const createBAmountAtom = atom(
   (get) => {
     const tokenA = get(createAAmountAtom)
     const tokenAInfo = get(createTokenADataAtom)
-    const tokenAdecimals = BigInt(tokenAInfo?.decimals! || 1n)
+    const tokenAdecimals = BigInt(tokenAInfo?.decimals || 1n)
 
     const tokenARaw = numberToBigintPrice(Number(tokenA), tokenAdecimals)
     const poolPrice = get(createInitialPriceAtom)
@@ -24,7 +24,7 @@ export const createBAmountAtom = atom(
     if (newTokenB == '') return
 
     const tokenBInfo = get(createTokenBDataAtom)
-    const tokenBdecimals = BigInt(tokenBInfo?.decimals! || 1n)
+    const tokenBdecimals = BigInt(tokenBInfo?.decimals || 1n)
     const tokenBRaw = numberToBigintPrice(Number(newTokenB), tokenBdecimals)
 
     const poolPrice = get(createInitialPriceAtom)
@@ -50,8 +50,8 @@ export const isPairSelectedAtom = atom((get) => {
 export const createAmountIsValidAtom = atom((get) => {
   const tokenAInfo = get(createTokenADataAtom)
   const tokenBInfo = get(createTokenBDataAtom)
-  const tokenABalance = tokenAInfo?.balance!
-  const tokenBBalance = tokenBInfo?.balance!
+  const tokenABalance = tokenAInfo?.balance
+  const tokenBBalance = tokenBInfo?.balance
   const tokenA = get(createAAmountAtom)
   const tokenB = get(createBAmountAtom)
   const initialPrice = get(createInitialPriceAtom)
@@ -59,7 +59,7 @@ export const createAmountIsValidAtom = atom((get) => {
   if (Number(tokenB) <= 0 || Number(tokenA) <= 0 || Number(initialPrice) <= 0) {
     return false
   }
-  if (tokenABalance < Number(tokenA) || tokenBBalance < Number(tokenB)) {
+  if (tokenABalance! < Number(tokenA) || tokenBBalance! < Number(tokenB)) {
     return false
   }
   return true

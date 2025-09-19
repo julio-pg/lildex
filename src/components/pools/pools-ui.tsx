@@ -29,8 +29,8 @@ export default function Pools() {
 
   const mutation = useOpenPositionMutation({
     selectedPool: selectedPool!,
-    metadataTokenA: selectedPool?.metadataTokenA!,
-    metadataTokenB: selectedPool?.metadataTokenB!,
+    metadataTokenA: selectedPool?.metadataTokenA,
+    metadataTokenB: selectedPool?.metadataTokenB,
     tokenAAmount,
     tokenBAmount,
   })
@@ -62,7 +62,7 @@ export default function Pools() {
                 </div>
                 <span>{`${data.metadataTokenA.symbol || ellipsify(data.tokenMintA)} / ${ellipsify(data.metadataTokenB.symbol || data.tokenMintB)}`}</span>
               </TableHead>
-              <TableCell>${BigInt(bigintPriceToNumber(data?.price!, 9n) || 0)}</TableCell>
+              <TableCell>${BigInt(bigintPriceToNumber(data?.price, 9n) || 0)}</TableCell>
               <TableCell>{data.liquidity}</TableCell>
               <TableCell>{data.protocolFeeRate / 100}%</TableCell>
               <TableCell>
@@ -77,12 +77,12 @@ export default function Pools() {
                       <DialogTitle>Open Position</DialogTitle>
                     </DialogHeader>
                     <SwapInput
-                      tokenData={selectedPool?.metadataTokenA!}
+                      tokenData={selectedPool?.metadataTokenA}
                       tokenAmount={tokenAAmount}
                       setAmount={setTokenAAmount}
                     />
                     <SwapInput
-                      tokenData={selectedPool?.metadataTokenB!}
+                      tokenData={selectedPool?.metadataTokenB}
                       tokenAmount={tokenBAmount}
                       setAmount={setTokenBAmount as Dispatch<SetStateAction<string>>}
                     />
@@ -90,7 +90,7 @@ export default function Pools() {
                       onClick={() => {
                         mutation
                           .mutateAsync()
-                          .catch((err: any) => console.log(err))
+                          .catch((err) => console.log(err))
                           .finally(() => {
                             setTokenAAmount('')
                             setTokenBAmount('')
