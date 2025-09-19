@@ -68,7 +68,7 @@ function Swap() {
 
           {/* Swap Arrow */}
           <button
-            className="items-center justify-center whitespace-nowrap rounded-full text-base font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-border-focus disabled:cursor-not-allowed active:brightness-100 active:scale-[0.99] border border-glass shadow-down text-slate-50 duration-100 disabled:opacity-50 h-8 w-8 shrink-0 flex bg-dark-700/50 backdrop-blur-lg hover:brightness-125 disabled:text-tertiary"
+            className="items-center justify-center whitespace-nowrap rounded-full text-base font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-border-focus disabled:cursor-not-allowed active:brightness-100 active:scale-[0.99] border border- shadow-down text-slate-50 duration-100 disabled:opacity-50 h-8 w-8 shrink-0 flex bg-dark-700/50 backdrop-blur-sm hover:brightness-125 disabled:text-tertiary"
             onClick={() => {
               setSelectedAtoken(selectedBtoken)
               setSelectedBtoken(selectedAtoken)
@@ -107,7 +107,7 @@ function Swap() {
           {account && !lilpool && (
             <div
               role="alert"
-              className="items-start gap-x-2 flex relative w-full rounded-md py-2.5 px-3 border border-orange-400 text-sm text-orange-400"
+              className="items-start gap-x-2 flex  w-full rounded-md py-2.5 px-3 border border-orange-400 text-sm text-orange-400"
             >
               <CircleX />
               <div className="flex flex-col gap-1">
