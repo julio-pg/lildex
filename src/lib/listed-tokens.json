@@ -26,5 +26,12 @@
     "name": "Wowcoin",
     "decimals": 9,
     "logoURI": "/img/fallback-coin.png"
+  },
+  {
+    "address": "EMP6wqCg9yS8BFf9Tuy1nmtvAqSpWLAmDAcWUBWQuGUb",
+    "symbol": "RED",
+    "name": "Redcoin",
+    "decimals": 9,
+    "logoURI": "/img/fallback-coin.png"
   }
 ]
