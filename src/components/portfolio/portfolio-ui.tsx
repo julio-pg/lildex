@@ -25,53 +25,51 @@ export default function Portfolio() {
     selectedPosition: selectedPostion!,
   })
   return (
-    <div className="relative overflow-x-auto rounded-md">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Pool</TableHead>
-            <TableHead>Balance token A</TableHead>
-            <TableHead>Balance token B</TableHead>
-            {/* <TableHead>Current Price</TableHead> */}
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Pool</TableHead>
+          <TableHead>Balance token A</TableHead>
+          <TableHead>Balance token B</TableHead>
+          {/* <TableHead>Current Price</TableHead> */}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {postions?.map((data) => (
+          <TableRow key={data.address}>
+            <TableHead scope="row" className="flex items-center">
+              <div className="items-center -space-x-2 flex lg:group-hover:opacity-0">
+                <span className="flex min-h-4 min-w-4 shrink-0 rounded-full shadow-box h-5 w-5">
+                  <img className="aspect-square h-full w-full rounded-full" src={data.metadataTokenA.logoURI} />
+                </span>
+                <span className="flex min-h-4 min-w-4 shrink-0 rounded-full shadow-box h-5 w-5">
+                  <img className="aspect-square h-full w-full rounded-full" src={data.metadataTokenB.logoURI} />
+                </span>
+                <span className="flex min-h-4 min-w-4 shrink-0 rounded-full shadow-box h-5 w-5"></span>
+              </div>
+              <span>{`${data.metadataTokenA.symbol || ellipsify(data.metadataTokenB.address)} / ${ellipsify(data.metadataTokenB.symbol || data.metadataTokenB.address)}`}</span>
+            </TableHead>
+            <TableCell>
+              {bigintPriceToNumber(data?.tokenAAmount, BigInt(data.metadataTokenA.decimals || 1)) || 0}
+            </TableCell>
+            <TableCell>
+              {bigintPriceToNumber(data?.tokenBAmount, BigInt(data?.metadataTokenB.decimals || 1)) || 0}
+            </TableCell>
+            {/* <TableCell >${data.positionMint / BigInt(10) ** BigInt(9)}</TableCell> */}
+            <TableCell>
+              <Button
+                // disabled={mutation.isPending}
+                onClick={() => {
+                  SetSelectedPosition(data)
+                  mutation.mutateAsync().catch((err) => console.log(err))
+                }}
+              >
+                Close
+              </Button>
+            </TableCell>
           </TableRow>
-        </TableHeader>
-        <TableBody>
-          {postions?.map((data) => (
-            <TableRow key={data.address} className="bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400 ">
-              <TableHead scope="row" className=" font-medium text-xl flex items-center">
-                <div className="items-center -space-x-2 flex lg:group-hover:opacity-0">
-                  <span className="relative flex min-h-4 min-w-4 shrink-0 rounded-full shadow-box h-5 w-5 z-10">
-                    <img className="aspect-square h-full w-full rounded-full" src={data.metadataTokenA.logoURI} />
-                  </span>
-                  <span className="relative flex min-h-4 min-w-4 shrink-0 rounded-full shadow-box h-5 w-5 z-10">
-                    <img className="aspect-square h-full w-full rounded-full" src={data.metadataTokenB.logoURI} />
-                  </span>
-                  <span className="relative flex min-h-4 min-w-4 shrink-0 rounded-full shadow-box h-5 w-5"></span>
-                </div>
-                <span>{`${data.metadataTokenA.symbol || ellipsify(data.metadataTokenB.address)} / ${ellipsify(data.metadataTokenB.symbol || data.metadataTokenB.address)}`}</span>
-              </TableHead>
-              <TableCell>
-                {bigintPriceToNumber(data?.tokenAAmount, BigInt(data.metadataTokenA.decimals || 1)) || 0}
-              </TableCell>
-              <TableCell>
-                {bigintPriceToNumber(data?.tokenBAmount, BigInt(data?.metadataTokenB.decimals || 1)) || 0}
-              </TableCell>
-              {/* <TableCell >${data.positionMint / BigInt(10) ** BigInt(9)}</TableCell> */}
-              <TableCell>
-                <Button
-                  // disabled={mutation.isPending}
-                  onClick={() => {
-                    SetSelectedPosition(data)
-                    mutation.mutateAsync().catch((err) => console.log(err))
-                  }}
-                >
-                  Close
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+        ))}
+      </TableBody>
+    </Table>
   )
 }
