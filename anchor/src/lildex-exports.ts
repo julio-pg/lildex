@@ -1,5 +1,5 @@
 // Here we export some useful types and functions for interacting with the Anchor program.
-import { Account, address, getBase58Decoder, SolanaClient } from 'gill'
+import { Account, getBase58Decoder, SolanaClient } from 'gill'
 import { SolanaClusterId } from '@wallet-ui/react'
 import { getProgramAccountsDecoded } from './helpers/get-program-accounts-decoded'
 // import { Lildex, LILDEX_DISCRIMINATOR, LILDEX_PROGRAM_ADDRESS, getLildexDecoder } from './client/js/generated'

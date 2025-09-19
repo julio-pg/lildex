@@ -9,7 +9,7 @@ import { Link, useLocation } from 'react-router'
 export function AppHeader({ links = [] }: { links: { label: string; path: string }[] }) {
   const { pathname } = useLocation()
   const [showMenu, setShowMenu] = useState(false)
-
+  const nodeEnv = import.meta.env.VITE_NODE_ENV
   function isActive(path: string) {
     return path === '/' ? pathname === '/' : pathname.startsWith(path)
   }
@@ -40,8 +40,7 @@ export function AppHeader({ links = [] }: { links: { label: string; path: string
 
         <div className="hidden md:flex items-center gap-4">
           <WalletButton size="sm" />
-          <ClusterButton size="sm" />
-          {/* <ThemeSelect /> */}
+          {nodeEnv == 'staging' && <ClusterButton size="sm" />} {/* <ThemeSelect /> */}
         </div>
 
         {showMenu && (
@@ -62,7 +61,7 @@ export function AppHeader({ links = [] }: { links: { label: string; path: string
               </ul>
               <div className="flex flex-col gap-4">
                 <WalletButton />
-                <ClusterButton />
+                {nodeEnv == 'staging' && <ClusterButton />}
                 {/* <ThemeSelect /> */}
               </div>
             </div>

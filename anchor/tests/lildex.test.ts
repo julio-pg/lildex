@@ -28,7 +28,7 @@ describe('lildex', () => {
   // const userInitialTokenAmount = 10n * TOKEN
   const tokenAOfferedAmount = 1n * TOKENA
   const initialPrice = 3n * TOKENB
-  const tokenBRaw = (tokenAOfferedAmount * initialPrice) / BigInt(10 ** 9)
+  // const tokenBRaw = (tokenAOfferedAmount * initialPrice) / BigInt(10 ** 9)
   const tokenBWantedAmount = 3000000000n
 
   beforeAll(async () => {
@@ -304,7 +304,7 @@ describe('lildex', () => {
       positionMint = position1.data.positionMint
     }
     postionTokenAccount = await connection.getTokenAccountAddress(payer.address, positionMint!, true)
-    const ix = programClient.getClosePositionInstruction({
+    const closePositionIx = programClient.getClosePositionInstruction({
       positionAuthority: payer,
       receiver: payer.address,
       position: position1.address,
@@ -312,11 +312,27 @@ describe('lildex', () => {
       positionTokenAccount: postionTokenAccount!,
       token2022Program: TOKEN_EXTENSIONS_PROGRAM,
     })
+    const decreaseLiquidityIx = programClient.getDecreaseLiquidityInstruction({
+      lilpool: lilpool!,
+      position: position1.address,
+      positionAuthority: payer,
+      positionTokenAccount: postionTokenAccount,
+      tokenMintA: tokenMintA,
+      tokenMintB: tokenMintB,
+      tokenOwnerAccountA: funderTokenAccountA,
+      tokenOwnerAccountB: funderTokenAccountB,
+      tokenVaultA: tokenVaultA.address,
+      tokenVaultB: tokenVaultB.address,
+      tokenMaxA: tokenAOfferedAmount,
+      tokenMaxB: tokenBWantedAmount,
+      tokenProgramA: tokenProgramA.programAddress,
+      tokenProgramB: tokenProgramB.programAddress,
+    })
 
     try {
       await connection.sendTransactionFromInstructions({
         feePayer: payer,
-        instructions: [ix],
+        instructions: [decreaseLiquidityIx, closePositionIx],
       })
     } catch (err: any) {
       if (err.cause) {

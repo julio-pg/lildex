@@ -1,4 +1,4 @@
-import { bigintPriceToNumber, initialPriceDecimals, numberToBigintPrice, TokenMetadata } from '@/lib/utils'
+import { bigintPriceToNumber, numberToBigintPrice, TokenMetadata } from '@/lib/utils'
 import { Lilpool } from '@project/anchor'
 import { atom } from 'jotai'
 

@@ -1,12 +1,11 @@
 import { useWalletUi } from '@wallet-ui/react'
-import { ArrowUpDown, Check, CircleX, Copy, ExternalLink, X } from 'lucide-react'
+import { ArrowUpDown, Check, CircleX, Copy, ExternalLink } from 'lucide-react'
 import { WalletButton } from '../solana/solana-provider'
 import { Button } from '../ui/button'
-import { ellipsify, solanaTokenAddress } from '@/lib/utils'
+import { ellipsify } from '@/lib/utils'
 import { Dispatch, SetStateAction, useState } from 'react'
 import SwapInputWithModal from '../ui/swap-input-with-modal'
 import { useCreateSwapMutation, useGetLilpoolAddressQuery, useGetListedTokensQuery } from './swap-data-access'
-import { address } from 'gill'
 import listedTokens from '@/lib/listed-tokens.json'
 import { useAtom } from 'jotai'
 import {
@@ -28,7 +27,7 @@ function Swap() {
       </div>
     )
   }
-  const [selectedPool, SetSelectedPool] = useAtom(swapSelectedPoolAtom)
+  const [_selectedPool, SetSelectedPool] = useAtom(swapSelectedPoolAtom)
   const [tokenAAmount, setTokenAAmount] = useAtom(swapTokenAAmountAtom)
   const [tokenBAmount, setTokenBAmount] = useAtom(swapTokenBAmountAtom)
   const [selectedAtoken, setSelectedAtoken] = useAtom(selectedAtokenAtom)

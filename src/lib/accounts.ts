@@ -9,8 +9,6 @@ import {
   MaybeEncodedAccount,
   parseBase64RpcAccount,
   SolanaClient,
-  getBase58Encoder,
-  getUtf8Encoder,
 } from 'gill'
 
 export interface GetProgramAccountsConfig {

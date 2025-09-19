@@ -17,7 +17,6 @@ import {
   getBase58Decoder,
   getProgramDerivedAddress,
   getUtf8Encoder,
-  none,
 } from 'gill'
 import { fetchMint, findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from 'gill/programs'
 import { toastTx } from '../toast-tx'

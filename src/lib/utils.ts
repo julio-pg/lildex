@@ -119,7 +119,7 @@ export async function getTokenMetadata(
   wallet: Address,
   mint: Address,
 ): Promise<TokenMetadata> {
-  let metadata: TokenMetadata = {
+  const metadata: TokenMetadata = {
     address: '',
     symbol: '',
     name: '',
@@ -160,10 +160,10 @@ export async function getTokenMetadata(
     }
     const balanceQuery = await getTokenBalance(rpc, wallet, mint, mintAccount.programAddress!)
     // assign values
-    metadata.decimals = mintAccount?.data.decimals!
+    metadata.decimals = mintAccount?.data.decimals
 
     metadata.balance = Number(balanceQuery)
-    metadata.tokenProgram = mintAccount.programAddress!
+    metadata.tokenProgram = mintAccount.programAddress
   } catch (error) {
     console.log(error)
   }

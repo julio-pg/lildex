@@ -4,9 +4,7 @@ import { WalletButton } from '../solana/solana-provider'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Dispatch, SetStateAction } from 'react'
-import { address } from 'gill'
 
-import { solanaTokenAddress } from '@/lib/utils'
 import { useInitializePoolMutation } from './create-pool-data-access'
 import { useAtom } from 'jotai'
 import {
@@ -41,10 +39,8 @@ export default function CreatePool() {
   const [selectedBtoken, setSelectedBtoken] = useAtom(createTokenBDataAtom)
   const [isPairSelected] = useAtom(isPairSelectedAtom)
   const [amountIsValid] = useAtom(createAmountIsValidAtom)
-  const walletAddress = address(account?.address! || solanaTokenAddress)
 
   const { data: tokensWithBalances } = useGetListedTokensQuery({
-    wallet: walletAddress,
     listedTokens: listedTokens,
   })
 
