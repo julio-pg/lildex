@@ -1,91 +1,102 @@
-# lildex
+# 🪙 LilDex
 
-This is a Vite app containing:
+LilDex is a **Decentralized Exchange (DEX)** built on **Solana** using **Anchor** for the on-chain program and **React** for the frontend.  
+It allows users to:
 
-- Tailwind CSS setup for styling
-- Useful wallet UI elements setup using [Gill](https://gill.site/)
-- A basic Lildex Solana program written in Anchor
-- UI components for interacting with the Lildex program using the Anchor generated client
+- Create liquidity pools
+- Add liquidity to existing pools
+- Withdraw liquidity from pools
+- Swap tokens available in the pool pairs
 
-## Getting Started
+---
 
-### Installation
+## 🚀 Features
 
-#### Download the template
+- **Pool Creation**: Easily create new token pairs on Solana.
+- **Liquidity Provisioning**: Add your tokens to pools and earn a share of swap fees.
+- **Liquidity Withdrawal**: Remove your liquidity at any time.
+- **Token Swaps**: Trade between supported pool pairs instantly.
 
-```shell
-pnpm create solana-dapp@latest -t gh:solana-foundation/templates/gill/lildex
+---
+
+## 🛠️ Tech Stack
+
+- **Smart Contracts**: [Anchor](https://book.anchor-lang.com/) framework for Solana programs.
+- **Blockchain**: [Solana](https://solana.com/).
+- **Frontend**: [React](https://react.dev/) with hooks and context for wallet integration.
+- **Wallet**: Compatible with [Phantom](https://phantom.app/) and other Solana wallets.
+
+---
+
+## ⚙️ Installation
+
+### Prerequisites
+
+- [Rust](https://www.rust-lang.org/tools/install)
+- [Solana CLI](https://docs.solana.com/cli/install-solana-cli-tools)
+- [Anchor CLI](https://book.anchor-lang.com/getting_started/installation.html)
+- [Node.js](https://nodejs.org/) & npm (or yarn)
+
+### Setup
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/julio-pg/lildex.git
+   cd lilDex
+   ```
+
+2. Install dependencies for the frontend:
+
+   ```bash
+   cd app
+   pnpm install
+   ```
+
+3. Build and deploy the Solana program locally:
+
+   ```bash
+   pnpm run anchor-build
+   pnpm run anchor deploy
+   ```
+
+4. Run the frontend app:
+
+   ```bash
+   pnpm run dev
+   ```
+
+---
+
+## 🧪 Testing
+
+Run Anchor tests:
+
+```bash
+pnpm run anchor-test
 ```
 
-#### Install Dependencies
+---
 
-```shell
-pnpm install
-```
+## 🎨 UI Preview
 
-## Apps
+The LilDex frontend provides a simple interface for:
 
-### anchor
+- Connecting your wallet
+- Viewing existing pools
+- Creating pools
+- Adding/removing liquidity
+- Swapping tokens
 
-This is a Solana program written in Rust using the Anchor framework.
+---
 
-#### Commands
+## 🤝 Contributing
 
-You can use any normal anchor commands. Either move to the `anchor` directory and run the `anchor` command or prefix the
-command with `pnpm`, eg: `pnpm anchor`.
+Contributions are welcome!
+Feel free to fork the repo, create a feature branch, and submit a PR.
 
-#### Sync the program id:
+---
 
-Running this command will create a new keypair in the `anchor/target/deploy` directory and save the address to the
-Anchor config file and update the `declare_id!` macro in the `./src/lib.rs` file of the program. This will also update
-the constant in the `anchor/src/lildex-exports.ts` file.
+## 📜 License
 
-```shell
-pnpm run setup
-```
-
-```shell
-pnpm anchor keys sync
-```
-
-#### Build the program:
-
-```shell
-pnpm anchor-build
-```
-
-#### Start the test validator with the program deployed:
-
-```shell
-pnpm anchor-localnet
-```
-
-#### Run the tests
-
-```shell
-pnpm anchor-test
-```
-
-#### Deploy to Devnet
-
-```shell
-pnpm anchor deploy --provider.cluster devnet
-```
-
-### web
-
-This is a React app that uses the Anchor generated client to interact with the Solana program.
-
-#### Commands
-
-Start the web app
-
-```shell
-pnpm dev
-```
-
-Build the web app
-
-```shell
-pnpm build
-```
+MIT License © 2025 LilDex

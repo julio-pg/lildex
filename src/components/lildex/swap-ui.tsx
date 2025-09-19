@@ -51,6 +51,7 @@ function Swap() {
     selectedBtoken: selectedBtoken!,
     lilpoolData: lilpool!,
   })
+  // TODO: make all the features works with SOL
   return (
     <div className="min-h-screen flex flex-col gap-y-4 items-center">
       <div className="w-full max-w-md rounded-2xl p-6 shadow-2xl bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400">
