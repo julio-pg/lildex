@@ -52,7 +52,7 @@ function Swap() {
     lilpoolData: lilpool!,
   })
   return (
-    <div className="min-h-screen flex flex-col gap-y-4 items-center justify-center">
+    <div className="min-h-screen flex flex-col gap-y-4 items-center">
       <div className="w-full max-w-md rounded-2xl p-6 shadow-2xl bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400">
         {/* Pay and Receive Section */}
         <div className="flex flex-col items-center -space-y-3 mb-3">

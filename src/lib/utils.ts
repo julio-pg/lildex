@@ -8,6 +8,7 @@ import {
   TOKEN_2022_PROGRAM_ADDRESS,
   TOKEN_PROGRAM_ADDRESS,
 } from 'gill/programs/token'
+import { fetchMetadata, getTokenMetadataAddress } from 'gill/programs'
 
 export const solanaTokenAddress = address('So11111111111111111111111111111111111111112')
 export const initialPriceDecimals = 9n
@@ -129,8 +130,19 @@ export async function getTokenMetadata(
   }
   metadata.address = mint
   try {
-    // TODO: add support for tokens without extensions with fethMetadata method
     const mintAccount = await fetchMint(rpc, mint)
+    if (mintAccount.programAddress == TOKEN_PROGRAM_ADDRESS) {
+      const metadataAddress = await getTokenMetadataAddress(mint)
+      const { data: metaplexMetadata } = await fetchMetadata(rpc, metadataAddress)
+      try {
+        const uriData = await (await fetch(metaplexMetadata?.data.uri!)).json()
+        metadata.logoURI = uriData.image
+      } catch (error) {
+        console.warn('Metadata fetch failed:', error)
+      }
+      metadata.symbol = metaplexMetadata.data.symbol
+      metadata.name = metaplexMetadata.data.name
+    }
 
     const maybeTokenExtensions = mintAccount.data.extensions
     if (isSome(maybeTokenExtensions)) {
